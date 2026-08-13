@@ -1,35 +1,70 @@
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EventoVivo — Divulgação de Artistas e Eventos Independentes</title>
-    <meta name="description" content="EventoVivo conecta artistas independentes e público: divulgue seu trabalho, publique eventos e descubra a cena da sua cidade.">
-    <meta property="og:title" content="EventoVivo — Divulgação de Artistas e Eventos Independentes">
-    <meta property="og:description" content="Divulgue seu trabalho, publique eventos e descubra a cena independente perto de você.">
-    <meta property="og:type" content="website">
-    <meta name="theme-color" content="#110f0c">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23110f0c'/%3E%3Ctext x='32' y='46' font-family='Arial, sans-serif' font-weight='900' font-size='38' fill='%23b3121e' text-anchor='middle'%3EV%3C/text%3E%3C/svg%3E">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Courier+Prime:wght@400;700&family=Permanent+Marker&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../Css/style.css">
-</head>
-<body>
+<?php
+/* Compatível com PHP 5.2.0: sem __DIR__ (5.3+), sem array curto [] (5.4+),
+   sem operador ?? (7.0+) e sem depender de <?= (short_open_tag). */
+require_once dirname(__FILE__) . '/Componentes/cards.php';
 
-<header class="site-header">
-  <div class="wrap header-inner">
-    <a class="logo" href="#topo">Evento<span>Vivo</span></a>
-    <nav class="nav">
-      <a href="#topo">Home</a>
-      <a href="#como-funciona">Como funciona</a>
-      <a href="#eventos">Eventos</a>
-      <a href="#artistas">Artistas</a>
-    </nav>
-    <form class="search" role="search" action="#eventos" method="get">
-      <input type="search" name="busca" placeholder="Buscar artista, evento ou cidade" aria-label="Buscar artista, evento ou cidade">
-      <button type="submit">Buscar</button>
-    </form>
-  </div>
-</header>
+/* ---- Dados: eventos em destaque ---- */
+$eventos = array(
+    array(
+        'data'   => '23 ago',
+        'local'  => 'Porto Alegre, RS',
+        'titulo' => 'Noite de Garagem',
+        'desc'   => 'Cortina de Ferro sobe ao palco do Galpão 7 pra um set cru, direto e sem enrolação.',
+    ),
+    array(
+        'data'   => '30 ago',
+        'local'  => 'São Paulo, SP',
+        'titulo' => 'Subsolo Fest',
+        'desc'   => 'Quatro bandas, um palco só: hardcore e post-punk lotam a Casa Rachada até de madrugada.',
+    ),
+    array(
+        'data'   => '05 set',
+        'local'  => 'Curitiba, PR',
+        'titulo' => 'Ruído na Veia',
+        'desc'   => 'Máquina Enferrujada estreia faixas novas de noise rock no Bar do Zeca.',
+    ),
+    array(
+        'data'   => '12 set',
+        'local'  => 'Belo Horizonte, MG',
+        'titulo' => 'Grito Coletivo',
+        'desc'   => 'Poesia falada e punk underground dividem o mesmo microfone nessa noite de sarau e show.',
+    ),
+);
+
+/* ---- Dados: artistas em destaque ---- */
+$artistas = array(
+    array(
+        'foto'       => '../Assets/artistas/cortina-de-ferro.jpg',
+        'nome'       => 'Cortina de Ferro',
+        'tipo'       => 'Punk rock',
+        'local'      => 'Porto Alegre, RS',
+        'categorias' => array('Ao vivo', 'Autoral', 'DIY'),
+    ),
+    array(
+        'foto'       => '../Assets/artistas/maquina-enferrujada.jpg',
+        'nome'       => 'Máquina Enferrujada',
+        'tipo'       => 'Noise rock',
+        'local'      => 'Curitiba, PR',
+        'categorias' => array('Instrumental', 'Autoral', 'Underground'),
+    ),
+    array(
+        'foto'       => '../Assets/artistas/fita-cassete.jpg',
+        'nome'       => 'Fita Cassete',
+        'tipo'       => 'Synth punk',
+        'local'      => 'Recife, PE',
+        'categorias' => array('Ao vivo', 'Eletrônico', 'Retrô'),
+    ),
+    array(
+        'foto'       => '../Assets/artistas/zona-cinza.jpg',
+        'nome'       => 'Zona Cinza',
+        'tipo'       => 'Post-punk',
+        'local'      => 'Belo Horizonte, MG',
+        'categorias' => array('Autoral', 'Ao vivo', 'DIY'),
+    ),
+);
+
+require dirname(__FILE__) . '/Componentes/header.php';
+?>
 
 <main>
 
@@ -77,26 +112,9 @@
     <div class="wrap">
       <h2>Eventos em destaque</h2>
       <div class="grid">
-        <article class="card">
-          <p class="tag">23 ago · Porto Alegre, RS</p>
-          <h3>Noite de Garagem</h3>
-          <p class="desc">Cortina de Ferro sobe ao palco do Galpão 7 pra um set cru, direto e sem enrolação.</p>
-        </article>
-        <article class="card">
-          <p class="tag">30 ago · São Paulo, SP</p>
-          <h3>Subsolo Fest</h3>
-          <p class="desc">Quatro bandas, um palco só: hardcore e post-punk lotam a Casa Rachada até de madrugada.</p>
-        </article>
-        <article class="card">
-          <p class="tag">05 set · Curitiba, PR</p>
-          <h3>Ruído na Veia</h3>
-          <p class="desc">Máquina Enferrujada estreia faixas novas de noise rock no Bar do Zeca.</p>
-        </article>
-        <article class="card">
-          <p class="tag">12 set · Belo Horizonte, MG</p>
-          <h3>Grito Coletivo</h3>
-          <p class="desc">Poesia falada e punk underground dividem o mesmo microfone nessa noite de sarau e show.</p>
-        </article>
+        <?php foreach ($eventos as $evento): ?>
+          <?php render_event_card($evento); ?>
+        <?php endforeach; ?>
       </div>
     </div>
   </section>
@@ -105,44 +123,13 @@
     <div class="wrap">
       <h2>Artistas em destaque</h2>
       <div class="grid">
-        <article class="card">
-          <p class="tag">Punk rock · Porto Alegre, RS</p>
-          <h3>Cortina de Ferro</h3>
-          <p class="desc">Três acordes, letra direta e um som que não pede desculpa.</p>
-        </article>
-        <article class="card">
-          <p class="tag">Noise rock · Curitiba, PR</p>
-          <h3>Máquina Enferrujada</h3>
-          <p class="desc">Guitarra distorcida, bateria seca e zero produção de estúdio.</p>
-        </article>
-        <article class="card">
-          <p class="tag">Synth punk · Recife, PE</p>
-          <h3>Fita Cassete</h3>
-          <p class="desc">Sintetizador vintage e refrão colado que gruda depois do primeiro show.</p>
-        </article>
-        <article class="card">
-          <p class="tag">Post-punk · Belo Horizonte, MG</p>
-          <h3>Zona Cinza</h3>
-          <p class="desc">Baixo em primeiro plano e letras que soam mais a desabafo do que a canção.</p>
-        </article>
+        <?php foreach ($artistas as $artista): ?>
+          <?php render_artist_card($artista); ?>
+        <?php endforeach; ?>
       </div>
     </div>
   </section>
 
 </main>
 
-<footer class="site-footer">
-  <div class="wrap footer-inner">
-    <p class="logo">Evento<span>Vivo</span></p>
-    <nav>
-      <a href="#topo">Home</a>
-      <a href="#como-funciona">Como funciona</a>
-      <a href="#eventos">Eventos</a>
-      <a href="#artistas">Artistas</a>
-    </nav>
-    <p class="copy">© 2026 EventoVivo. Todos os direitos reservados.</p>
-  </div>
-</footer>
-
-</body>
-</html>
+<?php require dirname(__FILE__) . '/Componentes/footer.php'; ?>

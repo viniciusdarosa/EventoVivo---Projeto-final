@@ -1,23 +1,54 @@
 /* ==========================================================
-   EventoVivo — estilos
-   Sistema: cores fixas, escala de espaçamento de 8px,
-   Anton (display) + Courier Prime (corpo/UI) + Permanent Marker (etiquetas)
+   EventoVivo — folha de estilos
+   Índice:
+     1. Variáveis (cores, fontes, espaçamento)
+     2. Reset
+     3. Layout base (wrap, seções)
+     4. Header (cabeçalho + busca)
+     5. Hero
+     6. Botões
+     7. Títulos de seção
+     8. Seção "Como funciona"
+     9. Card base (compartilhado)
+    10. Card de evento
+    11. Card de artista
+    12. Footer (rodapé)
+    13. Acessibilidade
+    14. Responsivo
    ========================================================== */
-
+ 
+ 
+/* ==========================================================
+   1. VARIÁVEIS
+   ========================================================== */
 :root {
+  /* -- cores de fundo -- */
   --ink: #110f0c;
   --ink-2: #1c1912;
   --steel: #262219;
   --rule: #4a4334;
-  --paper: #e6dfc9;
-  --paper-dim: #a89d80;
+ 
+  /* -- cores de texto -- */
+  --paper: #e6dfc9;      /* texto principal (creme) */
+  --paper-dim: #a89d80;  /* texto secundário */
+  --white: #ffffff;      /* branco puro, usado em destaques pontuais */
+ 
+  /* -- cores de destaque --
+     --blood  : vermelho da marca (CTA, logo, header)
+     --accent : vermelho de detalhe (substitui o antigo amarelo em
+                selos, sublinhados, tags e sombras decorativas)
+     --yellow : amarelo, reservado apenas para a localidade
+                nos cards de artista */
   --blood: #b3121e;
-  --hazard: #e6b923;
-
+  --accent: #b8000d;
+  --yellow: #e6b923;
+ 
+  /* -- tipografia -- */
   --font-display: 'Anton', sans-serif;
   --font-body: 'Courier Prime', monospace;
   --font-mark: 'Permanent Marker', cursive;
-
+ 
+  /* -- escala de espaçamento (base 8px) -- */
   --sp-1: .5rem;
   --sp-2: 1rem;
   --sp-3: 1.5rem;
@@ -25,18 +56,30 @@
   --sp-5: 3rem;
   --sp-6: 4rem;
   --sp-7: 6rem;
-
+ 
+  /* -- efeitos -- */
   --shadow-hard: 6px 6px 0 rgba(0,0,0,.55);
   --ease: .18s ease;
 }
-
-/* ---- reset ---- */
+ 
+ 
+/* ==========================================================
+   2. RESET
+   ========================================================== */
 *, *::before, *::after { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
-body { margin: 0; background: var(--ink); color: var(--paper); font-family: var(--font-body); font-size: 1rem; line-height: 1.6; }
-h1, h2, h3, p, ol { margin: 0; padding: 0; }
-ol { list-style: none; }
+body {
+  margin: 0;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+h1, h2, h3, p, ol, ul { margin: 0; padding: 0; }
+ol, ul { list-style: none; }
 a { color: inherit; text-decoration: none; }
+img { max-width: 100%; display: block; }
 button, input {
   font-family: inherit;
   font-size: 1rem;
@@ -45,16 +88,39 @@ button, input {
   -webkit-appearance: none;
   appearance: none;
 }
-::selection { background: var(--blood); color: var(--paper); }
-section[id] { scroll-margin-top: 5.5rem; }
-
-/* ---- layout ---- */
+::selection { background: var(--accent); color: var(--paper); }
+ 
+ 
+/* ==========================================================
+   3. LAYOUT BASE
+   ========================================================== */
 .wrap { max-width: 1180px; margin-inline: auto; padding-inline: var(--sp-3); }
-
-/* ---- header ---- */
-.site-header { position: sticky; top: 0; z-index: 10; background: var(--ink); border-bottom: 2px solid var(--blood); }
-.header-inner { display: flex; align-items: center; gap: var(--sp-4); flex-wrap: wrap; padding-block: var(--sp-2); }
-.logo { font-family: var(--font-display); text-transform: uppercase; font-size: 1.4rem; letter-spacing: .03em; }
+section[id] { scroll-margin-top: 5.5rem; }
+ 
+ 
+/* ==========================================================
+   4. HEADER
+   ========================================================== */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--ink);
+  border-bottom: 2px solid var(--blood);
+}
+.header-inner {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+  padding-block: var(--sp-2);
+}
+.logo {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-size: 1.4rem;
+  letter-spacing: .03em;
+}
 .logo span { color: var(--blood); }
 .nav { display: flex; gap: var(--sp-3); flex-wrap: wrap; }
 .nav a {
@@ -66,9 +132,15 @@ section[id] { scroll-margin-top: 5.5rem; }
   border-bottom: 2px solid transparent;
   transition: color var(--ease), border-color var(--ease);
 }
-.nav a:hover { color: var(--blood); border-color: var(--blood); }
+.nav a:hover { color: var(--accent); border-color: var(--accent); }
+ 
 .search { margin-left: auto; display: flex; gap: var(--sp-1); }
-.search input { background: var(--steel); border: 1px solid var(--rule); padding: .5rem .75rem; min-width: 200px; }
+.search input {
+  background: var(--steel);
+  border: 1px solid var(--rule);
+  padding: .5rem .75rem;
+  min-width: 200px;
+}
 .search input::placeholder { color: var(--paper-dim); }
 .search button {
   background: var(--blood);
@@ -83,10 +155,18 @@ section[id] { scroll-margin-top: 5.5rem; }
   transition: background var(--ease), color var(--ease);
 }
 .search button:hover { background: transparent; color: var(--blood); }
-
-/* ---- hero ---- */
+ 
+ 
+/* ==========================================================
+   5. HERO
+   ========================================================== */
 .hero { padding-block: clamp(3rem, 8vw, 6rem) clamp(2.5rem, 6vw, 4rem); }
-.eyebrow { font-family: var(--font-mark); color: var(--hazard); font-size: 1.15rem; margin-bottom: var(--sp-2); }
+.eyebrow {
+  font-family: var(--font-mark);
+  color: var(--accent);
+  font-size: 1.15rem;
+  margin-bottom: var(--sp-2);
+}
 h1 {
   font-family: var(--font-display);
   text-transform: uppercase;
@@ -96,10 +176,19 @@ h1 {
   text-shadow: 4px 4px 0 var(--blood);
   max-width: 22ch;
 }
-.hero-sub { font-size: 1.05rem; color: var(--paper-dim); max-width: 58ch; line-height: 1.7; margin-block: var(--sp-3); }
+.hero-sub {
+  font-size: 1.05rem;
+  color: var(--paper-dim);
+  max-width: 58ch;
+  line-height: 1.7;
+  margin-block: var(--sp-3);
+}
 .hero-cta { display: flex; gap: var(--sp-2); flex-wrap: wrap; margin-top: var(--sp-3); }
-
-/* ---- botões ---- */
+ 
+ 
+/* ==========================================================
+   6. BOTÕES
+   ========================================================== */
 .btn {
   display: inline-block;
   padding: .85rem 1.5rem;
@@ -114,20 +203,26 @@ h1 {
 .btn-primary:hover { background: transparent; color: var(--blood); }
 .btn-ghost { background: transparent; color: var(--paper); border-color: var(--paper); }
 .btn-ghost:hover { border-color: var(--blood); color: var(--blood); }
-
-/* ---- títulos de seção ---- */
+ 
+ 
+/* ==========================================================
+   7. TÍTULOS DE SEÇÃO
+   ========================================================== */
 h2 {
   display: inline-block;
   font-family: var(--font-display);
   text-transform: uppercase;
   font-size: clamp(1.7rem, 4vw, 2.4rem);
   letter-spacing: .02em;
-  border-bottom: 4px solid var(--hazard);
+  border-bottom: 4px solid var(--accent);
   padding-bottom: var(--sp-1);
   margin-bottom: var(--sp-5);
 }
-
-/* ---- como funciona ---- */
+ 
+ 
+/* ==========================================================
+   8. SEÇÃO "COMO FUNCIONA"
+   ========================================================== */
 .how { padding-block: var(--sp-7); background: var(--ink-2); border-block: 1px solid var(--rule); }
 .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--sp-4); }
 .steps li { border-top: 2px solid var(--rule); padding-top: var(--sp-2); }
@@ -135,63 +230,136 @@ h2 {
   display: block;
   font-family: var(--font-display);
   font-size: clamp(2rem, 5vw, 2.8rem);
-  text-shadow: 3px 3px 0 var(--hazard);
+  text-shadow: 3px 3px 0 var(--accent);
   margin-bottom: var(--sp-1);
 }
 .steps h3 { font-weight: 700; text-transform: uppercase; font-size: 1rem; letter-spacing: .03em; margin-bottom: var(--sp-1); }
 .steps p { color: var(--paper-dim); font-size: .92rem; line-height: 1.6; }
-
-/* ---- eventos / artistas ---- */
+ 
+ 
+/* ==========================================================
+   9. CARD BASE (compartilhado por eventos e artistas)
+   ========================================================== */
 .destaque { padding-block: var(--sp-7); }
 .destaque.alt { background: var(--ink-2); border-top: 1px solid var(--rule); }
 .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--sp-5); }
+ 
 .card {
   position: relative;
   background: var(--steel);
   border: 1px solid var(--rule);
-  padding: var(--sp-3);
   box-shadow: var(--shadow-hard);
   transition: transform var(--ease), box-shadow var(--ease);
 }
-.card::before {
+.grid .card:nth-child(odd) { transform: rotate(-1.4deg); }
+.grid .card:nth-child(even) { transform: rotate(1.2deg); }
+.grid .card:hover { transform: rotate(0deg); box-shadow: 8px 8px 0 rgba(0,0,0,.55); }
+ 
+ 
+/* ==========================================================
+   10. CARD DE EVENTO
+   ========================================================== */
+.event-card { padding: var(--sp-3); }
+.event-card::before {
   content: "";
   position: absolute;
   top: -.6rem;
   left: 1.5rem;
   width: 3.2rem;
   height: 1.1rem;
-  background: var(--hazard);
+  background: var(--accent);
   opacity: .85;
   transform: rotate(-4deg);
 }
-.grid .card:nth-child(odd) { transform: rotate(-1.4deg); }
-.grid .card:nth-child(even) { transform: rotate(1.2deg); }
-.grid .card:hover { transform: rotate(0deg); box-shadow: 8px 8px 0 rgba(0,0,0,.55); }
-.card .tag { font-family: var(--font-mark); color: var(--hazard); font-size: .95rem; margin-bottom: var(--sp-1); }
-.card h3 { font-weight: 700; text-transform: uppercase; font-size: 1.05rem; letter-spacing: .02em; margin-bottom: var(--sp-1); }
-.card .desc { color: var(--paper-dim); font-size: .9rem; line-height: 1.6; }
-
-/* ---- rodapé ---- */
+.event-card .tag { font-family: var(--font-mark); color: var(--yellow); font-size: .95rem; margin-bottom: var(--sp-1); }
+.event-card h3 { font-weight: 700; text-transform: uppercase; font-size: 1.05rem; letter-spacing: .02em; margin-bottom: var(--sp-1); }
+.event-card .desc { color: var(--paper-dim); font-size: .9rem; line-height: 1.6; }
+ 
+ 
+/* ==========================================================
+   11. CARD DE ARTISTA
+   Estrutura: foto em bloco cheio no topo + corpo de texto abaixo
+   ========================================================== */
+.artist-card { padding: 0; overflow: hidden; }
+ 
+.artist-photo-wrap {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-bottom: 3px solid var(--accent);
+  background: var(--ink-2); /* aparece caso a foto ainda não exista */
+}
+.artist-photo { width: 100%; height: 100%; object-fit: cover; }
+ 
+.artist-body { padding: var(--sp-3); }
+ 
+.artist-nome {
+  color: var(--accent);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 1.1rem;
+  letter-spacing: .02em;
+  margin-bottom: var(--sp-1);
+}
+.artist-tipo {
+  color: var(--white);
+  font-weight: 700;
+  font-size: .9rem;
+  margin-bottom: var(--sp-1);
+}
+.artist-local {
+  font-family: var(--font-mark);
+  color: var(--yellow);
+  font-size: .9rem;
+  margin-bottom: var(--sp-2);
+}
+ 
+.categorias { display: flex; flex-wrap: wrap; gap: .4rem; }
+.categoria {
+  border: 1px solid var(--rule);
+  padding: .2rem .55rem;
+  font-size: .68rem;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--paper-dim);
+  transition: border-color var(--ease), color var(--ease);
+}
+.artist-card:hover .categoria { border-color: var(--accent); color: var(--paper); }
+ 
+ 
+/* ==========================================================
+   12. FOOTER
+   ========================================================== */
 .site-footer { padding-block: var(--sp-5); border-top: 2px solid var(--blood); }
 .footer-inner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sp-3); }
 .site-footer .logo { font-family: var(--font-display); text-transform: uppercase; font-size: 1.1rem; }
 .site-footer .logo span { color: var(--blood); }
 .site-footer nav { display: flex; gap: var(--sp-3); flex-wrap: wrap; }
 .site-footer nav a { font-size: .8rem; text-transform: uppercase; letter-spacing: .05em; font-weight: 700; }
-.site-footer nav a:hover { color: var(--blood); }
+.site-footer nav a:hover { color: var(--accent); }
 .copy { width: 100%; color: var(--paper-dim); font-size: .8rem; margin-top: var(--sp-2); }
-
-/* ---- acessibilidade ---- */
-a:focus-visible, button:focus-visible, input:focus-visible { outline: 3px solid var(--hazard); outline-offset: 2px; }
-
+ 
+ 
+/* ==========================================================
+   13. ACESSIBILIDADE
+   ========================================================== */
+a:focus-visible, button:focus-visible, input:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+ 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   * { transition: none !important; }
 }
-
-/* ---- responsivo ---- */
+ 
+ 
+/* ==========================================================
+   14. RESPONSIVO
+   ========================================================== */
 @media (max-width: 720px) {
   .header-inner { flex-direction: column; align-items: flex-start; }
   .search { margin-left: 0; width: 100%; }
   .search input { flex: 1; }
 }
+ 
