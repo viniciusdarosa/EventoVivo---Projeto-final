@@ -1,19 +1,12 @@
-<?php
-/**
- * header.php
- * Abre o documento HTML, monta o <head> e o cabeçalho (nav + busca).
- * Deve ser fechado por Includes/footer.php.
- */
-?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EventoVivo — Divulgação de Artistas e Eventos Independentes</title>
-    <meta name="description" content="EventoVivo conecta artistas independentes e público: divulgue seu trabalho, publique eventos e descubra a cena da sua cidade.">
-    <meta property="og:title" content="EventoVivo — Divulgação de Artistas e Eventos Independentes">
-    <meta property="og:description" content="Divulgue seu trabalho, publique eventos e descubra a cena independente perto de você.">
+    <title>EventoVivo — Divulgacao de Artistas e Eventos Independentes</title>
+    <meta name="description" content="EventoVivo conecta artistas independentes e publico: divulgue seu trabalho, publique eventos e descubra a cena da sua cidade.">
+    <meta property="og:title" content="EventoVivo — Divulgacao de Artistas e Eventos Independentes">
+    <meta property="og:description" content="Divulgue seu trabalho, publique eventos e descubra a cena independente perto de voce.">
     <meta property="og:type" content="website">
     <meta name="theme-color" content="#110f0c">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23110f0c'/%3E%3Ctext x='32' y='46' font-family='Arial, sans-serif' font-weight='900' font-size='38' fill='%23b8000d' text-anchor='middle'%3EV%3C/text%3E%3C/svg%3E">
