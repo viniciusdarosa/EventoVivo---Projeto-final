@@ -1,0 +1,13 @@
+# Impede que qualquer arquivo .php enviado por engano/malicia
+# seja executado se alguém colocar/renomear algo nesta pasta.
+<FilesMatch "\.(php|phtml|php\d)$">
+  Require all denied
+</FilesMatch>
+
+# Sintaxe alternativa para Apache 2.2 (EasyPHP costuma usar 2.2/2.4
+# dependendo da versão). Descomente se a diretiva acima não funcionar
+# no seu Apache:
+# <FilesMatch "\.(php|phtml|php\d)$">
+#   Order allow,deny
+#   Deny from all
+# </FilesMatch>
