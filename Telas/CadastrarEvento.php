@@ -11,7 +11,7 @@
  */
 
 session_start();
-require dirname(__FILE__) . '../config/conexao.php';
+require dirname(__FILE__) . '/../config/conexao.php';
 require dirname(__FILE__) . '/Componentes/funcoes_eventos.php';
 
 // Só usuários logados podem cadastrar evento. O id do organizador

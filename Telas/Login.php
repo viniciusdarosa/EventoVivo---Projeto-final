@@ -1,3 +1,47 @@
+<?php
+/**
+ * Login.php — Processamento de login + tela
+ * Compatível com PHP 5.3.9 (sem short arrays, ??, __DIR__, etc.)
+ */
+session_start();
+require_once dirname(__FILE__) . '/../config/conexao.php';
+require_once dirname(__FILE__) . '/Componentes/funcoes_eventos.php';
+
+$erroLogin = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $email = isset($_POST['email']) ? trim($_POST['email']) : '';
+    $senha = isset($_POST['senha']) ? $_POST['senha'] : '';
+
+    if ($email === '' || $senha === '') {
+        $erroLogin = 'Preencha e-mail e senha.';
+    } else {
+        $stmt = $conexao->prepare("SELECT id_usuario, nome, senha FROM usuario WHERE email = ? LIMIT 1");
+        $stmt->bind_param('s', $email);
+        $stmt->execute();
+        $resultado = $stmt->get_result();
+        $usuario = $resultado->fetch_assoc();
+        $stmt->close();
+
+        if ($usuario && verificar_senha($senha, $usuario['senha'])) {
+            // Login OK — cria sessão
+            session_regenerate_id(true);
+            $_SESSION['id_usuario'] = (int) $usuario['id_usuario'];
+            $_SESSION['nome_usuario'] = $usuario['nome'];
+            header('Location: CRUD_Eventos.php');
+            exit;
+        } else {
+            $erroLogin = 'E-mail ou senha inválidos.';
+        }
+    }
+}
+
+// Se já logado, redireciona para o painel
+if (isset($_SESSION['id_usuario'])) {
+    header('Location: CRUD_Eventos.php');
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -24,10 +68,16 @@
   </div>
 
   <div class="auth-form-panel">
-    <div class="auth-card">
-      <h2>Entrar</h2>
+<div class="auth-card">
+        <h2>Entrar</h2>
 
-      <form action="Login.php" method="post" autocomplete="on">
+        <?php if ($erroLogin !== ''): ?>
+          <div class="alert alert-erro" style="margin-bottom:1rem;padding:.8rem;background:rgba(179,18,30,.12);border:2px solid #b3121e;color:#e6dfc9;font-size:.85rem;">
+            <?php echo htmlspecialchars($erroLogin); ?>
+          </div>
+        <?php endif; ?>
+
+        <form action="Login.php" method="post" autocomplete="on">
         <div class="form-group">
           <label for="email">E-mail</label>
           <input type="email" id="email" name="email" placeholder="seu@email.com" required>

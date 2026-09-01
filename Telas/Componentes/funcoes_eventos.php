@@ -189,3 +189,81 @@ function formatar_data_evento($data) {
     $timestamp = strtotime($data);
     return date('d/m/Y', $timestamp);
 }
+
+/**
+ * Gera um salt aleatório seguro para hash de senha.
+ * PHP 5.3.9 compatível: usa openssl_random_pseudo_bytes se disponível,
+ * senão fallback com mt_rand + uniqid.
+ *
+ * @param int $length Tamanho do salt em bytes (padrão 32)
+ * @return string Salt em hexadecimal
+ */
+function gerar_salt($length = 32) {
+    if (function_exists('openssl_random_pseudo_bytes')) {
+        $bytes = openssl_random_pseudo_bytes($length, $crypto_strong);
+        if ($crypto_strong) {
+            return bin2hex($bytes);
+        }
+    }
+    // Fallback para PHP 5.3.9 sem openssl ou se não for cryptographically strong
+    $salt = '';
+    for ($i = 0; $i < $length; $i++) {
+        $salt .= sprintf('%02x', mt_rand(0, 255));
+    }
+    $salt .= uniqid('', true);
+    return substr($salt, 0, $length * 2);
+}
+
+/**
+ * Gera hash SHA-256 da senha com salt.
+ * Formato retornado: sha256:$salt:$hash (para armazenar no banco)
+ *
+ * @param string $senha Senha em texto puro
+ * @param string $salt Salt em hexadecimal (se vazio, gera novo)
+ * @return string Hash no formato sha256:$salt:$hash
+ */
+function hash_senha($senha, $salt = '') {
+    if ($salt === '') {
+        $salt = gerar_salt();
+    }
+    $hash = hash('sha256', $salt . $senha . $salt);
+    return 'sha256:' . $salt . ':' . $hash;
+}
+
+/**
+ * Verifica se a senha confere com o hash armazenado.
+ *
+ * @param string $senha Senha em texto puro fornecida no login
+ * @param string $hashArmazenado Hash do banco (formato sha256:$salt:$hash)
+ * @return bool True se a senha estiver correta
+ */
+function verificar_senha($senha, $hashArmazenado) {
+    if (empty($hashArmazenado) || strpos($hashArmazenado, 'sha256:') !== 0) {
+        return false;
+    }
+    $partes = explode(':', $hashArmazenado);
+    if (count($partes) !== 3) {
+        return false;
+    }
+    $salt = $partes[1];
+    $hashEsperado = $partes[2];
+    $hashCalculado = hash('sha256', $salt . $senha . $salt);
+    return hash_equals($hashCalculado, $hashEsperado);
+}
+
+/**
+ * Comparação de strings em tempo constante (evita timing attacks).
+ * PHP 5.6+ tem hash_equals nativo; esta é compatível com 5.3.9.
+ */
+if (!function_exists('hash_equals')) {
+    function hash_equals($known_string, $user_string) {
+        if (strlen($known_string) !== strlen($user_string)) {
+            return false;
+        }
+        $result = 0;
+        for ($i = 0; $i < strlen($known_string); $i++) {
+            $result |= (ord($known_string[$i]) ^ ord($user_string[$i]));
+        }
+        return $result === 0;
+    }
+}
