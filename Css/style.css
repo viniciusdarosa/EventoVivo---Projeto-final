@@ -259,6 +259,16 @@ h2 {
 .destaque { padding-block: var(--sp-7); }
 .destaque.alt { background: var(--ink-2); border-top: 1px solid var(--rule); }
 .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--sp-5); }
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-4);
+  flex-wrap: wrap;
+}
+.section-header h2 { margin-bottom: 0; }
  
 .card {
   position: relative;
@@ -574,11 +584,204 @@ a:focus-visible, button:focus-visible, input:focus-visible {
   html { scroll-behavior: auto; }
   * { transition: none !important; }
 }
- 
- 
+
+
 /* ==========================================================
-   15. RESPONSIVO
+   16. PÁGINAS DE LISTAGEM (Eventos.php / Artistas.php)
    ========================================================== */
+.list-page { padding-bottom: var(--sp-7); }
+
+.page-header {
+  padding-block: clamp(3rem, 8vw, 5rem) clamp(2rem, 5vw, 3rem);
+  background: linear-gradient(135deg, var(--ink) 0%, var(--ink-2) 50%, var(--ink) 100%);
+  border-bottom: 1px solid var(--rule);
+  text-align: center;
+}
+.page-header .eyebrow { margin-bottom: var(--sp-1); }
+.page-header h1 {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  line-height: 1;
+  letter-spacing: .01em;
+  text-shadow: 4px 4px 0 var(--blood);
+  margin-bottom: var(--sp-2);
+}
+.page-header .hero-sub { max-width: 60ch; margin-inline: auto; }
+
+.filters-section { padding-block: var(--sp-4); background: var(--ink-2); border-bottom: 1px solid var(--rule); }
+.toolbar {
+  display: grid;
+  grid-template-columns: minmax(220px, 2fr) minmax(160px, 1fr) minmax(140px, 1fr) minmax(120px, 1fr) minmax(120px, 1fr) auto auto;
+  gap: 1rem;
+  align-items: end;
+  flex-wrap: wrap;
+}
+.toolbar label {
+  display: block;
+  margin-bottom: .35rem;
+  color: var(--paper-dim);
+  font-size: .7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+.toolbar input,
+.toolbar select {
+  width: 100%;
+  min-height: 43px;
+  padding: .55rem .75rem;
+  background: var(--ink);
+  border: 1px solid var(--rule);
+  outline: none;
+  color: var(--paper);
+}
+.toolbar input::placeholder { color: var(--paper-dim); opacity: .7; }
+.toolbar input:focus,
+.toolbar select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(184, 0, 13, .2);
+}
+.toolbar .btn-filter { min-height: 43px; }
+
+.results-section { padding-block: var(--sp-5); }
+.results-header { margin-bottom: var(--sp-4); }
+.results-header h2 {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  border-bottom: 3px solid var(--accent);
+  padding-bottom: var(--sp-1);
+  display: inline-block;
+}
+
+/* Grid de eventos (reusa .eventos-grid do crud_eventos.css mas adiciona aqui para independência) */
+.eventos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Grid de artistas */
+.artistas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.artist-card-public {
+  background: var(--steel);
+  border: 2px solid var(--rule);
+  box-shadow: var(--shadow-hard);
+  overflow: hidden;
+  transition: transform var(--ease), border-color var(--ease), box-shadow var(--ease);
+}
+.artistas-grid .artist-card-public:nth-child(odd) { transform: rotate(-1deg); }
+.artistas-grid .artist-card-public:nth-child(even) { transform: rotate(1deg); }
+.artist-card-public:hover {
+  transform: rotate(0deg) translateY(-2px);
+  border-color: var(--accent);
+  box-shadow: 8px 8px 0 rgba(0,0,0,.55);
+}
+
+.artist-card-public .artist-photo-wrap {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-bottom: 3px solid var(--accent);
+  background: var(--ink-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.artist-card-public .artist-photo { width: 100%; height: 100%; object-fit: cover; }
+.artist-photo-placeholder {
+  width: 80px;
+  height: 80px;
+  color: var(--paper-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.artist-photo-placeholder svg { width: 100%; height: 100%; }
+
+.artist-card-public .artist-body { padding: var(--sp-3); }
+.artist-card-public .artist-nome {
+  color: var(--accent);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 1.1rem;
+  letter-spacing: .02em;
+  margin-bottom: .35rem;
+}
+.artist-card-public .artist-tipo {
+  color: var(--white);
+  font-weight: 700;
+  font-size: .9rem;
+  margin-bottom: .25rem;
+}
+.artist-card-public .artist-titulo {
+  color: var(--paper-dim);
+  font-size: .85rem;
+  font-style: italic;
+  margin-bottom: .5rem;
+}
+.artist-card-public .artist-local {
+  font-family: var(--font-mark);
+  color: var(--yellow);
+  font-size: .9rem;
+  margin-bottom: .5rem;
+}
+.artist-card-public .artist-bio {
+  color: var(--paper-dim);
+  font-size: .8rem;
+  line-height: 1.5;
+  margin-bottom: .75rem;
+}
+.artist-contato {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  align-items: center;
+}
+.artist-valor {
+  font-size: .8rem;
+  font-weight: 700;
+  color: var(--yellow);
+  font-family: var(--font-mark);
+  margin-right: .5rem;
+}
+.contact-link {
+  font-size: .75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--accent);
+  border-bottom: 1px solid transparent;
+  transition: border-color var(--ease);
+}
+.contact-link:hover { border-color: var(--accent); }
+
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--paper-dim);
+}
+.empty-state .btn { margin-top: 1.5rem; }
+
+/* Ajustes no toolbar para mobile */
+@media (max-width: 900px) {
+  .toolbar {
+    grid-template-columns: 1fr 1fr;
+  }
+  .toolbar .search-box { grid-column: 1 / -1; }
+}
+
+@media (max-width: 600px) {
+  .toolbar { grid-template-columns: 1fr; }
+  .toolbar .btn-filter,
+  .toolbar .btn-ghost { width: 100%; text-align: center; }
+}
 @media (max-width: 720px) {
   .header-inner { flex-direction: column; align-items: flex-start; }
   .search { margin-left: 0; width: 100%; }

@@ -232,23 +232,34 @@ function hash_senha($senha, $salt = '') {
 
 /**
  * Verifica se a senha confere com o hash armazenado.
+ * Suporta dois formatos:
+ *   - Novo: sha256:$salt:$hash (seguro, com salt)
+ *   - Legado: texto puro (para compatibilidade com usuários existentes)
  *
  * @param string $senha Senha em texto puro fornecida no login
- * @param string $hashArmazenado Hash do banco (formato sha256:$salt:$hash)
+ * @param string $hashArmazenado Hash do banco (formato sha256:$salt:$hash) ou texto puro
  * @return bool True se a senha estiver correta
  */
 function verificar_senha($senha, $hashArmazenado) {
-    if (empty($hashArmazenado) || strpos($hashArmazenado, 'sha256:') !== 0) {
+    if (empty($hashArmazenado)) {
         return false;
     }
-    $partes = explode(':', $hashArmazenado);
-    if (count($partes) !== 3) {
-        return false;
+
+    // Formato novo: sha256:$salt:$hash
+    if (strpos($hashArmazenado, 'sha256:') === 0) {
+        $partes = explode(':', $hashArmazenado);
+        if (count($partes) !== 3) {
+            return false;
+        }
+        $salt = $partes[1];
+        $hashEsperado = $partes[2];
+        $hashCalculado = hash('sha256', $salt . $senha . $salt);
+        return hash_equals($hashCalculado, $hashEsperado);
     }
-    $salt = $partes[1];
-    $hashEsperado = $partes[2];
-    $hashCalculado = hash('sha256', $salt . $senha . $salt);
-    return hash_equals($hashCalculado, $hashEsperado);
+
+    // Formato legado: comparação direta (texto puro)
+    // Útil para usuários cadastrados antes do sistema de hash
+    return $senha === $hashArmazenado;
 }
 
 /**
