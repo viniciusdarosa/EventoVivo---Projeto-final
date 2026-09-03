@@ -134,28 +134,44 @@ section[id] { scroll-margin-top: 5.5rem; }
   transition: color var(--ease), border-color var(--ease);
 }
 .nav a:hover { color: var(--accent); border-color: var(--accent); }
- 
-.search { margin-left: auto; display: flex; gap: var(--sp-1); }
-.search input {
+
+.logout {
+  color: var(--accent);
+  text-transform: uppercase;
+  font-size: .75rem;
+  font-weight: 700;
+  border-bottom: 1px solid transparent;
+  transition: border-color var(--ease);
+}
+.logout:hover { border-color: var(--accent); }
+
+.header-search { margin-left: auto; display: flex; gap: var(--sp-1); }
+.header-search input {
   background: var(--steel);
   border: 1px solid var(--rule);
   padding: .5rem .75rem;
-  min-width: 200px;
+  min-width: 220px;
+  color: var(--paper);
 }
-.search input::placeholder { color: var(--paper-dim); }
-.search button {
+.header-search input::placeholder { color: var(--paper-dim); }
+.header-search input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(184, 0, 13, .2);
+}
+.header-search button {
   background: var(--blood);
   border: 1px solid var(--blood);
   color: var(--paper);
-  padding: .5rem 1rem;
-  text-transform: uppercase;
-  font-weight: 700;
-  font-size: .75rem;
-  letter-spacing: .06em;
+  padding: .5rem .75rem;
+  font-size: 1rem;
   cursor: pointer;
   transition: background var(--ease), color var(--ease);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-.search button:hover { background: transparent; color: var(--blood); }
+.header-search button:hover { background: transparent; color: var(--blood); }
  
  
 /* ==========================================================
@@ -784,8 +800,8 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 }
 @media (max-width: 720px) {
   .header-inner { flex-direction: column; align-items: flex-start; }
-  .search { margin-left: 0; width: 100%; }
-  .search input { flex: 1; }
+  .header-search { margin-left: 0; width: 100%; }
+  .header-search input { flex: 1; }
 
   .auth-split {
     grid-template-columns: 1fr;
@@ -803,5 +819,44 @@ a:focus-visible, button:focus-visible, input:focus-visible {
   .auth-form-panel {
     padding: var(--sp-4) var(--sp-2);
   }
+}
+
+/* ==========================================================
+   17. PÁGINA DE BUSCA GERAL (Busca.php)
+   ========================================================== */
+.busca-page { padding-bottom: var(--sp-7); }
+
+.busca-resultados { padding-block: var(--sp-5); }
+
+.resultados-bloco { margin-bottom: 2rem; }
+
+.resultados-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+.resultados-header h2 {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  border-bottom: 3px solid var(--accent);
+  padding-bottom: var(--sp-1);
+  margin-bottom: 0;
+}
+.resultados-header .counter {
+  color: var(--paper-dim);
+  font-size: .85rem;
+  font-weight: 400;
+  margin-left: .5rem;
+}
+
+@media (max-width: 600px) {
+  .header-inner { flex-wrap: wrap; }
+  .nav { order: 3; width: 100%; justify-content: center; margin-top: 1rem; }
+  .header-search { order: 2; width: 100%; }
+  .logo { order: 1; }
 }
  
