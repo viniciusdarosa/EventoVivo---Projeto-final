@@ -24,14 +24,14 @@
    ========================================================== */
 :root {
   /* -- cores de fundo -- */
-  --ink: #110f0c;
-  --ink-2: #1e1a12;
-  --steel: #2a251b;
-  --rule: #4a4334;
+  --ink: #120f0f;
+  --ink-2: #1f1a1a;
+  --steel: #2d2727;
+  --rule: #4a4040;
  
   /* -- cores de texto -- */
-  --paper: #e6dfc9;      /* texto principal (creme) */
-  --paper-dim: #a89d80;  /* texto secundário */
+  --paper: #dedbd2;      /* texto principal (cinza-claro quente) */
+  --paper-dim: #a5a29a;  /* texto secundário */
   --white: #ffffff;      /* branco puro, usado em destaques pontuais */
  
   /* -- cores de destaque --

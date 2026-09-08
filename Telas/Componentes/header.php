@@ -19,14 +19,14 @@
 
 <header class="site-header">
   <div class="wrap header-inner">
-    <a class="logo" href="#topo">Evento<span>Vivo</span></a>
+    <a class="logo" href="Home.php">Evento<span>Vivo</span></a>
     <nav class="nav">
-      <a href="#topo">Home</a>
-      <a href="#como-funciona">Como funciona</a>
-      <a href="#eventos">Eventos</a>
-      <a href="#artistas">Artistas</a>
+      <a href="Home.php">Home</a>
+      <a href="Home.php#como-funciona">Como funciona</a>
+      <a href="Evento.php">Eventos</a>
+      <a href="Home.php#artistas">Artistas</a>
     </nav>
-    <form class="search" role="search" action="#eventos" method="get">
+    <form class="search" role="search" action="Evento.php" method="get">
       <input type="search" name="busca" placeholder="Buscar artista, evento ou cidade" aria-label="Buscar artista, evento ou cidade">
       <button type="submit">Buscar</button>
     </form>

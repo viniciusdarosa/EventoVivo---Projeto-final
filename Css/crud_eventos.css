@@ -5,12 +5,12 @@
    ========================================================== */
 
 :root {
-  --ink: #110f0c;
-  --ink-2: #1e1a12;
-  --steel: #2a251b;
-  --rule: #4a4334;
-  --paper: #e6dfc9;
-  --paper-dim: #a89d80;
+  --ink: #120f0f;
+  --ink-2: #1f1a1a;
+  --steel: #2d2727;
+  --rule: #4a4040;
+  --paper: #dedbd2;
+  --paper-dim: #a5a29a;
   --white: #ffffff;
   --blood: #b3121e;
   --accent: #b8000d;
@@ -425,19 +425,19 @@ h1 {
 }
 
 .cover-2 {
-  background: linear-gradient(145deg, #16120f, #322017);
+  background: linear-gradient(145deg, #161313, #2e2828);
 }
 
 .cover-3 {
-  background: linear-gradient(145deg, #12100d, #25231a);
+  background: linear-gradient(145deg, #110f0f, #221e1e);
 }
 
 .cover-4 {
-  background: linear-gradient(145deg, #18110e, #30251c);
+  background: linear-gradient(145deg, #181515, #302a2a);
 }
 
 .cover-5 {
-  background: linear-gradient(145deg, #140e0e, #35151a);
+  background: linear-gradient(145deg, #161112, #381a1f);
 }
 
 /* INFORMAÇÕES */
