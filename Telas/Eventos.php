@@ -11,6 +11,9 @@ session_start();
 require_once dirname(__FILE__) . '/../config/conexao.php';
 require_once dirname(__FILE__) . '/Componentes/funcoes_eventos.php';
 
+// Remove automaticamente eventos encerrados há mais de 1 mês antes da listagem.
+limpar_eventos_antigos($conexao);
+
 // ---- Filtros (GET) ----
 $busca = isset($_GET['busca']) ? trim($_GET['busca']) : '';
 $categoriaFiltro = isset($_GET['categoria']) && ctype_digit($_GET['categoria']) ? (int) $_GET['categoria'] : 0;

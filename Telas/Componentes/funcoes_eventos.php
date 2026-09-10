@@ -159,6 +159,49 @@ function excluir_imagem_evento($imagemCapa) {
     }
 }
 
+
+/**
+ * Remove eventos encerrados há mais de 1 mês e suas imagens de capa.
+ *
+ * A limpeza é executada quando a página Eventos.php é aberta.
+ * Para evitar deixar arquivos órfãos, a imagem é removida somente
+ * depois que o registro do evento for excluído com sucesso do banco.
+ *
+ * @param mysqli $conexao conexão já aberta
+ */
+function limpar_eventos_antigos($conexao) {
+    $sql = "SELECT id_evento, imagem_capa
+            FROM eventos
+            WHERE data_fim_evento < DATE_SUB(CURDATE(), INTERVAL 1 MONTH)";
+
+    $resultado = $conexao->query($sql);
+
+    if (!$resultado) {
+        // Não interrompe a página de eventos caso a limpeza falhe.
+        return;
+    }
+
+    while ($evento = $resultado->fetch_assoc()) {
+        $idEvento = (int) $evento['id_evento'];
+
+        $stmt = $conexao->prepare("DELETE FROM eventos WHERE id_evento = ?");
+
+        if ($stmt === false) {
+            continue;
+        }
+
+        $stmt->bind_param('i', $idEvento);
+
+        if ($stmt->execute()) {
+            excluir_imagem_evento($evento['imagem_capa']);
+        }
+
+        $stmt->close();
+    }
+
+    $resultado->free();
+}
+
 /**
  * Formata um valor decimal para exibição
  * em Real. Se o valor for 0, mostra "Gratuito".
