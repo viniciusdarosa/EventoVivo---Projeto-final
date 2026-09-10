@@ -5,9 +5,6 @@
  * Formulário de cadastro de perfil de freelancer + processamento do
  * INSERT (quando o formulário é enviado via POST), incluindo o
  * upload da foto de capa/portfolio.
- *
- * id_freelancer e usuario_id NÃO vêm do formulário:
- * são preenchidos automaticamente pelo servidor.
  */
 session_start();
 require_once dirname(__FILE__) . '/../config/conexao.php';

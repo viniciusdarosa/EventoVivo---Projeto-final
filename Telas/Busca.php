@@ -1,7 +1,6 @@
 <?php
 /**
  * Busca.php — Busca geral unificada (eventos + artistas/freelancers)
- * Compatível com PHP 5.3.9
  */
 session_start();
 require_once dirname(__FILE__) . '/../config/conexao.php';

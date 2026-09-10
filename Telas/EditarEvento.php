@@ -2,7 +2,7 @@
 /**
  * EditarEvento.php
  *
- * Carrega um evento existente (via ?id_evento=) e exibe o mesmo
+ * Carrega um evento existente e exibe o mesmo
  * formulário do cadastro, pré-preenchido. No POST, processa o
  * UPDATE. O upload de nova imagem é opcional: se o usuário não
  * enviar arquivo novo, a imagem atual é mantida; se enviar, a
@@ -20,8 +20,7 @@ if (!isset($_SESSION['id_usuario'])) {
 
 $usuarioId = (int) $_SESSION['id_usuario'];
 
-// id_evento pode vir tanto do GET (ao abrir a tela pelo link "Editar")
-// quanto do POST (reenviado como campo oculto ao submeter o formulário).
+// id_evento pode vir tanto do GET quanto do POST .
 $idEvento = isset($_POST['id_evento']) ? $_POST['id_evento'] : (isset($_GET['id_evento']) ? $_GET['id_evento'] : null);
 
 if ($idEvento === null || !ctype_digit((string) $idEvento)) {
@@ -32,7 +31,7 @@ if ($idEvento === null || !ctype_digit((string) $idEvento)) {
 $idEvento = (int) $idEvento;
 
 // Busca o evento atual. Só permite editar evento que pertence ao
-// usuário logado (evita que um usuário edite evento de outro pela URL).
+// usuário logado.
 $stmt = $conexao->prepare("SELECT * FROM eventos WHERE id_evento = ? AND usuario_id = ?");
 $stmt->bind_param('ii', $idEvento, $usuarioId);
 $stmt->execute();

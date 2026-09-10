@@ -3,17 +3,6 @@
  * cards.php
  * Componentes reutilizáveis de card. Cada função recebe um array
  * associativo com os dados e imprime o HTML do card.
- *
- * Compatível com PHP 5.2.0: sem type hint de retorno (7.0+), sem
- * operador ?? (7.0+) e sem depender de <?= (short_open_tag).
- *
- * Uso:
- *   foreach ($eventos as $evento)   { render_event_card($evento); }
- *   foreach ($artistas as $artista) { render_artist_card($artista); }
- */
-
-/**
- * Card de evento.
  * Campos esperados: data, local, titulo, desc
  */
 function render_event_card($evento) {

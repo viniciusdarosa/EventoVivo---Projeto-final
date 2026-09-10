@@ -2,8 +2,7 @@
 /**
  * CRUD_Eventos.php
  *
- * Lista os eventos cadastrados pelo usuário logado (imagem de capa,
- * título, data/hora, cidade, valor, vagas), com busca por texto e
+ * Lista os eventos cadastrados pelo usuário logado, com busca por texto e
  * filtro por categoria/período, além dos botões de Editar e Excluir
  * de cada evento.
  */
@@ -19,12 +18,12 @@ if (!isset($_SESSION['id_usuario'])) {
 
 $usuarioId = (int) $_SESSION['id_usuario'];
 
-// ---- Filtros vindos da barra de busca (GET, para poder compartilhar/recarregar a URL) ----
+// ---- Filtros vindos da barra de busca ----
 $busca = isset($_GET['busca']) ? trim($_GET['busca']) : '';
 $categoriaFiltro = isset($_GET['categoria']) && ctype_digit($_GET['categoria']) ? (int) $_GET['categoria'] : 0;
 $periodoFiltro = isset($_GET['periodo']) ? $_GET['periodo'] : 'todos'; // todos | proximos | encerrados
 
-// ---- Monta a query dinamicamente, sempre com parâmetros (nunca concatenando valor direto do usuário) ----
+// ---- Monta a query dinamicamente, sempre com parâmetros ----
 $sql = "SELECT e.*, c.nome AS categoria_nome
         FROM eventos e
         LEFT JOIN categorias_eventos c ON c.id_categoria = e.categoria_id
