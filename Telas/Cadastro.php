@@ -132,6 +132,23 @@ if (isset($_SESSION['id_usuario'])) {
 </head>
 <body>
 
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a class="logo" href="Home.php">Evento<span>Vivo</span></a>
+    <nav class="nav">
+      <a href="Home.php">Home</a>
+      <a href="Eventos.php">Eventos</a>
+      <a href="Artistas.php">Artistas</a>
+      <a href="Login.php">Entrar</a>
+      <a href="Cadastro.php">Cadastrar</a>
+    </nav>
+    <form class="header-search" action="Busca.php" method="get" role="search">
+      <input type="search" name="q" placeholder="Buscar eventos, artistas, cidades..." aria-label="Busca geral">
+      <button type="submit" aria-label="Buscar">🔍</button>
+    </form>
+  </div>
+</header>
+
 <main class="auth-split">
 
   <div class="auth-brand">
@@ -255,5 +272,4 @@ if (isset($_SESSION['id_usuario'])) {
 
 </main>
 
-</body>
-</html>
+<?php require dirname(__FILE__) . '/Componentes/footer.php'; ?>

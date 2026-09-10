@@ -22,13 +22,16 @@
     <a class="logo" href="Home.php">Evento<span>Vivo</span></a>
     <nav class="nav">
       <a href="Home.php">Home</a>
-      <a href="Home.php#como-funciona">Como funciona</a>
-      <a href="Evento.php">Eventos</a>
-      <a href="Home.php#artistas">Artistas</a>
+      <a href="Eventos.php">Eventos</a>
+      <a href="Artistas.php">Artistas</a>
+      <?php if (isset($_SESSION['id_usuario'])): ?>
+        <a href="CRUD_Eventos.php">Meus Eventos</a>
+        <a href="CadastrarEvento.php">+ Novo Evento</a>
+        <a href="CRUD_Freelancers.php">Meu Perfil Artista</a>
+      <?php else: ?>
+        <a href="Login.php">Entrar</a>
+        <a href="Cadastro.php">Cadastrar</a>
+      <?php endif; ?>
     </nav>
-    <form class="search" role="search" action="Evento.php" method="get">
-      <input type="search" name="busca" placeholder="Buscar artista, evento ou cidade" aria-label="Buscar artista, evento ou cidade">
-      <button type="submit">Buscar</button>
-    </form>
   </div>
 </header>

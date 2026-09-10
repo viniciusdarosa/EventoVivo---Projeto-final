@@ -1,0 +1,17 @@
+# Bloqueia execução de scripts PHP nesta pasta
+<Files *.php>
+    Order Allow,Deny
+    Deny from all
+</Files>
+
+# Remove handler para PHP
+RemoveHandler .php
+RemoveType .php
+
+# Impede que arquivos sejam interpretados como PHP
+<IfModule mod_php5.c>
+    php_flag engine off
+</IfModule>
+<IfModule mod_php7.c>
+    php_flag engine off
+</IfModule>

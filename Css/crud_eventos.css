@@ -967,3 +967,107 @@ select:focus-visible {
     padding: 1.5rem;
   }
 }
+
+/* ==========================================================
+   Formulário de Freelancer (cadastro/edição)
+   Reaproveita tokens de cor e espaçamento do crud_eventos.css
+   ========================================================== */
+
+.freelancer-form-page {
+  padding: 2.5rem 0 4rem;
+}
+
+.freelancer-form {
+  background: var(--ink-2);
+  border: 2px solid var(--rule);
+  box-shadow: var(--shadow-hard);
+  padding: 2rem;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.1rem 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.freelancer-form .campo-full {
+  grid-column: 1 / -1;
+}
+
+.freelancer-form .campo {
+  display: flex;
+  flex-direction: column;
+  gap: .35rem;
+}
+
+.freelancer-form label {
+  font-family: var(--font-body);
+  font-size: .78rem;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--paper-dim);
+}
+
+.freelancer-form input[type="text"],
+.freelancer-form input[type="number"],
+.freelancer-form input[type="file"],
+.freelancer-form select,
+.freelancer-form textarea {
+  background: var(--ink);
+  border: 2px solid var(--rule);
+  color: var(--paper);
+  padding: .65rem .75rem;
+  font-family: var(--font-body);
+  font-size: .9rem;
+}
+
+.freelancer-form textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.freelancer-form input:focus,
+.freelancer-form select:focus,
+.freelancer-form textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.freelancer-form .imagem-atual {
+  display: flex;
+  align-items: center;
+  gap: .8rem;
+  margin-top: .3rem;
+}
+
+.freelancer-form .imagem-atual img {
+  width: 90px;
+  height: 60px;
+  object-fit: cover;
+  border: 2px solid var(--rule);
+}
+
+.freelancer-form .sem-imagem {
+  color: var(--paper-dim);
+  font-style: italic;
+  font-size: .85rem;
+}
+
+.freelancer-form .form-acoes {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 1rem;
+  margin-top: .5rem;
+}
+
+/* Freelancer Card no CRUD_Freelancers.php */
+.freelancer-card .evento-card-imagem.placeholder-cover {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 720px) {
+  .freelancer-form {
+    grid-template-columns: 1fr;
+    padding: 1.5rem;
+  }
+}

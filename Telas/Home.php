@@ -75,7 +75,7 @@ require dirname(__FILE__) . '/Componentes/header.php';
       <p class="hero-sub">EventoVivo junta artistas e público num só lugar. Divulgue seu trabalho, publique seu show ou ache o próximo point da cidade — sem burocracia, sem intermediário.</p>
       <div class="hero-cta">
         <a class="btn btn-primary" href="#como-funciona">Divulgar meu trabalho</a>
-        <a class="btn btn-ghost" href="#eventos">Ver eventos</a>
+        <a class="btn btn-ghost" href="Eventos.php">Ver todos os eventos</a>
       </div>
     </div>
   </section>
@@ -110,7 +110,10 @@ require dirname(__FILE__) . '/Componentes/header.php';
 
   <section class="destaque" id="eventos">
     <div class="wrap">
-      <h2>Eventos em destaque</h2>
+      <div class="section-header">
+        <h2>Eventos em destaque</h2>
+        <a class="btn btn-ghost" href="Eventos.php" style="font-size:.85rem;padding:.6rem 1rem;">Ver todos</a>
+      </div>
       <div class="grid">
         <?php foreach ($eventos as $evento): ?>
           <?php render_event_card($evento); ?>
@@ -121,7 +124,10 @@ require dirname(__FILE__) . '/Componentes/header.php';
 
   <section class="destaque alt" id="artistas">
     <div class="wrap">
-      <h2>Artistas em destaque</h2>
+      <div class="section-header">
+        <h2>Artistas em destaque</h2>
+        <a class="btn btn-ghost" href="Artistas.php" style="font-size:.85rem;padding:.6rem 1rem;">Ver todos</a>
+      </div>
       <div class="grid">
         <?php foreach ($artistas as $artista): ?>
           <?php render_artist_card($artista); ?>

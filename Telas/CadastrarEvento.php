@@ -176,22 +176,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $categorias = buscar_categorias_eventos($conexao);
-?>
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EventoVivo — Novo evento</title>
-  <meta name="theme-color" content="#110f0c">
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Courier+Prime:wght@400;700&family=Permanent+Marker&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../Css/crud_eventos.css">
-</head>
-<?php require dirname(__FILE__) . '/Componentes/header.php'; ?>
-<body>
+$pageTitle = 'EventoVivo — Novo evento';
+$pageDescription = 'Cadastre um novo evento no EventoVivo';
+$extraCss = array('../Css/crud_eventos.css');
+
+require dirname(__FILE__) . '/Componentes/header.php';
+?>
 
 <main class="admin-page evento-form-page">
   <div class="wrap">
@@ -336,5 +327,4 @@ $categorias = buscar_categorias_eventos($conexao);
 </main>
 
 <?php require dirname(__FILE__) . '/Componentes/footer.php'; ?>
-</body>
-</html>
+

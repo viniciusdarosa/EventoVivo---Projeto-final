@@ -28,6 +28,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             session_regenerate_id(true);
             $_SESSION['id_usuario'] = (int) $usuario['id_usuario'];
             $_SESSION['nome_usuario'] = $usuario['nome'];
+
+            // Se a senha está no formato legado (texto puro), atualiza para hash seguro
+            if (strpos($usuario['senha'], 'sha256:') !== 0) {
+                $novoHash = hash_senha($senha);
+                $stmtUpd = $conexao->prepare("UPDATE usuario SET senha = ? WHERE id_usuario = ?");
+                $stmtUpd->bind_param('si', $novoHash, $usuario['id_usuario']);
+                $stmtUpd->execute();
+                $stmtUpd->close();
+            }
+
             header('Location: CRUD_Eventos.php');
             exit;
         } else {
@@ -57,6 +67,23 @@ if (isset($_SESSION['id_usuario'])) {
     <link rel="stylesheet" href="../Css/style.css">
 </head>
 <body>
+
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a class="logo" href="Home.php">Evento<span>Vivo</span></a>
+    <nav class="nav">
+      <a href="Home.php">Home</a>
+      <a href="Eventos.php">Eventos</a>
+      <a href="Artistas.php">Artistas</a>
+      <a href="Login.php">Entrar</a>
+      <a href="Cadastro.php">Cadastrar</a>
+    </nav>
+    <form class="header-search" action="Busca.php" method="get" role="search">
+      <input type="search" name="q" placeholder="Buscar eventos, artistas, cidades..." aria-label="Busca geral">
+      <button type="submit" aria-label="Buscar">🔍</button>
+    </form>
+  </div>
+</header>
 
 <main class="auth-split">
 
@@ -99,5 +126,4 @@ if (isset($_SESSION['id_usuario'])) {
 
 </main>
 
-</body>
-</html>
+<?php require dirname(__FILE__) . '/Componentes/footer.php'; ?>
