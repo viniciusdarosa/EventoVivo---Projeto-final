@@ -84,7 +84,7 @@ $temPerfil = $freelancer !== false;
       <?php else: ?>
 
         <div class="eventos-grid">
-          <article class="evento-card freelancer-card">
+          <a href="PerfilFreelancer.php?id=<?php echo (int) $freelancer['id_freelancer']; ?>" target="_blank" class="evento-card freelancer-card" style="text-decoration:none;color:inherit;display:block;">
 
             <?php if (!empty($freelancer['portfolio'])): ?>
               <img class="evento-card-imagem"
@@ -124,12 +124,11 @@ $temPerfil = $freelancer !== false;
                     <input type="hidden" name="id_freelancer" value="<?php echo (int) $freelancer['id_freelancer']; ?>">
                     <button type="submit" class="btn-icone btn-icone-excluir">Excluir</button>
                   </form>
-
-                  <a class="btn-icone" href="PerfilFreelancer.php?id=<?php echo (int) $freelancer['id_freelancer']; ?>" target="_blank">Ver Público</a>
                 </div>
               </div>
             </div>
-          </article>
+          </a>
+
         </div>
 
       <?php endif; ?>

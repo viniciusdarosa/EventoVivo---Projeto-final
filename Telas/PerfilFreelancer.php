@@ -97,15 +97,6 @@ if (isset($_SESSION['id_usuario']) && !$ehDono) {
       flex-wrap: wrap;
       align-items: flex-end;
     }
-    .perfil-foto {
-      width: 140px;
-      height: 140px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 4px solid var(--blood);
-      box-shadow: var(--shadow-hard);
-      background: var(--steel);
-    }
     .perfil-info h1 {
       font-family: var(--font-display);
       text-transform: uppercase;
@@ -218,6 +209,38 @@ if (isset($_SESSION['id_usuario']) && !$ehDono) {
     .portfolio-info h4 { font-weight: 700; text-transform: uppercase; font-size: .9rem; margin-bottom: .35rem; }
     .portfolio-info p { color: var(--paper-dim); font-size: .8rem; line-height: 1.5; }
 
+    /* Abas de avaliações */
+    .abas-avaliacoes {
+      display: flex;
+      gap: .5rem;
+      margin-bottom: 1.5rem;
+      border-bottom: 2px solid var(--rule);
+      flex-wrap: wrap;
+    }
+    .aba-btn {
+      background: transparent;
+      border: none;
+      color: var(--paper-dim);
+      font-family: var(--font-body);
+      font-size: .9rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      padding: .75rem 1.5rem;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      transition: color var(--ease), border-color var(--ease);
+    }
+    .aba-btn:hover { color: var(--accent); }
+    .aba-btn.ativa {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+    .aba-conteudo { display: none; }
+    .aba-conteudo.ativa { display: block; animation: fadeIn .2s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
     .avaliacoes-lista { display: flex; flex-direction: column; gap: 1.5rem; }
     .avaliacao-card {
       background: var(--steel);
@@ -286,6 +309,7 @@ if (isset($_SESSION['id_usuario']) && !$ehDono) {
       .perfil-meta { justify-content: center; }
       .perfil-contatos { justify-content: center; }
       .avaliar-form { padding: 1.5rem; }
+      .abas-avaliacoes { justify-content: center; }
     }
   </style>
 </head>
@@ -300,7 +324,6 @@ if (isset($_SESSION['id_usuario']) && !$ehDono) {
     <?php endif; ?>
     <div class="wrap">
       <div class="perfil-header">
-        <img class="perfil-foto" src="<?php echo htmlspecialchars(freelancer_foto_src($freelancer['foto_perfil'])); ?>" alt="Foto de <?php echo htmlspecialchars($freelancer['nome']); ?>">
 
         <div class="perfil-info">
           <h1><?php echo htmlspecialchars($freelancer['nome']); ?></h1>
@@ -387,43 +410,54 @@ if (isset($_SESSION['id_usuario']) && !$ehDono) {
         </div>
       </div>
 
-      <?php if (!empty($avaliacoes)): ?>
-        <div class="avaliacoes-lista">
-          <?php foreach ($avaliacoes as $av): ?>
-            <article class="avaliacao-card">
-              <div class="avaliacao-header">
-                <img class="avaliador-foto" src="<?php echo htmlspecialchars(freelancer_foto_src($av['avaliador_foto'])); ?>" alt="<?php echo htmlspecialchars($av['avaliador_nome']); ?>">
-                <div class="avaliador-info">
-                  <div class="avaliador-nome"><?php echo htmlspecialchars($av['avaliador_nome']); ?></div>
-                  <div class="avaliacao-data"><?php echo date('d/m/Y H:i', strtotime($av['data_avaliacao'])); ?></div>
-                </div>
-                <div class="avaliacao-estrelas">
-                  <?php
-                  for ($i = 1; $i <= 5; $i++) {
-                      echo $i <= $av['nota'] ? '★' : '☆';
-                  }
-                  ?>
-                </div>
-              </div>
-              <?php if (!empty($av['comentario'])): ?>
-                <div class="avaliacao-comentario"><?php echo htmlspecialchars($av['comentario']); ?></div>
-              <?php endif; ?>
-            </article>
-          <?php endforeach; ?>
-        </div>
-      <?php else: ?>
-        <p class="sem-avaliacao">Este artista ainda não possui avaliações.</p>
-      <?php endif; ?>
+      <!-- Abas -->
+      <div class="abas-avaliacoes" role="tablist">
+        <button class="aba-btn ativa" role="tab" aria-selected="true" aria-controls="aba-avaliacoes" id="tab-avaliacoes" onclick="mostrarAba('avaliacoes')">Avaliações</button>
+        <?php if (isset($_SESSION['id_usuario']) && !$ehDono && !$jaAvaliou): ?>
+        <button class="aba-btn" role="tab" aria-selected="false" aria-controls="aba-escrever" id="tab-escrever" onclick="mostrarAba('escrever')">Escrever Avaliação</button>
+        <?php endif; ?>
+      </div>
 
-      <!-- Formulário de avaliação (apenas usuários logados que não são o dono e não avaliaram) -->
+      <!-- Conteúdo da aba Avaliações -->
+      <div class="aba-conteudo ativa" id="aba-avaliacoes" role="tabpanel" aria-labelledby="tab-avaliacoes">
+        <?php if (!empty($avaliacoes)): ?>
+          <div class="avaliacoes-lista">
+            <?php foreach ($avaliacoes as $av): ?>
+              <article class="avaliacao-card">
+                <div class="avaliacao-header">
+                  <img class="avaliador-foto" src="<?php echo htmlspecialchars(freelancer_foto_src($av['avaliador_foto'])); ?>" alt="<?php echo htmlspecialchars($av['avaliador_nome']); ?>">
+                  <div class="avaliador-info">
+                    <div class="avaliador-nome"><?php echo htmlspecialchars($av['avaliador_nome']); ?></div>
+                    <div class="avaliacao-data"><?php echo date('d/m/Y H:i', strtotime($av['data_avaliacao'])); ?></div>
+                  </div>
+                  <div class="avaliacao-estrelas">
+                    <?php
+                    for ($i = 1; $i <= 5; $i++) {
+                        echo $i <= $av['nota'] ? '★' : '☆';
+                    }
+                    ?>
+                  </div>
+                </div>
+                <?php if (!empty($av['comentario'])): ?>
+                  <div class="avaliacao-comentario"><?php echo htmlspecialchars($av['comentario']); ?></div>
+                <?php endif; ?>
+              </article>
+            <?php endforeach; ?>
+          </div>
+        <?php else: ?>
+          <p class="sem-avaliacao">Este artista ainda não possui avaliações.</p>
+        <?php endif; ?>
+      </div>
+
+      <!-- Conteúdo da aba Escrever Avaliação -->
       <?php if (isset($_SESSION['id_usuario']) && !$ehDono && !$jaAvaliou): ?>
-        <div style="margin-top:3rem;">
-          <h3 style="font-family:var(--font-body);font-size:1.1rem;text-transform:uppercase;letter-spacing:.02em;margin-bottom:1rem;">Deixe sua avaliação</h3>
-          <form class="avaliar-form" action="AvaliarFreelancer.php" method="post">
-            <input type="hidden" name="freelancer_id" value="<?php echo $idFreelancer; ?>">
-            <input type="hidden" name="redirect" value="PerfilFreelancer.php?id=<?php echo $idFreelancer; ?>">
+      <div class="aba-conteudo" id="aba-escrever" role="tabpanel" aria-labelledby="tab-escrever">
+        <h3 style="font-family:var(--font-body);font-size:1.1rem;text-transform:uppercase;letter-spacing:.02em;margin-bottom:1rem;">Deixe sua avaliação</h3>
+        <form class="avaliar-form" action="AvaliarFreelancer.php" method="post">
+          <input type="hidden" name="freelancer_id" value="<?php echo $idFreelancer; ?>">
+          <input type="hidden" name="redirect" value="PerfilFreelancer.php?id=<?php echo $idFreelancer; ?>">
 
-            <div class="campo">
+          <div class="campo">
               <label>Sua nota</label>
               <div class="estrelas-input" style="direction:ltr;">
                 <input type="radio" id="estrela5" name="nota" value="5" required><label for="estrela5" title="5 estrelas">★</label>
@@ -443,13 +477,35 @@ if (isset($_SESSION['id_usuario']) && !$ehDono) {
           </form>
         </div>
       <?php elseif (isset($_SESSION['id_usuario']) && $jaAvaliou): ?>
+      <div class="aba-conteudo" id="aba-escrever" role="tabpanel" aria-labelledby="tab-escrever">
         <p style="margin-top:2rem;color:var(--paper-dim);">Você já avaliou este artista.</p>
+      </div>
       <?php elseif (!isset($_SESSION['id_usuario'])): ?>
+      <div class="aba-conteudo" id="aba-escrever" role="tabpanel" aria-labelledby="tab-escrever">
         <p style="margin-top:2rem;color:var(--paper-dim);"><a href="Login.php" style="color:var(--accent);">Faça login</a> para avaliar este artista.</p>
+      </div>
       <?php endif; ?>
     </div>
   </section>
 </main>
+
+<script>
+function mostrarAba(abaId) {
+  // Esconde todas as abas
+  document.querySelectorAll('.aba-conteudo').forEach(function(el) {
+    el.classList.remove('ativa');
+  });
+  document.querySelectorAll('.aba-btn').forEach(function(btn) {
+    btn.classList.remove('ativa');
+    btn.setAttribute('aria-selected', 'false');
+  });
+  
+  // Mostra a aba selecionada
+  document.getElementById('aba-' + abaId).classList.add('ativa');
+  document.getElementById('tab-' + abaId).classList.add('ativa');
+  document.getElementById('tab-' + abaId).setAttribute('aria-selected', 'true');
+}
+</script>
 
 <?php require dirname(__FILE__) . '/Componentes/footer.php'; ?>
 </body>

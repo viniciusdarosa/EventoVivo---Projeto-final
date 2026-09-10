@@ -190,7 +190,7 @@ if ($resEstados) {
       <?php else: ?>
         <div class="artistas-grid">
           <?php foreach ($artistas as $artista): ?>
-            <article class="artist-card-public">
+            <a href="PerfilFreelancer.php?id=<?php echo (int) $artista['id_freelancer']; ?>" class="artist-card-public" style="text-decoration:none;color:inherit;display:block;">
               <div class="artist-photo-wrap">
                 <?php
                   // Usa a foto de perfil quando ela realmente existe;
@@ -237,17 +237,17 @@ if ($resEstados) {
                     <span class="artist-valor">R$ <?php echo number_format($artista['valor_hora'], 2, ',', '.'); ?>/h</span>
                   <?php endif; ?>
                   <?php if (!empty($artista['email'])): ?>
-                    <a href="mailto:<?php echo htmlspecialchars($artista['email']); ?>" class="contact-link">✉ Email</a>
+                    <span class="contact-link" style="pointer-events:none;">✉ Email</span>
                   <?php endif; ?>
                   <?php if (!empty($artista['telefone'])): ?>
-                    <a href="tel:<?php echo htmlspecialchars(preg_replace('/\D/', '', $artista['telefone'])); ?>" class="contact-link">📞 WhatsApp</a>
+                    <span class="contact-link" style="pointer-events:none;">📞 WhatsApp</span>
                   <?php endif; ?>
                   <?php if (!empty($artista['rede_social'])): ?>
-                    <a href="https://instagram.com/<?php echo ltrim($artista['rede_social'], '@'); ?>" target="_blank" class="contact-link">📸 Instagram</a>
+                    <span class="contact-link" style="pointer-events:none;">📸 Instagram</span>
                   <?php endif; ?>
                 </div>
               </div>
-            </article>
+            </a>
           <?php endforeach; ?>
         </div>
       <?php endif; ?>
