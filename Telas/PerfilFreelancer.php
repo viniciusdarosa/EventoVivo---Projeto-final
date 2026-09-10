@@ -1,7 +1,6 @@
 <?php
 /**
  * PerfilFreelancer.php — Perfil público de um freelancer/artista
- * Compatível com PHP 5.3.9
  */
 session_start();
 require_once dirname(__FILE__) . '/../config/conexao.php';
@@ -34,7 +33,7 @@ $mediaAvaliacoes = calcular_media_avaliacoes($conexao, $idFreelancer);
 // Verifica se o usuário logado é o dono do perfil
 $ehDono = isset($_SESSION['id_usuario']) && $_SESSION['id_usuario'] == $freelancer['usuario_id'];
 
-// Verifica se já avaliou (para não permitir avaliação duplicada)
+// Verifica se já avaliou
 $jaAvaliou = false;
 if (isset($_SESSION['id_usuario']) && !$ehDono) {
     $stmt = $conexao->prepare("SELECT id FROM avaliacoes WHERE avaliador = ? AND freelancer_id = ? LIMIT 1");

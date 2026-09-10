@@ -3,11 +3,7 @@
  * CadastrarEvento.php
  *
  * Formulário de cadastro de um novo evento + processamento do
- * INSERT (quando o formulário é enviado via POST), incluindo o
- * upload da imagem de capa.
- *
- * id_evento, data_publicacao e usuario_id NÃO vêm do formulário:
- * são preenchidos automaticamente pelo servidor.
+ * INSERT, incluindo o upload da imagem de capa.
  */
 
 session_start();

@@ -2,8 +2,8 @@
 /**
  * CRUD_Freelancers.php
  *
- * Lista os perfis de freelancer cadastrados pelo usuário logado
- * (um usuário pode ter apenas um perfil), com botões de Editar e Excluir.
+ * Lista os perfis de freelancer cadastrados pelo usuário logado,
+ * com botões de Editar e Excluir.
  */
 session_start();
 require_once dirname(__FILE__) . '/../config/conexao.php';

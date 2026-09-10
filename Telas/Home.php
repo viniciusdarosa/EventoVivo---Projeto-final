@@ -1,6 +1,4 @@
 <?php
-/* Compatível com PHP 5.2.0: sem __DIR__ (5.3+), sem array curto [] (5.4+),
-   sem operador ?? (7.0+) e sem depender de <?= (short_open_tag). */
 require_once dirname(__FILE__) . '/Componentes/cards.php';
 
 /* ---- Dados: eventos em destaque ---- */

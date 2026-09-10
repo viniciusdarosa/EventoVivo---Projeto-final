@@ -2,9 +2,7 @@
 /**
  * funcoes_freelancers.php
  *
- * Funções auxiliares usadas pelas telas de CRUD de Freelancers
- * (CadastrarFreelancer.php, EditarFreelancer.php, CRUD_Freelancers.php,
- * ExcluirFreelancer.php, PerfilFreelancer.php).
+ * Funções auxiliares usadas pelas telas de CRUD de Freelancers.
  *
  * Todas as funções recebem $conexao (objeto mysqli) já aberto por
  * config/conexao.php.
@@ -64,7 +62,7 @@ function buscar_freelancer_por_usuario($conexao, $usuarioId) {
 }
 
 /**
- * Busca um freelancer pelo ID (para perfil público).
+ * Busca um freelancer pelo ID.
  *
  * @param mysqli $conexao
  * @param int $idFreelancer
