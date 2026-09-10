@@ -1,3 +1,10 @@
+<?php
+if (session_id() == '') {
+    session_start();
+}
+?>
+<!DOCTYPE html>
+<html lang="pt-BR">
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -28,6 +35,10 @@
         <a href="CRUD_Eventos.php">Meus Eventos</a>
         <a href="CadastrarEvento.php">+ Novo Evento</a>
         <a href="CRUD_Freelancers.php">Meu Perfil Artista</a>
+        <span class="header-user">
+          Olá, <?php echo htmlspecialchars($_SESSION['nome_usuario']); ?>
+        </span>
+        <a href="Logout.php" class="header-logout">Sair</a>
       <?php else: ?>
         <a href="Login.php">Entrar</a>
         <a href="Cadastro.php">Cadastrar</a>

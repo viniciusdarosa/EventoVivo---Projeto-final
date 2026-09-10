@@ -68,22 +68,10 @@ if (isset($_SESSION['id_usuario'])) {
 </head>
 <body>
 
-<header class="site-header">
-  <div class="wrap header-inner">
-    <a class="logo" href="Home.php">Evento<span>Vivo</span></a>
-    <nav class="nav">
-      <a href="Home.php">Home</a>
-      <a href="Eventos.php">Eventos</a>
-      <a href="Artistas.php">Artistas</a>
-      <a href="Login.php">Entrar</a>
-      <a href="Cadastro.php">Cadastrar</a>
-    </nav>
-    <form class="header-search" action="Busca.php" method="get" role="search">
-      <input type="search" name="q" placeholder="Buscar eventos, artistas, cidades..." aria-label="Busca geral">
-      <button type="submit" aria-label="Buscar">🔍</button>
-    </form>
-  </div>
-</header>
+
+<div style="padding:1rem 1.5rem;">
+  <a href="Home.php" style="display:inline-block;text-decoration:none;font-weight:700;text-transform:uppercase;letter-spacing:.05em;">← Voltar para Home</a>
+</div>
 
 <main class="auth-split">
 
