@@ -1,4 +1,9 @@
 <?php
+/* ==========================================================
+ * COMPONENTE: ExcluirEvento.php
+ * Processa a exclusão segura de um evento pertencente ao usuário autenticado e remove sua imagem associada.
+ * ========================================================== */
+
 /**
  * ExcluirEvento.php
  *

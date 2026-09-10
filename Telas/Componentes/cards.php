@@ -1,4 +1,9 @@
 <?php
+/* ==========================================================
+ * COMPONENTE: cards.php
+ * Componentes reutilizáveis responsáveis por gerar o HTML dos cards de eventos e artistas.
+ * ========================================================== */
+
 /**
  * cards.php
  * Componentes reutilizáveis de card. Cada função recebe um array

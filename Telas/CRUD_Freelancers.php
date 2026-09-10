@@ -1,4 +1,9 @@
 <?php
+/* ==========================================================
+ * COMPONENTE: CRUD_Freelancers.php
+ * Área autenticada para visualizar e administrar o perfil de freelancer do usuário, com opções de editar e excluir.ws
+ * ========================================================== */
+
 /**
  * CRUD_Freelancers.php
  *

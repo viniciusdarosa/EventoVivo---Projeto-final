@@ -1,4 +1,9 @@
 <?php
+/* ==========================================================
+ * COMPONENTE: AvaliarFreelancer.php
+ * Tela e processamento responsáveis por registrar uma avaliação de um freelancer, validando o usuário e os dados enviados.wss
+ * ========================================================== */
+
 /**
  * AvaliarFreelancer.php — Processamento de avaliação de freelancer
  */

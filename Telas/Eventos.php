@@ -1,4 +1,9 @@
 <?php
+/* ==========================================================
+ * COMPONENTE: Eventos.php
+ * Lista publicamente os eventos cadastrados e oferece busca e filtros por categoria, período e localização.
+ * ========================================================== */
+
 /**
  * Eventos.php — Listagem pública de eventos com busca e filtros
  */

@@ -1,3 +1,11 @@
+/*
+ * COMPONENTE: crud_eventos.css
+ * Folha de estilos das telas de gerenciamento (CRUD). Organiza tabelas/listagens, filtros, ações e componentes usados para administrar eventos e perfis.
+ *
+ * Os blocos abaixo estão organizados por responsabilidade visual para
+ * facilitar a manutenção e a identificação dos estilos usados no projeto.
+ */
+
 /* ==========================================================
    EventoVivo — CRUD visual de eventos
    Complementa style.css / evento_style.css.

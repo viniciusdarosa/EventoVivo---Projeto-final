@@ -1,4 +1,9 @@
 <?php
+/* ==========================================================
+ * COMPONENTE: PerfilFreelancer.php
+ * Apresenta o perfil público completo de um freelancer, incluindo dados profissionais, portfolio e avaliações.
+ * ========================================================== */
+
 /**
  * PerfilFreelancer.php — Perfil público de um freelancer/artista
  */

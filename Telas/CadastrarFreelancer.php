@@ -1,4 +1,9 @@
 <?php
+/* ==========================================================
+ * COMPONENTE: CadastrarFreelancer.php
+ * Apresenta e processa o cadastro de um perfil de freelancer, incluindo categoria, dados profissionais e upload de portfolio.
+ * ========================================================== */
+
 /**
  * CadastrarFreelancer.php
  *

@@ -1,4 +1,9 @@
 <?php
+/* ==========================================================
+ * COMPONENTE: CadastrarEvento.php
+ * Apresenta e processa o cadastro de novos eventos, incluindo validações, categorias e upload da imagem de capa.
+ * ========================================================== */
+
 /**
  * CadastrarEvento.php
  *

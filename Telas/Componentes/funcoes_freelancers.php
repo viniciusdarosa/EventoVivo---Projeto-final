@@ -1,4 +1,9 @@
 <?php
+/* ==========================================================
+ * COMPONENTE: funcoes_freelancers.php
+ * Biblioteca de funções auxiliares para categorias, consultas, validações, uploads e operações relacionadas aos freelancers.
+ * ========================================================== */
+
 /**
  * funcoes_freelancers.php
  *
@@ -244,7 +249,30 @@ function freelancer_foto_src($fotoPerfil) {
         return 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"%3E%3Ccircle cx="32" cy="24" r="12" stroke="%23a89d80" stroke-width="2" fill="none"/%3E%3Cpath d="M8 56c0-13.255 10.745-24 24-24s24 10.745 24 24" stroke="%23a89d80" stroke-width="2" fill="none"/%3E%3C/svg%3E';
     }
 
-    return '../uploads/perfil/' . rawurlencode($fotoPerfil);
+    $caminho = dirname(__FILE__) . '/../../uploads/perfil/' . $fotoPerfil;
+    if (is_file($caminho)) {
+        return '../uploads/perfil/' . rawurlencode($fotoPerfil);
+    }
+
+    return '';
+}
+
+/**
+ * Retorna a melhor imagem disponível para o card público do freelancer.
+ * Primeiro tenta a foto de perfil; se ela não existir, usa a imagem de portfolio.
+ * Também corrige registros antigos que guardam o nome sem a extensão do arquivo.
+ *
+ * @param string $fotoPerfil nome do arquivo em uploads/perfil/
+ * @param string $portfolio nome do arquivo em uploads/freelancers/
+ * @return string caminho ou data URI
+ */
+function freelancer_imagem_publica_src($fotoPerfil, $portfolio) {
+    $fotoPerfilSrc = freelancer_foto_src($fotoPerfil);
+    if ($fotoPerfilSrc !== '') {
+        return $fotoPerfilSrc;
+    }
+
+    return freelancer_portfolio_src($portfolio);
 }
 
 /**
@@ -258,7 +286,24 @@ function freelancer_portfolio_src($imagem) {
         return 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 240"%3E%3Crect width="400" height="240" fill="%231e1a12"/%3E%3Ctext x="200" y="128" font-family="Arial, sans-serif" font-weight="700" font-size="20" fill="%23a89d80" text-anchor="middle"%3ESem imagem%3C/text%3E%3C/svg%3E';
     }
 
-    return '../uploads/freelancers/' . rawurlencode($imagem);
+    $diretorio = FREELANCERS_UPLOAD_DIR;
+    $caminhoExato = $diretorio . $imagem;
+
+    // Se o banco já tiver o nome completo, usa diretamente.
+    if (is_file($caminhoExato)) {
+        return '../uploads/freelancers/' . rawurlencode($imagem);
+    }
+
+    // Compatibilidade com registros que armazenam o nome sem extensão.
+    $extensoes = array('jpg', 'jpeg', 'png', 'webp', 'gif');
+    foreach ($extensoes as $extensao) {
+        $arquivoComExtensao = $imagem . '.' . $extensao;
+        if (is_file($diretorio . $arquivoComExtensao)) {
+            return '../uploads/freelancers/' . rawurlencode($arquivoComExtensao);
+        }
+    }
+
+    return 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 240"%3E%3Crect width="400" height="240" fill="%231e1a12"/%3E%3Ctext x="200" y="128" font-family="Arial, sans-serif" font-weight="700" font-size="20" fill="%23a89d80" text-anchor="middle"%3ESem imagem%3C/text%3E%3C/svg%3E';
 }
 
 /**

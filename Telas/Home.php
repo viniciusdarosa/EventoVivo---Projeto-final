@@ -1,4 +1,9 @@
 <?php
+/* ==========================================================
+ * COMPONENTE: Home.php
+ * Página inicial do EventoVivo. Reúne os destaques de eventos e artistas e apresenta a entrada principal para as funcionalidades do sistema.
+ * ========================================================== */
+
 require_once dirname(__FILE__) . '/Componentes/cards.php';
 
 /* ---- Dados: eventos em destaque ---- */

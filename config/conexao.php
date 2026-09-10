@@ -1,4 +1,9 @@
 <?php
+/* ==========================================================
+ * COMPONENTE: conexao.php
+ * Configuração central da conexão MySQL. Abre a conexão com o banco eventovivo e define a comunicação em UTF-8.
+ * ========================================================== */
+
     $servidor = "localhost";
     $usuario = "root";
     $senha = "";

@@ -1,4 +1,9 @@
 <?php
+/* ==========================================================
+ * COMPONENTE: Cadastro.php
+ * Processa o cadastro de novos usuários e apresenta o formulário de criação da conta.
+ * ========================================================== */
+
 /**
  * Cadastro.php — Processamento de cadastro + tela
  */

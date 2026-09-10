@@ -1,4 +1,9 @@
 <?php
+/* ==========================================================
+ * COMPONENTE: EditarEvento.php
+ * Carrega um evento existente, apresenta seus dados no formulário e processa a atualização, incluindo o tratamento opcional da imagem de capa.
+ * ========================================================== */
+
 /**
  * EditarEvento.php
  *

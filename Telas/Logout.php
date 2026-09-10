@@ -1,4 +1,9 @@
 <?php
+/* ==========================================================
+ * COMPONENTE: Logout.php
+ * Encerra a sessão do usuário e redireciona para a página inicial.
+ * ========================================================== */
+
 /**
  * Logout.php — Destrói a sessão e redireciona para Home
  */

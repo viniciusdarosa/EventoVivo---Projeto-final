@@ -1,4 +1,9 @@
 <?php
+/* ==========================================================
+ * COMPONENTE: CRUD_Eventos.php
+ * Área autenticada para listar e administrar os eventos do usuário, com busca, filtros e ações de edição/exclusão.
+ * ========================================================== */
+
 /**
  * CRUD_Eventos.php
  *

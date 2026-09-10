@@ -1,4 +1,9 @@
 <?php
+/* ==========================================================
+ * COMPONENTE: header.php
+ * Componente reutilizável de cabeçalho. Monta a navegação principal e os links condicionais de acordo com o estado da sessão.
+ * ========================================================== */
+
 if (session_id() == '') {
     session_start();
 }

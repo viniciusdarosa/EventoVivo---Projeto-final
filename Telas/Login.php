@@ -1,4 +1,9 @@
 <?php
+/* ==========================================================
+ * COMPONENTE: Login.php
+ * Processa a autenticação do usuário e apresenta o formulário de login.
+ * ========================================================== */
+
 /**
  * Login.php — Processamento de login + tela
  */

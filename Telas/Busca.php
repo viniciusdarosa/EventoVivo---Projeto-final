@@ -1,4 +1,9 @@
 <?php
+/* ==========================================================
+ * COMPONENTE: Busca.php
+ * Realiza uma busca geral no sistema, reunindo resultados de eventos e artistas/freelancers.
+ * ========================================================== */
+
 /**
  * Busca.php — Busca geral unificada (eventos + artistas/freelancers)
  */
@@ -173,16 +178,23 @@ require dirname(__FILE__) . '/Componentes/header.php';
             <?php foreach ($artistas as $artista): ?>
               <article class="artist-card-public">
                 <div class="artist-photo-wrap">
-                  <?php if (!empty($artista['foto_perfil'])): ?>
-                    <img class="artist-photo" src="../uploads/perfil/<?php echo htmlspecialchars($artista['foto_perfil']); ?>"
-                         alt="Foto de <?php echo htmlspecialchars($artista['nome']); ?>">
-                  <?php else: ?>
+                  <?php
+                    // Usa a foto de perfil quando ela existe; caso contrário, usa a imagem de portfolio.
+                    $imagemArtista = freelancer_imagem_publica_src(
+                        $artista['foto_perfil'],
+                        $artista['portfolio']
+                    );
+                  ?>
+                  <?php if (strpos($imagemArtista, 'data:image') === 0): ?>
                     <div class="artist-photo-placeholder">
                       <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <circle cx="32" cy="24" r="12" stroke="currentColor" stroke-width="2"/>
                         <path d="M8 56c0-13.255 10.745-24 24-24s24 10.745 24 24" stroke="currentColor" stroke-width="2"/>
                       </svg>
                     </div>
+                  <?php else: ?>
+                    <img class="artist-photo" src="<?php echo htmlspecialchars($imagemArtista); ?>"
+                         alt="Foto de <?php echo htmlspecialchars($artista['nome']); ?>">
                   <?php endif; ?>
                 </div>
 

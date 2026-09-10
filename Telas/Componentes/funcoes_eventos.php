@@ -1,4 +1,9 @@
 <?php
+/* ==========================================================
+ * COMPONENTE: funcoes_eventos.php
+ * Biblioteca de funções auxiliares para categorias, consultas, validações, uploads e operações relacionadas aos eventos.
+ * ========================================================== */
+
 /**
  * funcoes_eventos.php
  * Funções auxiliares usadas pelas telas de CRUD de Eventos. 

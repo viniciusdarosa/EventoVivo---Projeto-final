@@ -1,4 +1,9 @@
 <?php
+/* ==========================================================
+ * COMPONENTE: ExcluirFreelancer.php
+ * Processa a exclusão segura do perfil de freelancer pertencente ao usuário autenticado e remove sua imagem associada.
+ * ========================================================== */
+
 /**
  * ExcluirFreelancer.php
  *

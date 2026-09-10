@@ -1,4 +1,9 @@
 <?php
+/* ==========================================================
+ * COMPONENTE: EditarFreelancer.php
+ * Carrega o perfil de freelancer existente e processa sua atualização, incluindo a troca opcional da imagem de portfolio.ws
+ * ========================================================== */
+
 /**
  * EditarFreelancer.php
  *
