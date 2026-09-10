@@ -1,7 +1,6 @@
 <?php
 /**
  * Login.php — Processamento de login + tela
- * Compatível com PHP 5.3.9 (sem short arrays, ??, __DIR__, etc.)
  */
 session_start();
 require_once dirname(__FILE__) . '/../config/conexao.php';

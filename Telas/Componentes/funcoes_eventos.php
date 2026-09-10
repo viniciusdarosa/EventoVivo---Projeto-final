@@ -1,10 +1,8 @@
 <?php
 /**
  * funcoes_eventos.php
- *
- * Funções auxiliares usadas pelas telas de CRUD de Eventos
- * (CadastrarEvento.php, EditarEvento.php, CRUD_Eventos.php,
- * ExcluirEvento.php). Centralizar essa lógica aqui evita repetir
+ * Funções auxiliares usadas pelas telas de CRUD de Eventos. 
+ * Centralizar essa lógica aqui evita repetir
  * o mesmo código de validação/upload em cada tela.
  *
  * Todas as funções recebem $conexao (objeto mysqli) já aberto por
@@ -12,12 +10,10 @@
  */
 
 // Pasta física onde as imagens de capa dos eventos são salvas.
-// dirname(__FILE__) . '/../../' sobe de Telas/Componentes/ até a raiz do projeto.
+// dirname(__FILE__) . '/../../' vai de Telas/Componentes/ até a raiz do projeto.
 define('EVENTOS_UPLOAD_DIR', dirname(__FILE__) . '/../../uploads/eventos/');
-
 // Tamanho máximo aceito para a imagem de capa (2MB).
 define('EVENTOS_UPLOAD_MAX_BYTES', 2 * 1024 * 1024);
-
 /**
  * Busca todas as categorias de eventos, para popular o <select>
  * do formulário de cadastro/edição.
@@ -44,16 +40,13 @@ function buscar_categorias_eventos($conexao) {
 /**
  * Retorna a URL/caminho de exibição da imagem de capa de um evento.
  * Se o evento não tiver imagem cadastrada, devolve um placeholder
- * (SVG embutido em data URI, então não depende de nenhum arquivo
- * extra no projeto).
  *
  * @param string $imagemCapa nome do arquivo salvo em uploads/eventos/
- * @return string caminho (relativo às páginas em Telas/) ou data URI
+ * @return string caminho (relativo às páginas em Telas/)
  */
 function evento_imagem_src($imagemCapa) {
     if (empty($imagemCapa)) {
         // Placeholder simples em SVG, no mesmo espírito do favicon
-        // inline já usado em Componentes/header.php.
         return 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 240"%3E'
              . '%3Crect width="400" height="240" fill="%231e1a12"/%3E'
              . '%3Ctext x="200" y="128" font-family="Arial, sans-serif" font-weight="700" '
@@ -71,8 +64,8 @@ function evento_imagem_src($imagemCapa) {
  *  - campo é opcional (usuário pode não enviar nada — quem decide se
  *    isso é erro ou não é a tela que chama esta função);
  *  - só aceita image/jpeg, image/png, image/gif;
- *  - valida tanto o "type" enviado pelo navegador quanto a extensão
- *    real do nome do arquivo, porque o "type" do $_FILES pode ser
+ *  - valida tanto o tipo enviado pelo navegador quanto a extensão
+ *    real do nome do arquivo, porque o tipo do $_FILES pode ser
  *    forjado pelo cliente;
  *  - limite de 2MB.
  *
@@ -80,12 +73,12 @@ function evento_imagem_src($imagemCapa) {
  * @return array array('ok' => bool, 'erro' => string|null, 'extensao' => string|null)
  */
 function validar_upload_imagem_evento($arquivo) {
-    // Nenhum arquivo enviado (campo opcional, ex: na edição).
+    // Nenhum arquivo enviado.
     if (!isset($arquivo) || $arquivo['error'] === UPLOAD_ERR_NO_FILE) {
         return array('ok' => true, 'enviado' => false, 'erro' => null, 'extensao' => null);
     }
 
-    // Algum erro de upload do próprio PHP (ex: excedeu upload_max_filesize).
+    // Algum erro de upload do próprio PHP.
     if ($arquivo['error'] !== UPLOAD_ERR_OK) {
         return array('ok' => false, 'enviado' => true, 'erro' => 'Falha ao enviar o arquivo (código ' . $arquivo['error'] . ').', 'extensao' => null);
     }
@@ -121,8 +114,7 @@ function validar_upload_imagem_evento($arquivo) {
 
 /**
  * Move o arquivo de upload já validado para a pasta de eventos,
- * com um nome novo (evita colisão de nomes e path traversal — nunca
- * usamos o nome original enviado pelo usuário como nome final).
+ * com um nome novo.
  *
  * @param array  $arquivo   elemento de $_FILES['imagem_capa']
  * @param string $extensao  extensão validada (retornada por validar_upload_imagem_evento)
@@ -163,8 +155,8 @@ function excluir_imagem_evento($imagemCapa) {
 }
 
 /**
- * Formata um valor decimal (vindo do banco, ex: "0.00") para exibição
- * em Real, ex: "R$ 25,00". Se o valor for 0, mostra "Gratuito".
+ * Formata um valor decimal para exibição
+ * em Real. Se o valor for 0, mostra "Gratuito".
  */
 function formatar_valor_evento($valor) {
     $valor = (float) $valor;
@@ -192,8 +184,6 @@ function formatar_data_evento($data) {
 
 /**
  * Gera um salt aleatório seguro para hash de senha.
- * PHP 5.3.9 compatível: usa openssl_random_pseudo_bytes se disponível,
- * senão fallback com mt_rand + uniqid.
  *
  * @param int $length Tamanho do salt em bytes (padrão 32)
  * @return string Salt em hexadecimal
@@ -205,7 +195,6 @@ function gerar_salt($length = 32) {
             return bin2hex($bytes);
         }
     }
-    // Fallback para PHP 5.3.9 sem openssl ou se não for cryptographically strong
     $salt = '';
     for ($i = 0; $i < $length; $i++) {
         $salt .= sprintf('%02x', mt_rand(0, 255));
@@ -263,8 +252,7 @@ function verificar_senha($senha, $hashArmazenado) {
 }
 
 /**
- * Comparação de strings em tempo constante (evita timing attacks).
- * PHP 5.6+ tem hash_equals nativo; esta é compatível com 5.3.9.
+ * Comparação de strings em tempo constante.
  */
 if (!function_exists('hash_equals')) {
     function hash_equals($known_string, $user_string) {

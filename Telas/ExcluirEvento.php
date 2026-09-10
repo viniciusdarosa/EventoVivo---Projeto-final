@@ -8,9 +8,8 @@
  * do link para esta página ser seguido — ver Componentes que
  * geram o botão de excluir.
  *
- * Só aceita a exclusão via POST (o link em CRUD_Eventos.php envia
- * um formulário, não é um <a href> direto), para reduzir o risco
- * de exclusão acidental via link/crawler.
+ * Só aceita a exclusão via POST, para reduzir o risco
+ * de exclusão acidental.
  */
 
 session_start();
