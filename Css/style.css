@@ -318,6 +318,30 @@ h2 {
   opacity: .85;
   transform: rotate(-4deg);
 }
+
+.event-card-imagem-wrap {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 4px;
+  margin-bottom: var(--sp-2);
+  background: var(--ink-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.event-card-imagem { width: 100%; height: 100%; object-fit: cover; }
+
+.event-card-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.event-card-placeholder svg { width: 100%; height: 100%; max-width: 400px; max-height: 225px; }
+
+.event-card-corpo { padding: 0; }
 .event-card .tag { font-family: var(--font-mark); color: var(--yellow); font-size: .95rem; margin-bottom: var(--sp-1); }
 .event-card h3 { font-weight: 700; text-transform: uppercase; font-size: 1.05rem; letter-spacing: .02em; margin-bottom: var(--sp-1); }
 .event-card .desc { color: var(--paper-dim); font-size: .9rem; line-height: 1.6; }
