@@ -783,6 +783,59 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 }
 .contact-link:hover { border-color: var(--accent); }
 
+/* Avaliações em estrelas nos cards de artista */
+.artist-avaliacao {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: .75rem;
+  font-size: .85rem;
+}
+
+.artist-avaliacao .estrelas-avaliacao {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.artist-avaliacao .estrela {
+  color: var(--paper-dim);
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.artist-avaliacao .estrela.cheia { color: #ffd700; }
+.artist-avaliacao .estrela.meia { 
+  position: relative;
+  color: var(--paper-dim);
+}
+.artist-avaliacao .estrela.meia::before {
+  content: '★';
+  position: absolute;
+  left: 0;
+  color: #ffd700;
+  width: 50%;
+  overflow: hidden;
+}
+
+.artist-avaliacao .media-numero {
+  color: var(--paper);
+  font-weight: 700;
+  margin-left: .25rem;
+}
+
+.artist-avaliacao .avaliacao-count {
+  color: var(--paper-dim);
+  font-size: .75rem;
+  font-weight: 400;
+}
+
+.artist-avaliacao .sem-avaliacao {
+  color: var(--paper-dim);
+  font-size: .8rem;
+  font-style: italic;
+}
+
 .empty-state {
   text-align: center;
   padding: 4rem 2rem;

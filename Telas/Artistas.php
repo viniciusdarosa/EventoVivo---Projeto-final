@@ -30,10 +30,13 @@ if ($resCat) {
 
 // ---- Monta query dinâmica ----
 $sql = "SELECT f.*, u.nome, u.foto_perfil, u.biografia, u.cidade, u.estado, u.email, u.telefone,
-               cs.nome AS categoria_nome
+               cs.nome AS categoria_nome,
+               COALESCE(AVG(a.nota), 0) AS media_avaliacao,
+               COUNT(a.id) AS total_avaliacoes
         FROM freelancers f
         LEFT JOIN usuario u ON u.id_usuario = f.usuario_id
         LEFT JOIN categorias_servicos cs ON cs.id_categoria = f.categoria_id
+        LEFT JOIN avaliacoes a ON a.freelancer_id = f.id_freelancer
         WHERE 1=1";
 
 $tipos = '';
@@ -67,7 +70,7 @@ if ($estadoFiltro !== '') {
     $parametros[] = $estadoFiltro;
 }
 
-$sql .= " ORDER BY u.nome ASC";
+$sql .= " GROUP BY f.id_freelancer, u.id_usuario, cs.id_categoria ORDER BY u.nome ASC";
 
 $stmt = $conexao->prepare($sql);
 
@@ -227,6 +230,17 @@ if ($resEstados) {
                 <p class="artist-local">
                   <?php echo htmlspecialchars($artista['cidade']); ?>/<?php echo htmlspecialchars($artista['estado']); ?>
                 </p>
+
+                <?php 
+                  $media = isset($artista['media_avaliacao']) ? (float)$artista['media_avaliacao'] : 0;
+                  $total = isset($artista['total_avaliacoes']) ? (int)$artista['total_avaliacoes'] : 0;
+                  if ($total > 0): 
+                ?>
+                <div class="artist-avaliacao">
+                  <?php echo render_estrelas_avaliacao($media); ?>
+                  <span class="avaliacao-count">(<?php echo $total; ?> avaliaç<?php echo $total === 1 ? 'ão' : 'ões'; ?>)</span>
+                </div>
+                <?php endif; ?>
 
                 <?php if (!empty($artista['biografia'])): ?>
                 <p class="artist-bio"><?php echo htmlspecialchars(substr($artista['biografia'], 0, 120)); ?>...</p>
