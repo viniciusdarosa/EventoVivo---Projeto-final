@@ -318,30 +318,6 @@ h2 {
   opacity: .85;
   transform: rotate(-4deg);
 }
-
-.event-card-imagem-wrap {
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  overflow: hidden;
-  border-radius: 4px;
-  margin-bottom: var(--sp-2);
-  background: var(--ink-2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.event-card-imagem { width: 100%; height: 100%; object-fit: cover; }
-
-.event-card-placeholder {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.event-card-placeholder svg { width: 100%; height: 100%; max-width: 400px; max-height: 225px; }
-
-.event-card-corpo { padding: 0; }
 .event-card .tag { font-family: var(--font-mark); color: var(--yellow); font-size: .95rem; margin-bottom: var(--sp-1); }
 .event-card h3 { font-weight: 700; text-transform: uppercase; font-size: 1.05rem; letter-spacing: .02em; margin-bottom: var(--sp-1); }
 .event-card .desc { color: var(--paper-dim); font-size: .9rem; line-height: 1.6; }
@@ -687,7 +663,18 @@ a:focus-visible, button:focus-visible, input:focus-visible {
   border-color: var(--accent);
   box-shadow: 0 0 0 2px rgba(184, 0, 13, .2);
 }
-.toolbar .btn-filter { min-height: 43px; }
+.toolbar .btn-filter {
+  min-height: 43px;
+  background: var(--blood);
+  color: var(--paper);
+  border-color: var(--blood);
+  cursor: pointer;
+}
+
+.toolbar .btn-filter:hover {
+  background: transparent;
+  color: var(--blood);
+}
 
 .results-section { padding-block: var(--sp-5); }
 .results-header { margin-bottom: var(--sp-4); }
@@ -707,6 +694,31 @@ a:focus-visible, button:focus-visible, input:focus-visible {
   gap: 1.5rem;
 }
 
+/* ==========================================================
+   IMAGEM DOS CARDS DE EVENTO
+   ========================================================== */
+
+.evento-card {
+    width: 100%;
+    overflow: hidden;
+    background: var(--steel);
+    border: 1px solid var(--rule);
+    box-shadow: var(--shadow-hard);
+}
+
+.evento-card-imagem {
+    display: block;
+    width: 100% !important;
+    height: 220px !important;
+    min-height: 220px !important;
+    max-height: 220px !important;
+
+    object-fit: cover !important;
+    object-position: center center;
+
+    margin: 0;
+    padding: 0;
+}
 
 /* Grid de artistas */
 .artistas-grid {

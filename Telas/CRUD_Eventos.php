@@ -79,7 +79,7 @@ $categorias = buscar_categorias_eventos($conexao);
 
 $pageTitle = 'EventoVivo — Gerenciar eventos';
 $pageDescription = 'Gerencie seus eventos publicados no EventoVivo';
-$extraCss = array('../Css/crud_eventos.css');
+$extraCss = array('../Css/eventos.css');
 
 require dirname(__FILE__) . '/Componentes/header.php';
 ?>

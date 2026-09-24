@@ -115,11 +115,12 @@ if ($resEstados) {
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Courier+Prime:wght@400;700&family=Permanent+Marker&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../Css/style.css">
+  <link rel="stylesheet" href="../Css/eventos.css">
 </head>
 <?php require dirname(__FILE__) . '/Componentes/header.php'; ?>
 <body>
 
-<main class="list-page">
+<main class="eventos-page">
   <section class="page-header">
     <div class="wrap">
       <p class="eyebrow">AGENDA CULTURAL</p>

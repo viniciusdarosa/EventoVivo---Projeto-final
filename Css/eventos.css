@@ -1,0 +1,381 @@
+/* ==========================================================
+   EventoVivo — estilos exclusivos de Eventos.php
+   e CRUD_Eventos.php
+   ========================================================== */
+
+:root {
+  --ev-ink: #120f0f;
+  --ev-ink-2: #1f1a1a;
+  --ev-steel: #2d2727;
+  --ev-rule: #4a4040;
+  --ev-paper: #dedbd2;
+  --ev-dim: #a5a29a;
+  --ev-blood: #b3121e;
+  --ev-accent: #b8000d;
+  --ev-shadow: 6px 6px 0 rgba(0,0,0,.55);
+  --ev-ease: .18s ease;
+}
+
+.eventos-page,
+.admin-page {
+  min-height: 100vh;
+  padding-bottom: 4rem;
+  background: var(--ev-ink);
+  color: var(--ev-paper);
+  font-family: 'Courier Prime', monospace;
+}
+
+.eventos-page *,
+.admin-page * {
+  box-sizing: border-box;
+}
+
+.eventos-page .wrap,
+.admin-page .wrap {
+  width: min(1180px, calc(100% - 2rem));
+  margin-inline: auto;
+}
+
+/* Cabeçalhos */
+
+.eventos-page .page-header,
+.admin-page .page-heading {
+  padding: clamp(2.5rem, 7vw, 5rem) 0 2.5rem;
+  background: linear-gradient(135deg, var(--ev-ink), var(--ev-ink-2), var(--ev-ink));
+  border-bottom: 1px solid var(--ev-rule);
+}
+
+.eventos-page .page-header {
+  text-align: center;
+}
+
+.eventos-page .eyebrow,
+.admin-page .eyebrow {
+  margin: 0 0 .5rem;
+  color: var(--ev-accent);
+  font-family: 'Permanent Marker', cursive;
+  font-size: 1rem;
+}
+
+.eventos-page h1,
+.admin-page h1 {
+  margin: 0;
+  color: var(--ev-paper);
+  font-family: 'Anton', sans-serif;
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  line-height: 1;
+  text-transform: uppercase;
+  text-shadow: 4px 4px 0 var(--ev-blood);
+}
+
+.eventos-page .hero-sub,
+.admin-page .heading-sub {
+  margin: .75rem auto 0;
+  max-width: 60ch;
+  color: var(--ev-dim);
+  line-height: 1.7;
+}
+
+.admin-page .heading-inner {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+/* Botões */
+
+.eventos-page .btn,
+.admin-page .btn {
+  display: inline-block;
+  border: 2px solid var(--ev-blood);
+  padding: .75rem 1.25rem;
+  color: var(--ev-paper);
+  background: transparent;
+  font: 700 .85rem 'Courier Prime', monospace;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background var(--ev-ease), color var(--ev-ease), border-color var(--ev-ease);
+}
+
+.eventos-page .btn-primary,
+.admin-page .btn-primary,
+.eventos-page .btn-filter,
+.admin-page .btn-filter {
+  background: var(--ev-blood);
+}
+
+.eventos-page .btn:hover,
+.admin-page .btn:hover {
+  background: transparent;
+  color: var(--ev-blood);
+}
+
+.eventos-page .btn-ghost {
+  border-color: var(--ev-paper);
+}
+
+/* Filtros */
+
+.eventos-page .filters-section,
+.admin-page .events-section {
+  padding: 1.5rem 0;
+  background: var(--ev-ink-2);
+  border-bottom: 1px solid var(--ev-rule);
+}
+
+.eventos-page .toolbar,
+.admin-page .toolbar {
+  display: grid;
+  gap: 1rem;
+  align-items: end;
+}
+
+.eventos-page .toolbar {
+  grid-template-columns: minmax(220px, 2fr) repeat(4, minmax(120px, 1fr)) auto auto;
+}
+
+.admin-page .toolbar {
+  grid-template-columns: minmax(220px, 2fr) minmax(160px, 1fr) minmax(140px, 1fr) auto;
+}
+
+.eventos-page .toolbar label,
+.admin-page .toolbar label {
+  display: block;
+  margin-bottom: .35rem;
+  color: var(--ev-dim);
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.eventos-page .toolbar input,
+.eventos-page .toolbar select,
+.admin-page .toolbar input,
+.admin-page .toolbar select {
+  width: 100%;
+  min-height: 43px;
+  padding: .55rem .75rem;
+  color: var(--ev-paper);
+  background: var(--ev-ink);
+  border: 1px solid var(--ev-rule);
+  outline: 0;
+  font: inherit;
+}
+
+.eventos-page .toolbar input::placeholder,
+.admin-page .toolbar input::placeholder {
+  color: var(--ev-dim);
+  opacity: .7;
+}
+
+.eventos-page .toolbar input:focus,
+.eventos-page .toolbar select:focus,
+.admin-page .toolbar input:focus,
+.admin-page .toolbar select:focus {
+  border-color: var(--ev-accent);
+  box-shadow: 0 0 0 2px rgba(184,0,13,.2);
+}
+
+.eventos-page .btn-filter,
+.admin-page .btn-filter {
+  min-height: 43px;
+}
+
+/* Resultados */
+
+.eventos-page .results-section,
+.admin-page .events-section > .wrap {
+  padding-top: 2.5rem;
+}
+
+.eventos-page .results-header,
+.admin-page .list-header {
+  margin-bottom: 1.5rem;
+}
+
+.eventos-page .results-header h2,
+.admin-page .list-header h2 {
+  margin: 0;
+  padding-bottom: .5rem;
+  display: inline-block;
+  border-bottom: 3px solid var(--ev-accent);
+  color: var(--ev-paper);
+  font-family: 'Anton', sans-serif;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  text-transform: uppercase;
+}
+
+.admin-page .list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.admin-page .counter {
+  margin-left: .5rem;
+  color: var(--ev-dim);
+  font-size: .85rem;
+}
+
+/* Cards */
+
+.eventos-page .eventos-grid,
+.admin-page .eventos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.eventos-page .evento-card,
+.admin-page .evento-card {
+  width: 100%;
+  overflow: hidden;
+  background: var(--ev-steel);
+  border: 1px solid var(--ev-rule);
+  box-shadow: var(--ev-shadow);
+}
+
+.eventos-page .evento-card-imagem,
+.admin-page .evento-card-imagem {
+  display: block;
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  object-position: center;
+}
+
+.admin-page .evento-card-corpo {
+  padding: 1rem;
+}
+
+.admin-page .evento-card-categoria {
+  margin: 0 0 .35rem;
+  color: var(--ev-accent);
+  font-family: 'Permanent Marker', cursive;
+  font-size: .9rem;
+}
+
+.admin-page .evento-card-titulo {
+  margin: 0 0 .5rem;
+  color: var(--ev-paper);
+  font-size: 1.1rem;
+  text-transform: uppercase;
+}
+
+.admin-page .evento-card-info {
+  margin: .35rem 0;
+  color: var(--ev-dim);
+  font-size: .85rem;
+  line-height: 1.5;
+}
+
+.admin-page .evento-card-rodape {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding-top: .75rem;
+  border-top: 1px solid var(--ev-rule);
+}
+
+.admin-page .evento-card-valor {
+  color: var(--ev-paper);
+  font-weight: 700;
+}
+
+.admin-page .evento-card-acoes {
+  display: flex;
+  gap: .5rem;
+  align-items: center;
+}
+
+.admin-page .btn-icone {
+  padding: .4rem .65rem;
+  color: var(--ev-paper);
+  border: 1px solid var(--ev-rule);
+  font: 700 .75rem 'Courier Prime', monospace;
+  text-decoration: none;
+  text-transform: uppercase;
+  background: transparent;
+  cursor: pointer;
+}
+
+.admin-page .btn-icone:hover {
+  border-color: var(--ev-accent);
+  color: var(--ev-accent);
+}
+
+.admin-page .btn-icone-excluir {
+  border-color: #7b2525;
+}
+
+/* Estados vazios */
+
+.eventos-page .empty-state,
+.admin-page .estado-vazio {
+  padding: 3rem 1.5rem;
+  color: var(--ev-dim);
+  text-align: center;
+}
+
+.eventos-page .empty-state .btn {
+  margin-top: 1.25rem;
+}
+
+.eventos-page .empty-state p,
+.admin-page .estado-vazio {
+  margin: 0;
+}
+
+/* Responsivo */
+
+@media (max-width: 1000px) {
+  .eventos-page .toolbar {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .eventos-page .toolbar .search-box {
+    grid-column: 1 / -1;
+  }
+
+  .admin-page .toolbar {
+    grid-template-columns: 2fr 1fr 1fr auto;
+  }
+}
+
+@media (max-width: 720px) {
+  .admin-page .heading-inner {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .eventos-page .toolbar,
+  .admin-page .toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .eventos-page .toolbar .search-box {
+    grid-column: auto;
+  }
+
+  .eventos-page .toolbar .btn,
+  .admin-page .toolbar .btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .eventos-page .eventos-grid,
+  .admin-page .eventos-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-page .evento-card-rodape {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
