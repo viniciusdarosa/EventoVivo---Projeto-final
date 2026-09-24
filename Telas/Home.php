@@ -4,67 +4,63 @@
  * Página inicial do EventoVivo. Reúne os destaques de eventos e artistas e apresenta a entrada principal para as funcionalidades do sistema.
  * ========================================================== */
 
+require_once dirname(__FILE__) . '/../config/conexao.php';
+require_once dirname(__FILE__) . '/Componentes/funcoes_eventos.php';
+require_once dirname(__FILE__) . '/Componentes/funcoes_freelancers.php';
 require_once dirname(__FILE__) . '/Componentes/cards.php';
 
-/* ---- Dados: eventos em destaque ---- */
-$eventos = array(
-    array(
-        'data'   => '23 ago',
-        'local'  => 'Porto Alegre, RS',
-        'titulo' => 'Noite de Garagem',
-        'desc'   => 'Cortina de Ferro sobe ao palco do Galpão 7 pra um set cru, direto e sem enrolação.',
-    ),
-    array(
-        'data'   => '30 ago',
-        'local'  => 'São Paulo, SP',
-        'titulo' => 'Subsolo Fest',
-        'desc'   => 'Quatro bandas, um palco só: hardcore e post-punk lotam a Casa Rachada até de madrugada.',
-    ),
-    array(
-        'data'   => '05 set',
-        'local'  => 'Curitiba, PR',
-        'titulo' => 'Ruído na Veia',
-        'desc'   => 'Máquina Enferrujada estreia faixas novas de noise rock no Bar do Zeca.',
-    ),
-    array(
-        'data'   => '12 set',
-        'local'  => 'Belo Horizonte, MG',
-        'titulo' => 'Grito Coletivo',
-        'desc'   => 'Poesia falada e punk underground dividem o mesmo microfone nessa noite de sarau e show.',
-    ),
-);
+/* ---- Busca 4 eventos mais próximos (próximos a acontecer) ---- */
+$sqlEventos = "SELECT e.*, c.nome AS categoria_nome
+               FROM eventos e
+               LEFT JOIN categorias_eventos c ON c.id_categoria = e.categoria_id
+               WHERE e.data_fim_evento >= CURDATE()
+               ORDER BY e.data_inicio_evento ASC
+               LIMIT 4";
+$stmtEventos = $conexao->prepare($sqlEventos);
+$stmtEventos->execute();
+$resultEventos = $stmtEventos->get_result();
 
-/* ---- Dados: artistas em destaque ---- */
-$artistas = array(
-    array(
-        'foto'       => '../Assets/artistas/cortina-de-ferro.jpg',
-        'nome'       => 'Cortina de Ferro',
-        'tipo'       => 'Punk rock',
-        'local'      => 'Porto Alegre, RS',
-        'categorias' => array('Ao vivo', 'Autoral', 'DIY'),
-    ),
-    array(
-        'foto'       => '../Assets/artistas/maquina-enferrujada.jpg',
-        'nome'       => 'Máquina Enferrujada',
-        'tipo'       => 'Noise rock',
-        'local'      => 'Curitiba, PR',
-        'categorias' => array('Instrumental', 'Autoral', 'Underground'),
-    ),
-    array(
-        'foto'       => '../Assets/artistas/fita-cassete.jpg',
-        'nome'       => 'Fita Cassete',
-        'tipo'       => 'Synth punk',
-        'local'      => 'Recife, PE',
-        'categorias' => array('Ao vivo', 'Eletrônico', 'Retrô'),
-    ),
-    array(
-        'foto'       => '../Assets/artistas/zona-cinza.jpg',
-        'nome'       => 'Zona Cinza',
-        'tipo'       => 'Post-punk',
-        'local'      => 'Belo Horizonte, MG',
-        'categorias' => array('Autoral', 'Ao vivo', 'DIY'),
-    ),
-);
+$eventos = array();
+while ($linha = $resultEventos->fetch_assoc()) {
+    $eventos[] = array(
+        'data'   => formatar_data_evento($linha['data_inicio_evento']),
+        'local'  => $linha['cidade'] . '/' . $linha['estado'],
+        'titulo' => $linha['titulo'],
+        'desc'   => substr($linha['descricao'], 0, 120) . (strlen($linha['descricao']) > 120 ? '...' : ''),
+        'imagem' => evento_imagem_src($linha['imagem_capa']),
+    );
+}
+$stmtEventos->close();
+
+/* ---- Busca 4 artistas melhores avaliados ---- */
+$sqlArtistas = "SELECT f.*, u.nome, u.foto_perfil, u.cidade, u.estado,
+                       cs.nome AS categoria_nome,
+                       COALESCE(AVG(a.nota), 0) AS media_avaliacao,
+                       COUNT(a.id) AS total_avaliacoes
+                FROM freelancers f
+                LEFT JOIN usuario u ON u.id_usuario = f.usuario_id
+                LEFT JOIN categorias_servicos cs ON cs.id_categoria = f.categoria_id
+                LEFT JOIN avaliacoes a ON a.freelancer_id = f.id_freelancer
+                WHERE f.usuario_id IS NOT NULL
+                GROUP BY f.id_freelancer, u.id_usuario, cs.id_categoria
+                HAVING total_avaliacoes > 0
+                ORDER BY media_avaliacao DESC, total_avaliacoes DESC
+                LIMIT 4";
+$stmtArtistas = $conexao->prepare($sqlArtistas);
+$stmtArtistas->execute();
+$resultArtistas = $stmtArtistas->get_result();
+
+$artistas = array();
+while ($linha = $resultArtistas->fetch_assoc()) {
+    $artistas[] = array(
+        'foto'       => freelancer_imagem_publica_src($linha['foto_perfil'], $linha['portfolio']),
+        'nome'       => $linha['nome'],
+        'tipo'       => $linha['profissao'] ?: $linha['categoria_nome'],
+        'local'      => $linha['cidade'] . '/' . $linha['estado'],
+        'categorias' => array(),
+    );
+}
+$stmtArtistas->close();
 
 require dirname(__FILE__) . '/Componentes/header.php';
 ?>
@@ -114,13 +110,17 @@ require dirname(__FILE__) . '/Componentes/header.php';
   <section class="destaque" id="eventos">
     <div class="wrap">
       <div class="section-header">
-        <h2>Eventos em destaque</h2>
+        <h2>Próximos eventos</h2>
         <a class="btn btn-ghost" href="Eventos.php" style="font-size:.85rem;padding:.6rem 1rem;">Ver todos</a>
       </div>
       <div class="grid">
-        <?php foreach ($eventos as $evento): ?>
-          <?php render_event_card($evento); ?>
-        <?php endforeach; ?>
+        <?php if (empty($eventos)): ?>
+          <p class="estado-vazio">Nenhum evento próximo cadastrado.</p>
+        <?php else: ?>
+          <?php foreach ($eventos as $evento): ?>
+            <?php render_event_card($evento); ?>
+          <?php endforeach; ?>
+        <?php endif; ?>
       </div>
     </div>
   </section>
@@ -128,13 +128,17 @@ require dirname(__FILE__) . '/Componentes/header.php';
   <section class="destaque alt" id="artistas">
     <div class="wrap">
       <div class="section-header">
-        <h2>Artistas em destaque</h2>
+        <h2>Artistas mais bem avaliados</h2>
         <a class="btn btn-ghost" href="Artistas.php" style="font-size:.85rem;padding:.6rem 1rem;">Ver todos</a>
       </div>
       <div class="grid">
-        <?php foreach ($artistas as $artista): ?>
-          <?php render_artist_card($artista); ?>
-        <?php endforeach; ?>
+        <?php if (empty($artistas)): ?>
+          <p class="estado-vazio">Nenhum artista avaliado ainda.</p>
+        <?php else: ?>
+          <?php foreach ($artistas as $artista): ?>
+            <?php render_artist_card($artista); ?>
+          <?php endforeach; ?>
+        <?php endif; ?>
       </div>
     </div>
   </section>
