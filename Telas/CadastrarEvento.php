@@ -328,4 +328,3 @@ require dirname(__FILE__) . '/Componentes/header.php';
 </main>
 
 <?php require dirname(__FILE__) . '/Componentes/footer.php'; ?>
-
