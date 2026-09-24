@@ -10,6 +10,7 @@
 session_start();
 require_once dirname(__FILE__) . '/../config/conexao.php';
 require_once dirname(__FILE__) . '/Componentes/funcoes_eventos.php';
+require_once dirname(__FILE__) . '/Componentes/EventoCard.php';
 
 // Remove automaticamente eventos encerrados há mais de 1 mês antes da listagem.
 limpar_eventos_antigos($conexao);
@@ -197,50 +198,7 @@ if ($resEstados) {
       <?php else: ?>
         <div class="eventos-grid">
           <?php foreach ($eventos as $evento): ?>
-            <article class="evento-card">
-              <img class="evento-card-imagem"
-                   src="<?php echo htmlspecialchars(evento_imagem_src($evento['imagem_capa'])); ?>"
-                   alt="Capa do evento <?php echo htmlspecialchars($evento['titulo']); ?>">
-
-              <div class="evento-card-corpo">
-                <p class="evento-card-categoria"><?php echo htmlspecialchars($evento['categoria_nome']); ?></p>
-                <h3 class="evento-card-titulo"><?php echo htmlspecialchars($evento['titulo']); ?></h3>
-
-                <p class="evento-card-info">
-                  <?php echo htmlspecialchars(formatar_data_evento($evento['data_inicio_evento'])); ?>
-                  às <?php echo htmlspecialchars(substr($evento['hora_inicio'], 0, 5)); ?>
-                  — <?php echo htmlspecialchars($evento['cidade']); ?>/<?php echo htmlspecialchars($evento['estado']); ?>
-                </p>
-
-                <?php if (!empty($evento['organizador_nome'])): ?>
-                <p class="evento-card-info">
-                  Por <?php echo htmlspecialchars($evento['organizador_nome']); ?>
-                </p>
-                <?php endif; ?>
-
-                <p class="evento-card-info">
-                  <?php echo (int) $evento['vagas']; ?> vaga(s)
-                </p>
-
-                <div class="evento-card-rodape">
-                  <span class="evento-card-valor"><?php echo formatar_valor_evento($evento['valor']); ?></span>
-
-                  <div class="evento-card-acoes">
-                    <?php if (isset($_SESSION['id_usuario']) && $_SESSION['id_usuario'] == $evento['usuario_id']): ?>
-                      <a class="btn-icone" href="EditarEvento.php?id_evento=<?php echo (int) $evento['id_evento']; ?>">Editar</a>
-                      <form method="post" action="ExcluirEvento.php"
-                            onsubmit="return confirm('Tem certeza que deseja excluir este evento?');"
-                            style="display:inline;">
-                        <input type="hidden" name="id_evento" value="<?php echo (int) $evento['id_evento']; ?>">
-                        <button type="submit" class="btn-icone btn-icone-excluir">Excluir</button>
-                      </form>
-                    <?php else: ?>
-                      <a class="btn-icone" href="#contato" onclick="alert('Faça login para entrar em contato com o organizador.')">Contatar</a>
-                    <?php endif; ?>
-                  </div>
-                </div>
-              </div>
-            </article>
+            <?php render_evento_card($evento); ?>
           <?php endforeach; ?>
         </div>
       <?php endif; ?>

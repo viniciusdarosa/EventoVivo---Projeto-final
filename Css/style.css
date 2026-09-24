@@ -683,6 +683,7 @@ a:focus-visible, button:focus-visible, input:focus-visible {
   gap: 1.5rem;
 }
 
+
 /* Grid de artistas */
 .artistas-grid {
   display: grid;
