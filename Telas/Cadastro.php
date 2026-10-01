@@ -106,6 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 session_regenerate_id(true);
                 $_SESSION['id_usuario'] = (int) $novoId;
                 $_SESSION['nome_usuario'] = $dados['nome'];
+                $_SESSION['tipo_usuario'] = 'usuario';
             } else {
                 $erros[] = 'Erro ao salvar cadastro: ' . $stmt->error;
             }

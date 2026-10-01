@@ -20,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($email === '' || $senha === '') {
         $erroLogin = 'Preencha e-mail e senha.';
     } else {
-        $stmt = $conexao->prepare("SELECT id_usuario, nome, senha FROM usuario WHERE email = ? LIMIT 1");
+        $stmt = $conexao->prepare("SELECT id_usuario, nome, senha, tipo FROM usuario WHERE email = ? LIMIT 1");
         $stmt->bind_param('s', $email);
         $stmt->execute();
         $resultado = $stmt->get_result();
@@ -32,6 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             session_regenerate_id(true);
             $_SESSION['id_usuario'] = (int) $usuario['id_usuario'];
             $_SESSION['nome_usuario'] = $usuario['nome'];
+            $_SESSION['tipo_usuario'] = $usuario['tipo'];
 
             // Se a senha está no formato legado (texto puro), atualiza para hash seguro
             if (strpos($usuario['senha'], 'sha256:') !== 0) {
@@ -40,6 +41,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmtUpd->bind_param('si', $novoHash, $usuario['id_usuario']);
                 $stmtUpd->execute();
                 $stmtUpd->close();
+            }
+
+            // O administrador cai direto no painel de controle do site.
+            if ($usuario['tipo'] === 'admin') {
+                header('Location: PainelAdmin.php');
+                exit;
             }
 
             header('Location: CRUD_Eventos.php');
@@ -52,7 +59,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // Se já logado, redireciona para o painel
 if (isset($_SESSION['id_usuario'])) {
-    header('Location: CRUD_Eventos.php');
+    if (isset($_SESSION['tipo_usuario']) && $_SESSION['tipo_usuario'] === 'admin') {
+        header('Location: PainelAdmin.php');
+    } else {
+        header('Location: CRUD_Eventos.php');
+    }
     exit;
 }
 ?>
