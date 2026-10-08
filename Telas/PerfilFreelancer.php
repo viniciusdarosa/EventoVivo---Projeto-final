@@ -185,6 +185,12 @@ if (isset($_SESSION['id_usuario']) && !$ehDono) {
     /* ---- Carrossel de fotos do trabalho ---- */
     .carrossel {
       position: relative;
+      /* Toda foto cai na mesma caixa. A largura acompanha a mesma
+         referência de altura (66vh) usada abaixo, senão o max-height
+         estica o box e ele deixa de ter a proporção declarada — no
+         desktop a caixa estava 1128x594 em vez de 3/2. */
+      max-width: max(640px, calc(66vh * 1.5));
+      margin: 0 auto;
       background: var(--steel);
       border: 2px solid var(--rule);
       box-shadow: var(--shadow-hard);
@@ -208,10 +214,13 @@ if (isset($_SESSION['id_usuario']) && !$ehDono) {
     .carrossel-slide img {
       display: block;
       width: 100%;
+      height: auto;
       aspect-ratio: 3 / 2;
       max-height: 66vh;
-      object-fit: cover;
-      object-position: center 30%;
+      /* contain em vez de cover: a foto inteira cabe na caixa,
+         sem corte e sem ultrapassar os limites do carrossel. */
+      object-fit: contain;
+      object-position: center;
       background: var(--ink-2);
     }
     .carrossel-legenda {

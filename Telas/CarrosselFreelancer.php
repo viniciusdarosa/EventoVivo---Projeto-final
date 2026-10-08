@@ -155,8 +155,10 @@ $carrosselCheio = $totalFotos >= CARROSSEL_MAX_FOTOS;
     .carrossel-card-img {
       display: block;
       width: 100%;
+      height: auto;
+      /* Mesma caixa para todo mundo, com a foto inteira (sem corte). */
       aspect-ratio: 4/3;
-      object-fit: cover;
+      object-fit: contain;
       background: var(--ink-2);
     }
     .carrossel-card-corpo { padding: 1rem; }
