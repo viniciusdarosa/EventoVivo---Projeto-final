@@ -11,6 +11,96 @@
  * Campos esperados: data, local, titulo, desc, imagem (opcional)
  */
 function render_event_card($evento) {
+    static $estilos_inseridos = false;
+
+    if (!$estilos_inseridos) {
+        $estilos_inseridos = true;
+        ?>
+        <style>
+          .event-card {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            background: var(--steel);
+            border: 1px solid var(--rule);
+            box-shadow: var(--shadow-hard);
+            overflow: hidden;
+            transition: transform var(--ease), border-color var(--ease), box-shadow var(--ease);
+          }
+
+          .event-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent);
+            box-shadow: 8px 8px 0 rgba(0,0,0,.55);
+          }
+
+          .event-card-imagem-wrap {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            overflow: hidden;
+            background: var(--ink-2);
+            border-bottom: 3px solid var(--accent);
+          }
+
+          .event-card-imagem,
+          .event-card-placeholder {
+            width: 100%;
+            height: 100%;
+            display: block;
+          }
+
+          .event-card-imagem {
+            object-fit: cover;
+            object-position: center;
+          }
+
+          .event-card-placeholder svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+          }
+
+          .event-card-corpo {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            padding: var(--sp-3);
+          }
+
+          .event-card .tag {
+            color: var(--accent);
+            font-family: var(--font-mark);
+            font-size: .9rem;
+            line-height: 1.2;
+            margin: 0 0 .45rem;
+          }
+
+          .event-card h3 {
+            font-family: var(--font-display);
+            font-size: 1.35rem;
+            line-height: 1.05;
+            text-transform: uppercase;
+            letter-spacing: .01em;
+            margin: 0 0 .8rem;
+          }
+
+          .event-card .desc {
+            color: var(--paper);
+            font-size: .82rem;
+            line-height: 1.45;
+            margin: 0;
+          }
+
+          @media (max-width: 600px) {
+            .event-card-corpo {
+              padding: var(--sp-2);
+            }
+          }
+        </style>
+        <?php
+    }
+
     $data   = isset($evento['data'])   ? htmlspecialchars($evento['data'])   : '';
     $local  = isset($evento['local'])  ? htmlspecialchars($evento['local'])  : '';
     $titulo = isset($evento['titulo']) ? htmlspecialchars($evento['titulo']) : '';
@@ -21,20 +111,34 @@ function render_event_card($evento) {
     <article class="card event-card">
       <div class="event-card-imagem-wrap">
         <?php if ($temImagem): ?>
-          <img class="event-card-imagem" src="<?php echo $imagem; ?>" alt="Capa do evento <?php echo htmlspecialchars($evento['titulo']); ?>">
+          <img
+            class="event-card-imagem"
+            src="<?php echo $imagem; ?>"
+            alt="Capa do evento <?php echo $titulo; ?>"
+            loading="lazy">
         <?php else: ?>
           <div class="event-card-placeholder">
-            <svg viewBox="0 0 400 225" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <svg viewBox="0 0 400 225" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Sem imagem">
               <rect width="400" height="225" fill="#1e1a12"/>
-              <text x="200" y="120" font-family="Arial, sans-serif" font-weight="700" font-size="18" fill="#a89d80" text-anchor="middle">Sem imagem</text>
+              <text x="200" y="120" font-family="Arial, sans-serif" font-weight="700"
+                    font-size="18" fill="#a89d80" text-anchor="middle">Sem imagem</text>
             </svg>
           </div>
         <?php endif; ?>
       </div>
+
       <div class="event-card-corpo">
-        <p class="tag"><?php echo $data; ?> · <?php echo $local; ?></p>
+        <?php if ($data !== '' || $local !== ''): ?>
+          <p class="tag">
+            <?php echo $data; ?><?php echo ($data !== '' && $local !== '') ? ' · ' : ''; ?><?php echo $local; ?>
+          </p>
+        <?php endif; ?>
+
         <h3><?php echo $titulo; ?></h3>
-        <p class="desc"><?php echo $desc; ?></p>
+
+        <?php if ($desc !== ''): ?>
+          <p class="desc"><?php echo $desc; ?></p>
+        <?php endif; ?>
       </div>
     </article>
     <?php

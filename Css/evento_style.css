@@ -274,9 +274,8 @@ h2 {
   box-shadow: var(--shadow-hard);
   transition: transform var(--ease), box-shadow var(--ease);
 }
-.grid .card:nth-child(odd) { transform: rotate(-1.4deg); }
-.grid .card:nth-child(even) { transform: rotate(1.2deg); }
-.grid .card:hover { transform: rotate(0deg); box-shadow: 8px 8px 0 rgba(0,0,0,.55); }
+.grid .card { transform: none; }
+.grid .card:hover { transform: translateY(-2px); box-shadow: 8px 8px 0 rgba(0,0,0,.55); }
  
  
 /* ==========================================================
