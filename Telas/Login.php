@@ -7,8 +7,7 @@
 /**
  * Login.php — Processamento de login + tela
  */
-session_start();
-require_once dirname(__FILE__) . '/../config/conexao.php';
+require_once dirname(__FILE__) . '/../config/bootstrap.php';
 require_once dirname(__FILE__) . '/Componentes/funcoes_eventos.php';
 
 $erroLogin = '';

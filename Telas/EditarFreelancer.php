@@ -13,8 +13,7 @@
  * a foto atual de usuario.foto_perfil é mantida; se enviar, a foto
  * antiga é apagada do servidor.
  */
-session_start();
-require_once dirname(__FILE__) . '/../config/conexao.php';
+require_once dirname(__FILE__) . '/../config/bootstrap.php';
 require_once dirname(__FILE__) . '/Componentes/funcoes_freelancers.php';
 
 if (!isset($_SESSION['id_usuario'])) {

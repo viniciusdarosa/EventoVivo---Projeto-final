@@ -7,7 +7,7 @@
 /**
  * Logout.php — Destrói a sessão e redireciona para Home
  */
-session_start();
+require_once dirname(__FILE__) . '/../config/bootstrap.php';
 
 // Destrói todos os dados da sessão
 $_SESSION = array();

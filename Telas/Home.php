@@ -4,7 +4,7 @@
  * Página inicial do EventoVivo. Reúne os destaques de eventos e artistas e apresenta a entrada principal para as funcionalidades do sistema.
  * ========================================================== */
 
-require_once dirname(__FILE__) . '/../config/conexao.php';
+require_once dirname(__FILE__) . '/../config/bootstrap.php';
 require_once dirname(__FILE__) . '/Componentes/funcoes_eventos.php';
 require_once dirname(__FILE__) . '/Componentes/funcoes_freelancers.php';
 require_once dirname(__FILE__) . '/Componentes/cards.php';

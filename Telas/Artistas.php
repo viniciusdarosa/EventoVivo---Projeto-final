@@ -7,8 +7,7 @@
 /**
  * Artistas.php — Listagem pública de artistas/freelancers com busca e filtros
  */
-session_start();
-require_once dirname(__FILE__) . '/../config/conexao.php';
+require_once dirname(__FILE__) . '/../config/bootstrap.php';
 require_once dirname(__FILE__) . '/Componentes/funcoes_eventos.php';
 require_once dirname(__FILE__) . '/Componentes/funcoes_freelancers.php';
 

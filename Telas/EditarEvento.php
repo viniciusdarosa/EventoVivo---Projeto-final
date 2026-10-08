@@ -14,8 +14,7 @@
  * imagem antiga é apagada do servidor.
  */
 
-session_start();
-require dirname(__FILE__) . '/../config/conexao.php';
+require_once dirname(__FILE__) . '/../config/bootstrap.php';
 require dirname(__FILE__) . '/Componentes/funcoes_eventos.php';
 
 if (!isset($_SESSION['id_usuario'])) {

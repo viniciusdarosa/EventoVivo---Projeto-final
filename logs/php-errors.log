@@ -1,0 +1,1 @@
+[08-Oct-2026 17:58:46 UTC] PHP Fatal error:  Call to undefined function session_status() in C:\Program Files (x86)\EasyPHP-5.3.9\www\EventoVivo---Projeto-final\config\bootstrap.php on line 144
