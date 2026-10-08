@@ -76,8 +76,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $sql = "INSERT INTO usuario
                     (nome, email, senha, telefone, cpf, data_nascimento,
                      cidade, estado, cep, endereco, numero, complemento,
-                     tipo, data_cadastro)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'usuario', NOW())";
+                     tipo)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'usuario')";
 
         $stmt = $conexao->prepare($sql);
         if ($stmt === false) {
