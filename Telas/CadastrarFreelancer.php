@@ -1,7 +1,7 @@
 <?php
 /* ==========================================================
  * COMPONENTE: CadastrarFreelancer.php
- * Apresenta e processa o cadastro de um perfil de freelancer, incluindo categoria, dados profissionais e upload de portfolio.
+ * Apresenta e processa o cadastro de um perfil de freelancer, incluindo categoria, dados profissionais e upload da foto de perfil.
  * ========================================================== */
 
 /**
@@ -9,7 +9,7 @@
  *
  * Formulário de cadastro de perfil de freelancer + processamento do
  * INSERT (quando o formulário é enviado via POST), incluindo o
- * upload da foto de capa/portfolio.
+ * upload da foto de perfil (usuario.foto_perfil).
  */
 session_start();
 require_once dirname(__FILE__) . '/../config/conexao.php';
@@ -65,18 +65,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $erros[] = 'Informe um valor válido para hora (use 0 para "A combinar").';
     }
 
-    // Upload de imagem de capa (opcional)
-    $uploadInfo = validar_upload_imagem_freelancer(isset($_FILES['foto_capa']) ? $_FILES['foto_capa'] : null);
+    // Upload de foto de perfil (opcional)
+    $uploadInfo = validar_upload_imagem_freelancer(isset($_FILES['foto_perfil']) ? $_FILES['foto_perfil'] : null);
 
     if ($uploadInfo['enviado'] && !$uploadInfo['ok']) {
         $erros[] = $uploadInfo['erro'];
     }
 
     if (empty($erros)) {
-        $nomeImagem = null;
+        $nomeFoto = null;
         if ($uploadInfo['enviado']) {
-            $nomeImagem = salvar_upload_imagem_freelancer($_FILES['foto_capa'], $uploadInfo['extensao']);
-            if ($nomeImagem === false) {
+            $nomeFoto = salvar_upload_foto_perfil($_FILES['foto_perfil'], $uploadInfo['extensao']);
+            if ($nomeFoto === false) {
                 $erros[] = 'Não foi possível salvar a imagem enviada. Tente novamente.';
             }
         }
@@ -84,26 +84,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (empty($erros)) {
             $sql = "INSERT INTO freelancers
                         (usuario_id, categoria_id, profissao, descricao,
-                         experiencia, valor_hora, portfolio, rede_social)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                         experiencia, valor_hora, rede_social)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)";
 
             $stmt = $conexao->prepare($sql);
 
             if ($stmt === false) {
                 $erros[] = 'Erro ao preparar a operação: ' . $conexao->error;
+                if ($nomeFoto) {
+                    excluir_foto_perfil($nomeFoto);
+                }
             } else {
                 $categoriaId = (int) $dados['categoria_id'];
                 $valorHora = $dados['valor_hora'] !== '' ? (float) $dados['valor_hora'] : null;
 
                 $stmt->bind_param(
-                    'iisssdss',
+                    'iisssds',
                     $usuarioId,
                     $categoriaId,
                     $dados['profissao'],
                     $dados['descricao'],
                     $dados['experiencia'],
                     $valorHora,
-                    $nomeImagem,
                     $dados['rede_social']
                 );
 
@@ -112,9 +114,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     foreach ($dados as $campo => $valorPadrao) {
                         $dados[$campo] = '';
                     }
+
+                    if ($nomeFoto && !atualizar_foto_perfil_usuario($conexao, $usuarioId, $nomeFoto)) {
+                        excluir_foto_perfil($nomeFoto);
+                        $erros[] = 'O perfil foi criado, mas não foi possível gravar a foto de perfil.';
+                    }
                 } else {
-                    if ($nomeImagem) {
-                        excluir_imagem_freelancer($nomeImagem);
+                    if ($nomeFoto) {
+                        excluir_foto_perfil($nomeFoto);
                     }
                     $erros[] = 'Erro ao salvar o perfil: ' . $stmt->error;
                 }
@@ -214,8 +221,8 @@ $categorias = buscar_categorias_servicos($conexao);
       </div>
 
       <div class="campo campo-full">
-        <label for="foto_capa">Foto de Capa do Perfil (JPG, PNG ou GIF, até 2MB) — opcional</label>
-        <input type="file" id="foto_capa" name="foto_capa" accept="image/jpeg,image/png,image/gif">
+        <label for="foto_perfil">Foto de Perfil (JPG, PNG ou GIF, até 2MB) — opcional</label>
+        <input type="file" id="foto_perfil" name="foto_perfil" accept="image/jpeg,image/png,image/gif">
       </div>
 
       <div class="form-acoes">

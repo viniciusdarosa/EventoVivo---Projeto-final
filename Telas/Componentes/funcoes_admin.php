@@ -702,7 +702,7 @@ function admin_indicadores_sociais($conexao) {
             (SELECT COUNT(*) FROM mensagens) AS mensagens,
             (SELECT COUNT(*) FROM avaliacoes) AS avaliacoes,
             (SELECT COUNT(*) FROM favoritos) AS favoritos,
-            (SELECT COUNT(*) FROM portfolio) AS portfolios,
+            (SELECT COUNT(*) FROM carrossel_fotos) AS fotos,
             (SELECT COUNT(*) FROM notificacoes WHERE lida = 0) AS notificacoes_abertas"
     );
 
@@ -711,7 +711,7 @@ function admin_indicadores_sociais($conexao) {
     if (!$linha) {
         return array(
             'artistas' => 0, 'mensagens' => 0, 'avaliacoes' => 0,
-            'favoritos' => 0, 'portfolios' => 0, 'notificacoes_abertas' => 0,
+            'favoritos' => 0, 'fotos' => 0, 'notificacoes_abertas' => 0,
         );
     }
 
@@ -720,7 +720,7 @@ function admin_indicadores_sociais($conexao) {
         'mensagens' => (int) $linha['mensagens'],
         'avaliacoes' => (int) $linha['avaliacoes'],
         'favoritos' => (int) $linha['favoritos'],
-        'portfolios' => (int) $linha['portfolios'],
+        'fotos' => (int) $linha['fotos'],
         'notificacoes_abertas' => (int) $linha['notificacoes_abertas'],
     );
 }

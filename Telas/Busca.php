@@ -179,11 +179,9 @@ require dirname(__FILE__) . '/Componentes/header.php';
               <article class="artist-card-public">
                 <div class="artist-photo-wrap">
                   <?php
-                    // Usa a foto de perfil quando ela existe; caso contrário, usa a imagem de portfolio.
-                    $imagemArtista = freelancer_imagem_publica_src(
-                        $artista['foto_perfil'],
-                        $artista['portfolio']
-                    );
+                    // Usa a foto de perfil de usuario.foto_perfil;
+                    // sem arquivo, cai no placeholder.
+                    $imagemArtista = freelancer_imagem_publica_src($artista['foto_perfil']);
                   ?>
                   <?php if (strpos($imagemArtista, 'data:image') === 0): ?>
                     <div class="artist-photo-placeholder">

@@ -86,10 +86,15 @@ $temPerfil = $freelancer !== false;
         <div class="eventos-grid">
           <a href="PerfilFreelancer.php?id=<?php echo (int) $freelancer['id_freelancer']; ?>" target="_blank" class="evento-card freelancer-card" style="text-decoration:none;color:inherit;display:block;">
 
-            <?php if (!empty($freelancer['portfolio'])): ?>
+            <?php
+            $srcCard = !empty($freelancer['foto_perfil'])
+                ? freelancer_foto_src($freelancer['foto_perfil'])
+                : '';
+            if ($srcCard !== ''):
+            ?>
               <img class="evento-card-imagem"
-                   src="<?php echo htmlspecialchars(freelancer_portfolio_src($freelancer['portfolio'])); ?>"
-                   alt="Capa do perfil de <?php echo htmlspecialchars($_SESSION['nome_usuario']); ?>">
+                   src="<?php echo htmlspecialchars($srcCard); ?>"
+                   alt="Foto de perfil de <?php echo htmlspecialchars($_SESSION['nome_usuario']); ?>">
             <?php else: ?>
               <div class="evento-card-imagem placeholder-cover" style="display:flex;align-items:center;justify-content:center;background:var(--steel);">
                 <span style="font-family:var(--font-display);font-size:3rem;color:var(--paper-dim);">🎨</span>

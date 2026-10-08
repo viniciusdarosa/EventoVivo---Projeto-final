@@ -544,7 +544,7 @@ require dirname(__FILE__) . '/Componentes/header.php';
         <li><span>Avaliações</span><b><?php echo (int) $social['avaliacoes']; ?></b></li>
         <li><span>Favoritos</span><b><?php echo (int) $social['favoritos']; ?></b></li>
         <li><span>Mensagens</span><b><?php echo (int) $social['mensagens']; ?></b></li>
-        <li><span>Portfólios</span><b><?php echo (int) $social['portfolios']; ?></b></li>
+        <li><span>Fotos publicadas</span><b><?php echo (int) $social['fotos']; ?></b></li>
         <li><span>Notificações abertas</span><b><?php echo (int) $social['notificacoes_abertas']; ?></b></li>
       </ul>
     </section>

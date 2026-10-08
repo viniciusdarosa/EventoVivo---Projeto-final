@@ -13,8 +13,11 @@
  * config/conexao.php.
  */
 
-// Pasta física onde as imagens de portfolio dos freelancers são salvas.
+// Pasta física onde as fotos do carrossel de trabalho dos freelancers são salvas.
 define('FREELANCERS_UPLOAD_DIR', dirname(__FILE__) . '/../../uploads/freelancers/');
+
+// Pasta física onde a foto de perfil (usuario.foto_perfil) é salva.
+define('PERFIL_UPLOAD_DIR', dirname(__FILE__) . '/../../uploads/perfil/');
 
 // Tamanho máximo aceito para imagens (2MB).
 define('FREELANCERS_UPLOAD_MAX_BYTES', 2 * 1024 * 1024);
@@ -54,8 +57,9 @@ function buscar_categorias_servicos($conexao) {
  */
 function buscar_freelancer_por_usuario($conexao, $usuarioId) {
     $stmt = $conexao->prepare("
-        SELECT f.*, cs.nome AS categoria_nome
+        SELECT f.*, u.foto_perfil, cs.nome AS categoria_nome
         FROM freelancers f
+        LEFT JOIN usuario u ON u.id_usuario = f.usuario_id
         LEFT JOIN categorias_servicos cs ON cs.id_categoria = f.categoria_id
         WHERE f.usuario_id = ?
         LIMIT 1
@@ -93,26 +97,6 @@ function buscar_freelancer_completo($conexao, $idFreelancer) {
     $stmt->close();
 
     return $freelancer ?: false;
-}
-
-/**
- * Busca itens do portfolio de um freelancer.
- *
- * @param mysqli $conexao
- * @param int $freelancerId
- * @return array
- */
-function buscar_portfolio_freelancer($conexao, $freelancerId) {
-    $itens = array();
-    $stmt = $conexao->prepare("SELECT * FROM portfolio WHERE freelancer_id = ? ORDER BY id ASC");
-    $stmt->bind_param('i', $freelancerId);
-    $stmt->execute();
-    $resultado = $stmt->get_result();
-    while ($linha = $resultado->fetch_assoc()) {
-        $itens[] = $linha;
-    }
-    $stmt->close();
-    return $itens;
 }
 
 /**
@@ -373,6 +357,98 @@ function excluir_imagem_freelancer($imagem) {
 }
 
 /**
+ * Move o upload já validado para a pasta de fotos de perfil
+ * (usuario.foto_perfil).
+ *
+ * @param array  $arquivo  elemento de $_FILES
+ * @param string $extensao extensão validada
+ * @return string|false nome do arquivo salvo, ou false em caso de falha
+ */
+function salvar_upload_foto_perfil($arquivo, $extensao) {
+    if (!is_dir(PERFIL_UPLOAD_DIR)) {
+        @mkdir(PERFIL_UPLOAD_DIR, 0755, true);
+    }
+
+    $nomeArquivo = uniqid('perfil_') . '.' . $extensao;
+    $caminhoDestino = PERFIL_UPLOAD_DIR . $nomeArquivo;
+
+    if (move_uploaded_file($arquivo['tmp_name'], $caminhoDestino)) {
+        return $nomeArquivo;
+    }
+
+    return false;
+}
+
+/**
+ * Apaga do servidor a foto de perfil de um usuário, se existir.
+ * Não serve para as fotos do carrossel: essas ficam em uploads/freelancers/.
+ *
+ * @param string $imagem nome do arquivo salvo em uploads/perfil/
+ */
+function excluir_foto_perfil($imagem) {
+    if (empty($imagem)) {
+        return;
+    }
+
+    $caminho = PERFIL_UPLOAD_DIR . $imagem;
+
+    if (is_file($caminho)) {
+        @unlink($caminho);
+    }
+}
+
+/**
+ * Grava em usuario.foto_perfil o nome de um arquivo já salvo em
+ * uploads/perfil/ e apaga a foto anterior.
+ *
+ * Só é chamada depois que o restante do cadastro/edição deu certo:
+ * se o UPDATE falhar, a foto anterior e o arquivo antigo continuam intactos
+ * e a nova imagem deve ser apagada pelo chamador.
+ *
+ * @param mysqli $conexao
+ * @param int    $usuarioId
+ * @param string $nomeFoto   nome devolvido por salvar_upload_foto_perfil()
+ * @return bool true se o UPDATE foi aplicado
+ */
+function atualizar_foto_perfil_usuario($conexao, $usuarioId, $nomeFoto) {
+    if (empty($nomeFoto)) {
+        return false;
+    }
+
+    $fotoAntiga = null;
+    $stmt = $conexao->prepare("SELECT foto_perfil FROM usuario WHERE id_usuario = ?");
+    if ($stmt) {
+        $stmt->bind_param('i', $usuarioId);
+        $stmt->execute();
+        $resultado = $stmt->get_result();
+        $linha = $resultado->fetch_assoc();
+        if ($linha && $linha['foto_perfil'] !== null && $linha['foto_perfil'] !== '') {
+            $fotoAntiga = $linha['foto_perfil'];
+        }
+        $stmt->close();
+    }
+
+    $stmt = $conexao->prepare("UPDATE usuario SET foto_perfil = ? WHERE id_usuario = ?");
+    if (!$stmt) {
+        return false;
+    }
+
+    $stmt->bind_param('si', $nomeFoto, $usuarioId);
+    $aplicado = $stmt->execute();
+    $stmt->close();
+
+    if (!$aplicado) {
+        return false;
+    }
+
+    if ($fotoAntiga !== null && $fotoAntiga !== $nomeFoto) {
+        excluir_foto_perfil($fotoAntiga);
+    }
+
+    return true;
+}
+
+/**
  * Retorna a URL/caminho de exibição da foto de perfil do freelancer.
  * Se não tiver foto, devolve um placeholder SVG.
  *
@@ -394,29 +470,28 @@ function freelancer_foto_src($fotoPerfil) {
 
 /**
  * Retorna a melhor imagem disponível para o card público do freelancer.
- * Primeiro tenta a foto de perfil; se ela não existir, usa a imagem de portfolio.
- * Também corrige registros antigos que guardam o nome sem a extensão do arquivo.
+ * A imagem vem de usuario.foto_perfil; quando ela não tem arquivo,
+ * devolve o mesmo placeholder do avatar.
  *
  * @param string $fotoPerfil nome do arquivo em uploads/perfil/
- * @param string $portfolio nome do arquivo em uploads/freelancers/
  * @return string caminho ou data URI
  */
-function freelancer_imagem_publica_src($fotoPerfil, $portfolio) {
-    $fotoPerfilSrc = freelancer_foto_src($fotoPerfil);
-    if ($fotoPerfilSrc !== '') {
-        return $fotoPerfilSrc;
+function freelancer_imagem_publica_src($fotoPerfil) {
+    $src = freelancer_foto_src($fotoPerfil);
+    if ($src !== '') {
+        return $src;
     }
 
-    return freelancer_portfolio_src($portfolio);
+    return freelancer_foto_src(null);
 }
 
 /**
- * Retorna a URL/caminho de exibição da imagem do portfolio.
+ * Retorna a URL/caminho de exibição de uma foto do carrossel de trabalho.
  *
  * @param string $imagem nome do arquivo salvo em uploads/freelancers/
  * @return string caminho
  */
-function freelancer_portfolio_src($imagem) {
+function freelancer_foto_trabalho_src($imagem) {
     if (empty($imagem)) {
         return 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 240"%3E%3Crect width="400" height="240" fill="%231e1a12"/%3E%3Ctext x="200" y="128" font-family="Arial, sans-serif" font-weight="700" font-size="20" fill="%23a89d80" text-anchor="middle"%3ESem imagem%3C/text%3E%3C/svg%3E';
     }
@@ -424,13 +499,12 @@ function freelancer_portfolio_src($imagem) {
     $diretorio = FREELANCERS_UPLOAD_DIR;
     $caminhoExato = $diretorio . $imagem;
 
-    // Se o banco já tiver o nome completo, usa diretamente.
     if (is_file($caminhoExato)) {
         return '../uploads/freelancers/' . rawurlencode($imagem);
     }
 
-    // Compatibilidade com registros que armazenam o nome sem extensão.
-    $extensoes = array('jpg', 'jpeg', 'png', 'webp', 'gif');
+    // Compatibilidade com nomes gravados sem extensão.
+    $extensoes = array('jpg', 'jpeg', 'png', 'webp', 'gif', 'avif');
     foreach ($extensoes as $extensao) {
         $arquivoComExtensao = $imagem . '.' . $extensao;
         if (is_file($diretorio . $arquivoComExtensao)) {

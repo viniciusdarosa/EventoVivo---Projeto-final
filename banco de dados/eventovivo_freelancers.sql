@@ -30,7 +30,6 @@ CREATE TABLE `freelancers` (
   `descricao` text COLLATE utf8mb4_unicode_ci,
   `experiencia` text COLLATE utf8mb4_unicode_ci,
   `valor_hora` decimal(10,2) DEFAULT NULL,
-  `portfolio` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `rede_social` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`id_freelancer`),
   KEY `fk_freelancer_usuario` (`usuario_id`),
@@ -46,7 +45,13 @@ CREATE TABLE `freelancers` (
 
 LOCK TABLES `freelancers` WRITE;
 /*!40000 ALTER TABLE `freelancers` DISABLE KEYS */;
-INSERT INTO `freelancers` VALUES (1,1,1,'Músico','Músico especializado em apresentações ao vivo e eventos.','Mais de 5 anos de experiência em apresentações musicais.',150.00,'portfolio_lucas','@lucasmusic'),(2,2,1,'Cantora','Cantora especializada em música brasileira e pop.','Mais de 5 anos realizando apresentações em bares, eventos e festivais.',180.00,'portfolio_ana','@anabeatriz.music'),(3,3,2,'Fotógrafo','Fotógrafo especializado em shows, eventos e ensaios.','Mais de 7 anos trabalhando com fotografia profissional.',120.00,'portfolio_marcos','@marcosfoto'),(4,5,4,'Dançarino','Dançarino especializado em apresentações urbanas e coreografias.','Participação em grupos de dança e apresentações culturais.',100.00,'portfolio_gabriel','@gabrieldanca'),(5,4,5,'Designer Gráfico','Designer especializado em cartazes e identidade visual para eventos.','Experiência na criação de materiais gráficos para artistas e produtores.',80.00,'portfolio_eventossul','@eventossuldesign');
+INSERT INTO `freelancers` (`id_freelancer`, `usuario_id`, `categoria_id`, `profissao`, `descricao`, `experiencia`, `valor_hora`, `rede_social`) VALUES
+  ('1', '1', '1', 'Músico', 'Músico especializado em apresentações ao vivo e eventos.', 'Mais de 5 anos de experiência em apresentações musicais.', '150.00', '@lucasmusic'),
+  ('2', '2', '1', 'Cantora', 'Cantora especializada em música brasileira e pop.', 'Mais de 5 anos realizando apresentações em bares, eventos e festivais.', '180.00', '@anabeatriz.music'),
+  ('3', '3', '2', 'Fotógrafo', 'Fotógrafo especializado em shows, eventos e ensaios.', 'Mais de 7 anos trabalhando com fotografia profissional.', '120.00', '@marcosfoto'),
+  ('4', '5', '4', 'Dançarino', 'Dançarino especializado em apresentações urbanas e coreografias.', 'Participação em grupos de dança e apresentações culturais.', '100.00', '@gabrieldanca'),
+  ('5', '4', '5', 'Designer Gráfico', 'Designer especializado em cartazes e identidade visual para eventos.', 'Experiência na criação de materiais gráficos para artistas e produtores.', '80.00', '@eventossuldesign'),
+  ('6', '6', '1', 'Baixista', 'Toco muito mesmo', '2 anos', '0.00', '');
 /*!40000 ALTER TABLE `freelancers` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

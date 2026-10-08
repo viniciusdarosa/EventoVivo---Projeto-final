@@ -1,7 +1,7 @@
 <?php
 /* ==========================================================
  * COMPONENTE: PerfilFreelancer.php
- * Apresenta o perfil público completo de um freelancer, incluindo dados profissionais, portfolio e avaliações.
+ * Apresenta o perfil público completo de um freelancer, incluindo dados profissionais, carrossel de trabalhos e avaliações.
  * ========================================================== */
 
 /**
@@ -421,10 +421,15 @@ if (isset($_SESSION['id_usuario']) && !$ehDono) {
 <body>
 
 <main class="perfil-page">
-  <!-- Hero com foto de capa -->
+  <!-- Hero com a foto de perfil -->
   <section class="perfil-hero">
-    <?php if (!empty($freelancer['portfolio'])): ?>
-      <img class="perfil-capa" src="<?php echo htmlspecialchars(freelancer_portfolio_src($freelancer['portfolio'])); ?>" alt="">
+    <?php
+    $srcCapa = !empty($freelancer['foto_perfil'])
+        ? freelancer_foto_src($freelancer['foto_perfil'])
+        : '';
+    if ($srcCapa !== ''):
+    ?>
+      <img class="perfil-capa" src="<?php echo htmlspecialchars($srcCapa); ?>" alt="">
     <?php endif; ?>
     <div class="wrap">
       <div class="perfil-header">
@@ -484,7 +489,6 @@ if (isset($_SESSION['id_usuario']) && !$ehDono) {
   </section>
 
   <!-- Carrossel de fotos do trabalho -->
-  <?php if ($totalCarrossel > 0 || $ehDono): ?>
   <section class="perfil-section alt">
     <div class="wrap">
       <h2 class="section-title">Trabalhos</h2>
@@ -497,7 +501,7 @@ if (isset($_SESSION['id_usuario']) && !$ehDono) {
                 <figure class="carrossel-slide" role="group" aria-roledescription="slide"
                         aria-label="<?php echo $indice + 1; ?> de <?php echo $totalCarrossel; ?>"
                         <?php if ($indice > 0): ?>aria-hidden="true"<?php endif; ?>>
-                  <img src="<?php echo htmlspecialchars(freelancer_portfolio_src($foto['imagem'])); ?>"
+                  <img src="<?php echo htmlspecialchars(freelancer_foto_trabalho_src($foto['imagem'])); ?>"
                        alt="<?php echo htmlspecialchars($foto['legenda'] !== null && $foto['legenda'] !== '' ? $foto['legenda'] : 'Foto do trabalho de ' . $freelancer['nome']); ?>"
                        <?php echo $indice === 0 ? 'loading="eager"' : 'loading="lazy"'; ?>>
                   <?php if ($foto['legenda'] !== null && $foto['legenda'] !== ''): ?>
@@ -529,7 +533,7 @@ if (isset($_SESSION['id_usuario']) && !$ehDono) {
           <?php endif; ?>
         </div>
       <?php else: ?>
-        <div class="carrossel-vazio">Este artista ainda não adicionou fotos do trabalho.</div>
+        <div class="carrossel-vazio">Nenhum trabalho publicado por enquanto.</div>
       <?php endif; ?>
 
       <?php if ($ehDono): ?>
@@ -539,7 +543,6 @@ if (isset($_SESSION['id_usuario']) && !$ehDono) {
       <?php endif; ?>
     </div>
   </section>
-  <?php endif; ?>
 
   <!-- Avaliações -->
   <section class="perfil-section">

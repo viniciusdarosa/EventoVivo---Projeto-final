@@ -196,12 +196,9 @@ if ($resEstados) {
             <a href="PerfilFreelancer.php?id=<?php echo (int) $artista['id_freelancer']; ?>" class="artist-card-public" style="text-decoration:none;color:inherit;display:block;">
               <div class="artist-photo-wrap">
                 <?php
-                  // Usa a foto de perfil quando ela realmente existe;
-                  // caso contrário, aproveita a imagem de portfolio em uploads/freelancers/.
-                  $imagemArtista = freelancer_imagem_publica_src(
-                      $artista['foto_perfil'],
-                      $artista['portfolio']
-                  );
+                  // Usa a foto de perfil de usuario.foto_perfil;
+                  // sem arquivo, cai no placeholder.
+                  $imagemArtista = freelancer_imagem_publica_src($artista['foto_perfil']);
                 ?>
                 <?php if (strpos($imagemArtista, 'data:image') === 0): ?>
                   <div class="artist-photo-placeholder">

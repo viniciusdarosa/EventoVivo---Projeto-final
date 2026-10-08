@@ -1,7 +1,7 @@
 <?php
 /* ==========================================================
  * COMPONENTE: EditarFreelancer.php
- * Carrega o perfil de freelancer existente e processa sua atualização, incluindo a troca opcional da imagem de portfolio.ws
+ * Carrega o perfil de freelancer existente e processa sua atualização, incluindo a troca opcional da foto de perfil.
  * ========================================================== */
 
 /**
@@ -9,8 +9,9 @@
  *
  * Carrega um perfil de freelancer existente e exibe o formulário
  * pré-preenchido. No POST, processa o UPDATE. O upload de nova
- * imagem é opcional: se o usuário não enviar arquivo novo, a imagem
- * atual é mantida; se enviar, a imagem antiga é apagada do servidor.
+ * foto de perfil é opcional: se o usuário não enviar arquivo novo,
+ * a foto atual de usuario.foto_perfil é mantida; se enviar, a foto
+ * antiga é apagada do servidor.
  */
 session_start();
 require_once dirname(__FILE__) . '/../config/conexao.php';
@@ -32,7 +33,7 @@ if (!$freelancer) {
 }
 
 $idFreelancer = (int) $freelancer['id_freelancer'];
-$imagemAtual = $freelancer['portfolio'];
+$imagemAtual = isset($freelancer['foto_perfil']) ? $freelancer['foto_perfil'] : null;
 
 $erros = array();
 $sucesso = false;
@@ -68,49 +69,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $erros[] = 'Informe um valor válido para hora (use 0 para "A combinar").';
     }
 
-    // ---- Upload de nova imagem é OPCIONAL na edição ----
-    $uploadInfo = validar_upload_imagem_freelancer(isset($_FILES['foto_capa']) ? $_FILES['foto_capa'] : null);
+    // ---- Upload de nova foto de perfil é OPCIONAL na edição ----
+    $uploadInfo = validar_upload_imagem_freelancer(isset($_FILES['foto_perfil']) ? $_FILES['foto_perfil'] : null);
 
     if ($uploadInfo['enviado'] && !$uploadInfo['ok']) {
         $erros[] = $uploadInfo['erro'];
     }
 
     if (empty($erros)) {
-        $nomeImagemFinal = $imagemAtual;
+        $nomeFotoEnviada = null;
 
         if ($uploadInfo['enviado']) {
-            $novoNomeImagem = salvar_upload_imagem_freelancer($_FILES['foto_capa'], $uploadInfo['extensao']);
+            $nomeFotoEnviada = salvar_upload_foto_perfil($_FILES['foto_perfil'], $uploadInfo['extensao']);
 
-            if ($novoNomeImagem === false) {
+            if ($nomeFotoEnviada === false) {
                 $erros[] = 'Não foi possível salvar a nova imagem. Tente novamente.';
-            } else {
-                excluir_imagem_freelancer($imagemAtual);
-                $nomeImagemFinal = $novoNomeImagem;
             }
         }
 
         if (empty($erros)) {
             $sql = "UPDATE freelancers SET
                         categoria_id = ?, profissao = ?, descricao = ?,
-                        experiencia = ?, valor_hora = ?, portfolio = ?, rede_social = ?
+                        experiencia = ?, valor_hora = ?, rede_social = ?
                     WHERE id_freelancer = ? AND usuario_id = ?";
 
             $stmt = $conexao->prepare($sql);
 
             if ($stmt === false) {
                 $erros[] = 'Erro ao preparar a operação: ' . $conexao->error;
+                if ($nomeFotoEnviada) {
+                    excluir_foto_perfil($nomeFotoEnviada);
+                }
             } else {
                 $categoriaId = (int) $dados['categoria_id'];
                 $valorHora = $dados['valor_hora'] !== '' ? (float) $dados['valor_hora'] : null;
 
                 $stmt->bind_param(
-                    'isssdssii',
+                    'isssdsii',
                     $categoriaId,
                     $dados['profissao'],
                     $dados['descricao'],
                     $dados['experiencia'],
                     $valorHora,
-                    $nomeImagemFinal,
                     $dados['rede_social'],
                     $idFreelancer,
                     $usuarioId
@@ -118,8 +118,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 if ($stmt->execute()) {
                     $sucesso = true;
-                    $imagemAtual = $nomeImagemFinal;
+
+                    if ($nomeFotoEnviada) {
+                        if (atualizar_foto_perfil_usuario($conexao, $usuarioId, $nomeFotoEnviada)) {
+                            $imagemAtual = $nomeFotoEnviada;
+                        } else {
+                            excluir_foto_perfil($nomeFotoEnviada);
+                            $erros[] = 'O perfil foi atualizado, mas não foi possível gravar a nova foto de perfil.';
+                        }
+                    }
                 } else {
+                    if ($nomeFotoEnviada) {
+                        excluir_foto_perfil($nomeFotoEnviada);
+                    }
                     $erros[] = 'Erro ao atualizar o perfil: ' . $stmt->error;
                 }
 
@@ -220,15 +231,18 @@ $categorias = buscar_categorias_servicos($conexao);
       </div>
 
       <div class="campo campo-full">
-        <label for="foto_capa">Foto de Capa (deixe em branco para manter a atual)</label>
+        <label for="foto_perfil">Foto de Perfil (deixe em branco para manter a atual)</label>
 
         <div class="imagem-atual">
-          <?php if (!empty($imagemAtual)): ?>
-            <img src="<?php echo htmlspecialchars(freelancer_portfolio_src($imagemAtual)); ?>" alt="Capa atual">
+          <?php
+          $srcFotoAtual = !empty($imagemAtual) ? freelancer_foto_src($imagemAtual) : '';
+          if ($srcFotoAtual !== ''):
+          ?>
+            <img src="<?php echo htmlspecialchars($srcFotoAtual); ?>" alt="Foto de perfil atual">
           <?php else: ?>
-            <div class="sem-imagem">Sem imagem de capa</div>
+            <div class="sem-imagem">Sem foto de perfil</div>
           <?php endif; ?>
-          <input type="file" id="foto_capa" name="foto_capa" accept="image/jpeg,image/png,image/gif">
+          <input type="file" id="foto_perfil" name="foto_perfil" accept="image/jpeg,image/png,image/gif">
         </div>
       </div>
 

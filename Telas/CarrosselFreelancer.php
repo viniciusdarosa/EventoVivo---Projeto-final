@@ -309,7 +309,7 @@ $carrosselCheio = $totalFotos >= CARROSSEL_MAX_FOTOS;
       <div class="carrossel-grid">
         <?php foreach ($fotos as $foto): ?>
           <article class="carrossel-card">
-            <img class="carrossel-card-img" src="<?php echo htmlspecialchars(freelancer_portfolio_src($foto['imagem'])); ?>" alt="<?php echo htmlspecialchars($foto['legenda'] !== null && $foto['legenda'] !== '' ? $foto['legenda'] : 'Foto do trabalho'); ?>">
+            <img class="carrossel-card-img" src="<?php echo htmlspecialchars(freelancer_foto_trabalho_src($foto['imagem'])); ?>" alt="<?php echo htmlspecialchars($foto['legenda'] !== null && $foto['legenda'] !== '' ? $foto['legenda'] : 'Foto do trabalho'); ?>">
             <div class="carrossel-card-corpo">
               <p class="carrossel-card-legenda">
                 <?php echo ($foto['legenda'] !== null && $foto['legenda'] !== '') ? htmlspecialchars($foto['legenda']) : '<em>Sem legenda</em>'; ?>
