@@ -19,6 +19,9 @@ define('FREELANCERS_UPLOAD_DIR', dirname(__FILE__) . '/../../uploads/freelancers
 // Tamanho máximo aceito para imagens (2MB).
 define('FREELANCERS_UPLOAD_MAX_BYTES', 2 * 1024 * 1024);
 
+// Quantidade máxima de fotos no carrossel do trabalho de cada freelancer.
+define('CARROSSEL_MAX_FOTOS', 10);
+
 /**
  * Busca todas as categorias de serviços, para popular o <select>
  * do formulário de cadastro/edição.
@@ -110,6 +113,138 @@ function buscar_portfolio_freelancer($conexao, $freelancerId) {
     }
     $stmt->close();
     return $itens;
+}
+
+/**
+ * Busca as fotos do carrossel de trabalho de um freelancer,
+ * na ordem em que devem aparecer (cronológica).
+ *
+ * @param mysqli $conexao
+ * @param int $freelancerId
+ * @return array lista de arrays (id_foto, freelancer_id, imagem, legenda, data_cadastro)
+ */
+function buscar_carrossel_freelancer($conexao, $freelancerId) {
+    $fotos = array();
+    $stmt = $conexao->prepare("
+        SELECT id_foto, freelancer_id, imagem, legenda, data_cadastro
+        FROM carrossel_fotos
+        WHERE freelancer_id = ?
+        ORDER BY data_cadastro ASC, id_foto ASC
+    ");
+    $stmt->bind_param('i', $freelancerId);
+    $stmt->execute();
+    $resultado = $stmt->get_result();
+    while ($linha = $resultado->fetch_assoc()) {
+        $fotos[] = $linha;
+    }
+    $stmt->close();
+    return $fotos;
+}
+
+/**
+ * Conta quantas fotos o carrossel de um freelancer já possui.
+ * Usado para respeitar o limite de CARROSSEL_MAX_FOTOS.
+ *
+ * @param mysqli $conexao
+ * @param int $freelancerId
+ * @return int
+ */
+function contar_carrossel_freelancer($conexao, $freelancerId) {
+    $stmt = $conexao->prepare("SELECT COUNT(*) AS total FROM carrossel_fotos WHERE freelancer_id = ?");
+    $stmt->bind_param('i', $freelancerId);
+    $stmt->execute();
+    $resultado = $stmt->get_result();
+    $linha = $resultado->fetch_assoc();
+    $stmt->close();
+    return (int) $linha['total'];
+}
+
+/**
+ * Insere uma nova foto no carrossel do freelancer.
+ * Respeita o limite de CARROSSEL_MAX_FOTOS no servidor.
+ *
+ * @param mysqli $conexao
+ * @param int $freelancerId dono do carrossel (sempre vindo da sessão)
+ * @param string $imagem nome do arquivo já salvo em uploads/freelancers/
+ * @param string|null $legenda texto exibido junto com a foto
+ * @return array array('ok' => bool, 'erro' => string|null)
+ */
+function inserir_foto_carrossel($conexao, $freelancerId, $imagem, $legenda) {
+    $freelancerId = (int) $freelancerId;
+
+    if ($freelancerId <= 0) {
+        return array('ok' => false, 'erro' => 'Perfil de artista inválido.');
+    }
+
+    if (empty($imagem)) {
+        return array('ok' => false, 'erro' => 'A imagem é obrigatória.');
+    }
+
+    $total = contar_carrossel_freelancer($conexao, $freelancerId);
+    if ($total >= CARROSSEL_MAX_FOTOS) {
+        return array('ok' => false, 'erro' => 'O carrossel já possui o máximo de ' . CARROSSEL_MAX_FOTOS . ' fotos.');
+    }
+
+    $legenda = ($legenda === null) ? null : trim($legenda);
+    if ($legenda !== null && strlen($legenda) > 255) {
+        return array('ok' => false, 'erro' => 'A legenda deve ter no máximo 255 caracteres.');
+    }
+    if ($legenda === '') {
+        $legenda = null;
+    }
+
+    $stmt = $conexao->prepare("INSERT INTO carrossel_fotos (freelancer_id, imagem, legenda, data_cadastro) VALUES (?, ?, ?, NOW())");
+    $stmt->bind_param('iss', $freelancerId, $imagem, $legenda);
+
+    if ($stmt->execute()) {
+        $stmt->close();
+        return array('ok' => true, 'erro' => null);
+    }
+
+    $erro = $stmt->error;
+    $stmt->close();
+    return array('ok' => false, 'erro' => 'Não foi possível adicionar a foto: ' . $erro);
+}
+
+/**
+ * Exclui uma foto do carrossel.
+ * O WHERE inclui freelancer_id para garantir que só o dono apague
+ * a própria foto — o id recebido nunca é confiado sozinho.
+ *
+ * @param mysqli $conexao
+ * @param int $idFoto
+ * @param int $freelancerId dono esperado (vindo da sessão)
+ * @return array array('ok' => bool, 'erro' => string|null, 'imagem' => string|null)
+ */
+function excluir_foto_carrossel($conexao, $idFoto, $freelancerId) {
+    $idFoto = (int) $idFoto;
+    $freelancerId = (int) $freelancerId;
+
+    $imagem = null;
+    $stmt = $conexao->prepare("SELECT imagem FROM carrossel_fotos WHERE id_foto = ? AND freelancer_id = ?");
+    $stmt->bind_param('ii', $idFoto, $freelancerId);
+    $stmt->execute();
+    $resultado = $stmt->get_result();
+    $linha = $resultado->fetch_assoc();
+    $stmt->close();
+
+    if (!$linha) {
+        return array('ok' => false, 'erro' => 'Foto não encontrada.', 'imagem' => null);
+    }
+
+    $imagem = $linha['imagem'];
+
+    $stmt = $conexao->prepare("DELETE FROM carrossel_fotos WHERE id_foto = ? AND freelancer_id = ?");
+    $stmt->bind_param('ii', $idFoto, $freelancerId);
+
+    if ($stmt->execute()) {
+        $stmt->close();
+        return array('ok' => true, 'erro' => null, 'imagem' => $imagem);
+    }
+
+    $erro = $stmt->error;
+    $stmt->close();
+    return array('ok' => false, 'erro' => 'Não foi possível excluir a foto: ' . $erro, 'imagem' => null);
 }
 
 /**

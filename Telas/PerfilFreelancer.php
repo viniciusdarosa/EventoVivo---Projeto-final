@@ -28,8 +28,9 @@ if (!$freelancer) {
     exit;
 }
 
-// Busca portfolio
-$portfolio = buscar_portfolio_freelancer($conexao, $idFreelancer);
+// Busca fotos do carrossel do trabalho
+$fotosCarrossel = buscar_carrossel_freelancer($conexao, $idFreelancer);
+$totalCarrossel = count($fotosCarrossel);
 
 // Busca avaliações
 $avaliacoes = buscar_avaliacoes_freelancer($conexao, $idFreelancer);
@@ -182,32 +183,126 @@ if (isset($_SESSION['id_usuario']) && !$ehDono) {
     }
     .experiencia-lista li { margin-bottom: .5rem; }
 
-    .portfolio-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-      gap: 1.5rem;
-    }
-    .portfolio-item {
+    /* ---- Carrossel de fotos do trabalho ---- */
+    .carrossel {
+      position: relative;
       background: var(--steel);
       border: 2px solid var(--rule);
       box-shadow: var(--shadow-hard);
-      overflow: hidden;
-      transition: transform var(--ease), border-color var(--ease), box-shadow var(--ease);
     }
-    .portfolio-item:hover {
-      transform: translateY(-2px);
-      border-color: var(--accent);
-      box-shadow: 8px 8px 0 rgba(0,0,0,.55);
-    }
-    .portfolio-img {
+    .carrossel-viewport {
+      position: relative;
       width: 100%;
-      aspect-ratio: 4/3;
-      object-fit: cover;
+      overflow: hidden;
       background: var(--ink-2);
     }
-    .portfolio-info { padding: 1rem; }
-    .portfolio-info h4 { font-weight: 700; text-transform: uppercase; font-size: .9rem; margin-bottom: .35rem; }
-    .portfolio-info p { color: var(--paper-dim); font-size: .8rem; line-height: 1.5; }
+    .carrossel-trilha {
+      display: flex;
+      transition: transform .45s ease;
+      will-change: transform;
+    }
+    .carrossel-slide {
+      flex: 0 0 100%;
+      min-width: 100%;
+      position: relative;
+    }
+    .carrossel-slide img {
+      display: block;
+      width: 100%;
+      aspect-ratio: 3 / 2;
+      max-height: 66vh;
+      object-fit: cover;
+      object-position: center 30%;
+      background: var(--ink-2);
+    }
+    .carrossel-legenda {
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 100%;
+      padding: 2.5rem 1.25rem .9rem;
+      background: linear-gradient(to top, rgba(0,0,0,.88) 0%, rgba(0,0,0,.55) 55%, transparent 100%);
+      color: var(--paper);
+      font-family: var(--font-body);
+      font-size: .9rem;
+      line-height: 1.5;
+      margin: 0;
+    }
+    .carrossel-seta {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 3;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(18,15,15,.82);
+      border: 2px solid var(--rule);
+      color: var(--paper);
+      font-size: 1.3rem;
+      line-height: 1;
+      cursor: pointer;
+      padding: 0;
+      transition: background var(--ease), border-color var(--ease), color var(--ease);
+    }
+    .carrossel-seta:hover {
+      background: var(--blood);
+      border-color: var(--blood);
+      color: var(--paper);
+    }
+    .carrossel-seta:focus-visible { outline: 2px solid var(--yellow); outline-offset: 2px; }
+    .carrossel-seta.anterior { left: .75rem; }
+    .carrossel-seta.proximo { right: .75rem; }
+    .carrossel-seta[disabled] { opacity: 0; pointer-events: none; }
+
+    .carrossel-rodape {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: .75rem 1rem;
+      border-top: 1px solid var(--rule);
+      flex-wrap: wrap;
+    }
+    .carrossel-dots {
+      display: flex;
+      gap: .5rem;
+      flex-wrap: wrap;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    .carrossel-dot {
+      display: block;
+      width: 11px;
+      height: 11px;
+      padding: 0;
+      background: transparent;
+      border: 2px solid var(--rule);
+      cursor: pointer;
+      transition: background var(--ease), border-color var(--ease);
+    }
+    .carrossel-dot:hover { border-color: var(--paper-dim); }
+    .carrossel-dot[aria-current="true"] { background: var(--accent); border-color: var(--accent); }
+    .carrossel-dot:focus-visible { outline: 2px solid var(--yellow); outline-offset: 2px; }
+    .carrossel-contador {
+      color: var(--paper-dim);
+      font-family: var(--font-body);
+      font-size: .8rem;
+      letter-spacing: .08em;
+      margin-left: auto;
+    }
+
+    .carrossel-vazio {
+      background: var(--steel);
+      border: 2px dashed var(--rule);
+      padding: 2.5rem 1.5rem;
+      text-align: center;
+      color: var(--paper-dim);
+    }
+    .carrossel-gestao { margin-top: 1.25rem; }
 
     /* Abas de avaliações */
     .abas-avaliacoes {
@@ -310,6 +405,15 @@ if (isset($_SESSION['id_usuario']) && !$ehDono) {
       .perfil-contatos { justify-content: center; }
       .avaliar-form { padding: 1.5rem; }
       .abas-avaliacoes { justify-content: center; }
+      .carrossel-seta { width: 38px; height: 38px; font-size: 1.1rem; }
+      .carrossel-seta.anterior { left: .4rem; }
+      .carrossel-seta.proximo { right: .4rem; }
+      .carrossel-legenda { font-size: .8rem; padding: 2rem .75rem .7rem; }
+      .carrossel-contador { margin-left: 0; }
+    }
+    @media (max-width: 480px) {
+      .carrossel-rodape { justify-content: center; }
+      .carrossel-contador { width: 100%; text-align: center; order: -1; }
     }
   </style>
 </head>
@@ -379,23 +483,60 @@ if (isset($_SESSION['id_usuario']) && !$ehDono) {
     </div>
   </section>
 
-  <!-- Portfolio -->
-  <?php if (!empty($portfolio)): ?>
+  <!-- Carrossel de fotos do trabalho -->
+  <?php if ($totalCarrossel > 0 || $ehDono): ?>
   <section class="perfil-section alt">
     <div class="wrap">
-      <h2 class="section-title">Portfolio</h2>
-      <div class="portfolio-grid">
-        <?php foreach ($portfolio as $item): ?>
-          <article class="portfolio-item">
-            <img class="portfolio-img" src="<?php echo htmlspecialchars(freelancer_portfolio_src($item['imagem'])); ?>" alt="<?php echo htmlspecialchars($item['descricao']); ?>">
-            <div class="portfolio-info">
-              <?php if (!empty($item['descricao'])): ?>
-                <h4><?php echo htmlspecialchars($item['descricao']); ?></h4>
-              <?php endif; ?>
+      <h2 class="section-title">Trabalhos</h2>
+
+      <?php if ($totalCarrossel > 0): ?>
+        <div class="carrossel" id="carrossel" role="region" aria-roledescription="carrossel" aria-label="Fotos do trabalho de <?php echo htmlspecialchars($freelancer['nome']); ?>" tabindex="0">
+          <div class="carrossel-viewport">
+            <div class="carrossel-trilha" id="carrossel-trilha">
+              <?php foreach ($fotosCarrossel as $indice => $foto): ?>
+                <figure class="carrossel-slide" role="group" aria-roledescription="slide"
+                        aria-label="<?php echo $indice + 1; ?> de <?php echo $totalCarrossel; ?>"
+                        <?php if ($indice > 0): ?>aria-hidden="true"<?php endif; ?>>
+                  <img src="<?php echo htmlspecialchars(freelancer_portfolio_src($foto['imagem'])); ?>"
+                       alt="<?php echo htmlspecialchars($foto['legenda'] !== null && $foto['legenda'] !== '' ? $foto['legenda'] : 'Foto do trabalho de ' . $freelancer['nome']); ?>"
+                       <?php echo $indice === 0 ? 'loading="eager"' : 'loading="lazy"'; ?>>
+                  <?php if ($foto['legenda'] !== null && $foto['legenda'] !== ''): ?>
+                    <figcaption class="carrossel-legenda"><?php echo htmlspecialchars($foto['legenda']); ?></figcaption>
+                  <?php endif; ?>
+                </figure>
+              <?php endforeach; ?>
             </div>
-          </article>
-        <?php endforeach; ?>
-      </div>
+
+            <?php if ($totalCarrossel > 1): ?>
+              <button type="button" class="carrossel-seta anterior" id="carrossel-anterior" aria-label="Foto anterior">&#10094;</button>
+              <button type="button" class="carrossel-seta proximo" id="carrossel-proximo" aria-label="Próxima foto">&#10095;</button>
+            <?php endif; ?>
+          </div>
+
+          <?php if ($totalCarrossel > 1): ?>
+            <div class="carrossel-rodape">
+              <ul class="carrossel-dots" id="carrossel-dots">
+                <?php foreach ($fotosCarrossel as $indice => $foto): ?>
+                  <li>
+                    <button type="button" class="carrossel-dot" data-indice="<?php echo $indice; ?>"
+                            aria-label="Ir para a foto <?php echo $indice + 1; ?>"
+                            <?php echo $indice === 0 ? 'aria-current="true"' : ''; ?>></button>
+                  </li>
+                <?php endforeach; ?>
+              </ul>
+              <span class="carrossel-contador" id="carrossel-contador" aria-live="polite">1 / <?php echo $totalCarrossel; ?></span>
+            </div>
+          <?php endif; ?>
+        </div>
+      <?php else: ?>
+        <div class="carrossel-vazio">Este artista ainda não adicionou fotos do trabalho.</div>
+      <?php endif; ?>
+
+      <?php if ($ehDono): ?>
+        <div class="carrossel-gestao">
+          <a href="CarrosselFreelancer.php" class="btn-contato ghost">+ Gerenciar fotos do trabalho</a>
+        </div>
+      <?php endif; ?>
     </div>
   </section>
   <?php endif; ?>
@@ -505,6 +646,164 @@ function mostrarAba(abaId) {
   document.getElementById('tab-' + abaId).classList.add('ativa');
   document.getElementById('tab-' + abaId).setAttribute('aria-selected', 'true');
 }
+
+/* ============================================================
+ * Carrossel de fotos do trabalho
+ * Setas, dots, contador, autoplay (pausa no hover/foco),
+ * teclado e swipe.
+ * ============================================================ */
+(function () {
+  var raiz = document.getElementById('carrossel');
+  if (!raiz) return;
+
+  var trilha = document.getElementById('carrossel-trilha');
+  if (!trilha) return;
+
+  var slides = trilha.querySelectorAll('.carrossel-slide');
+  var dots = raiz.querySelectorAll('.carrossel-dot');
+  var btnAnterior = document.getElementById('carrossel-anterior');
+  var btnProximo = document.getElementById('carrossel-proximo');
+  var contador = document.getElementById('carrossel-contador');
+  var total = slides.length;
+
+  if (total === 0) return;
+
+  var atual = 0;
+  var timer = null;
+  var PAUSA_MS = 5000;
+
+  function irPara(indice) {
+    if (indice < 0) indice = total - 1;
+    if (indice >= total) indice = 0;
+
+    atual = indice;
+    trilha.style.transform = 'translateX(' + (-atual * 100) + '%)';
+
+    for (var i = 0; i < slides.length; i++) {
+      if (i === atual) slides[i].removeAttribute('aria-hidden');
+      else slides[i].setAttribute('aria-hidden', 'true');
+    }
+
+    for (var d = 0; d < dots.length; d++) {
+      if (d === atual) dots[d].setAttribute('aria-current', 'true');
+      else dots[d].removeAttribute('aria-current');
+    }
+
+    if (contador) contador.textContent = (atual + 1) + ' / ' + total;
+  }
+
+  function proximo() { irPara(atual + 1); }
+  function anterior() { irPara(atual - 1); }
+
+  function pararAuto() {
+    if (timer !== null) {
+      clearInterval(timer);
+      timer = null;
+    }
+  }
+
+  function iniciarAuto() {
+    pararAuto();
+    if (total < 2) return;
+
+    // Respeita quem prefere menos movimento.
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    timer = setInterval(proximo, PAUSA_MS);
+  }
+
+  if (btnAnterior) {
+    btnAnterior.addEventListener('click', function () {
+      anterior();
+      iniciarAuto();
+    });
+  }
+
+  if (btnProximo) {
+    btnProximo.addEventListener('click', function () {
+      proximo();
+      iniciarAuto();
+    });
+  }
+
+  for (var k = 0; k < dots.length; k++) {
+    dots[k].addEventListener('click', (function (indice) {
+      return function () {
+        irPara(indice);
+        iniciarAuto();
+      };
+    })(k));
+  }
+
+  // Pausa o autoplay enquanto o mouse está sobre o carrossel,
+  // ou enquanto o foco está dentro dele.
+  raiz.addEventListener('mouseenter', pararAuto);
+  raiz.addEventListener('mouseleave', iniciarAuto);
+  raiz.addEventListener('focusin', pararAuto);
+  raiz.addEventListener('focusout', function (evento) {
+    if (!raiz.contains(evento.relatedTarget)) iniciarAuto();
+  });
+
+  // Teclado: setas navegam quando o carrossel tem foco.
+  raiz.addEventListener('keydown', function (evento) {
+    var tecla = evento.key !== undefined ? evento.key : evento.keyCode;
+
+    if (tecla === 'ArrowLeft' || tecla === 37) {
+      evento.preventDefault();
+      anterior();
+      iniciarAuto();
+    } else if (tecla === 'ArrowRight' || tecla === 39) {
+      evento.preventDefault();
+      proximo();
+      iniciarAuto();
+    } else if (tecla === 'Home' || tecla === 36) {
+      evento.preventDefault();
+      irPara(0);
+      iniciarAuto();
+    } else if (tecla === 'End' || tecla === 35) {
+      evento.preventDefault();
+      irPara(total - 1);
+      iniciarAuto();
+    }
+  });
+
+  // Swipe em telas de toque.
+  var xInicial = null;
+
+  trilha.addEventListener('touchstart', function (evento) {
+    if (evento.touches.length === 1) {
+      xInicial = evento.touches[0].clientX;
+      pararAuto();
+    }
+  }, { passive: true });
+
+  trilha.addEventListener('touchend', function (evento) {
+    if (xInicial === null) return;
+
+    var xFinal = evento.changedTouches[0].clientX;
+    var deslocamento = xFinal - xInicial;
+    xInicial = null;
+
+    if (Math.abs(deslocamento) < 50) {
+      iniciarAuto();
+      return;
+    }
+
+    if (deslocamento < 0) proximo();
+    else anterior();
+
+    iniciarAuto();
+  }, { passive: true });
+
+  // Para o autoplay com a aba oculta.
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) pararAuto();
+    else iniciarAuto();
+  });
+
+  irPara(0);
+  iniciarAuto();
+})();
 </script>
 
 <?php require dirname(__FILE__) . '/Componentes/footer.php'; ?>
