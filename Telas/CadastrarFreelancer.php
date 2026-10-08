@@ -11,8 +11,7 @@
  * INSERT (quando o formulário é enviado via POST), incluindo o
  * upload da foto de capa/portfolio.
  */
-session_start();
-require_once dirname(__FILE__) . '/../config/conexao.php';
+require_once dirname(__FILE__) . '/../config/bootstrap.php';
 require_once dirname(__FILE__) . '/Componentes/funcoes_freelancers.php';
 require_once dirname(__FILE__) . '/Componentes/funcoes_eventos.php'; // Para hash_senha se necessário
 
