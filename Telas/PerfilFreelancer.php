@@ -117,7 +117,7 @@ if (isset($_SESSION['id_usuario']) && !$ehDono) {
       display: inline-block;
       background: rgba(184,0,13,.15);
       border: 1px solid var(--accent);
-      color: var(--accent);
+      color: var(--red-text);
       padding: .25rem .75rem;
       font-size: .7rem;
       font-weight: 700;
@@ -151,9 +151,9 @@ if (isset($_SESSION['id_usuario']) && !$ehDono) {
       letter-spacing: .05em;
       transition: background var(--ease), color var(--ease);
     }
-    .btn-contato:hover { background: transparent; color: var(--blood); }
+    .btn-contato:hover { background: transparent; color: var(--red-text); }
     .btn-contato.ghost { background: transparent; border-color: var(--rule); color: var(--paper); }
-    .btn-contato.ghost:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-contato.ghost:hover { border-color: var(--accent); color: var(--red-text); }
 
     .perfil-section { padding: 3rem 0; }
     .perfil-section.alt { background: var(--ink-2); border-top: 1px solid var(--rule); }
@@ -257,7 +257,7 @@ if (isset($_SESSION['id_usuario']) && !$ehDono) {
     }
     .carrossel-seta:hover {
       background: var(--blood);
-      border-color: var(--blood);
+      border-color: var(--accent);
       color: var(--paper);
     }
     .carrossel-seta:focus-visible { outline: 2px solid var(--yellow); outline-offset: 2px; }
@@ -335,9 +335,9 @@ if (isset($_SESSION['id_usuario']) && !$ehDono) {
       margin-bottom: -2px;
       transition: color var(--ease), border-color var(--ease);
     }
-    .aba-btn:hover { color: var(--accent); }
+    .aba-btn:hover { color: var(--red-text); }
     .aba-btn.ativa {
-      color: var(--accent);
+      color: var(--red-text);
       border-bottom-color: var(--accent);
     }
     .aba-conteudo { display: none; }
@@ -634,7 +634,7 @@ if (isset($_SESSION['id_usuario']) && !$ehDono) {
       </div>
       <?php elseif (!isset($_SESSION['id_usuario'])): ?>
       <div class="aba-conteudo" id="aba-escrever" role="tabpanel" aria-labelledby="tab-escrever">
-        <p style="margin-top:2rem;color:var(--paper-dim);"><a href="Login.php" style="color:var(--accent);">Faça login</a> para avaliar este artista.</p>
+        <p style="margin-top:2rem;color:var(--paper-dim);"><a href="Login.php" style="color: var(--red-text);">Faça login</a> para avaliar este artista.</p>
       </div>
       <?php endif; ?>
     </div>

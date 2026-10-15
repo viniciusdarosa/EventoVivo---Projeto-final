@@ -186,8 +186,8 @@ $carrosselCheio = $totalFotos >= CARROSSEL_MAX_FOTOS;
       transition: border-color var(--ease), color var(--ease), background var(--ease);
     }
     .btn-excluir-foto:hover {
-      border-color: var(--blood);
-      color: var(--blood);
+      border-color: var(--accent);
+      color: var(--red-text);
       background: rgba(179, 18, 30, .1);
     }
 

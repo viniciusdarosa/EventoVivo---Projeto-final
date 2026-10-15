@@ -21,6 +21,7 @@
   --white: #ffffff;
   --blood: #b3121e;
   --accent: #b8000d;
+  --red-text: #ff6670;
   --yellow: #e6b923;
   --font-display: 'Anton', sans-serif;
   --font-body: 'Courier Prime', monospace;
@@ -103,7 +104,7 @@ a {
 }
 
 .logo span {
-  color: var(--blood);
+  color: var(--red-text);
 }
 
 .nav {
@@ -123,7 +124,7 @@ a {
 }
 
 .nav a:hover {
-  color: var(--accent);
+  color: var(--red-text);
   border-color: var(--accent);
 }
 
@@ -140,7 +141,7 @@ a {
 }
 
 .logout {
-  color: var(--accent);
+  color: var(--red-text);
   text-transform: uppercase;
   font-size: .75rem;
   font-weight: 700;
@@ -176,7 +177,7 @@ a {
 .eyebrow {
   margin-bottom: .65rem;
   font-family: var(--font-mark);
-  color: var(--accent);
+  color: var(--red-text);
   font-size: 1rem;
 }
 
@@ -220,7 +221,7 @@ h1 {
 
 .btn-primary:hover {
   background: transparent;
-  color: var(--blood);
+  color: var(--red-text);
 }
 
 .btn-filter {
@@ -454,7 +455,7 @@ h1 {
 }
 
 .event-category {
-  color: var(--accent);
+  color: var(--red-text);
   font-size: .7rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -555,7 +556,7 @@ h1 {
 }
 
 .action.delete {
-  color: var(--accent);
+  color: var(--red-text);
   border-color: var(--accent);
 }
 
@@ -764,7 +765,7 @@ select:focus-visible {
 }
 
 .alert-erro {
-  border-color: var(--blood);
+  border-color: var(--accent);
   background: rgba(179, 18, 30, .12);
   color: var(--paper);
 }
@@ -819,7 +820,7 @@ select:focus-visible {
   font-size: .7rem;
   text-transform: uppercase;
   letter-spacing: .08em;
-  color: var(--accent);
+  color: var(--red-text);
 }
 
 .evento-card-titulo {
@@ -870,12 +871,12 @@ select:focus-visible {
 
 .btn-icone:hover {
   border-color: var(--accent);
-  color: var(--accent);
+  color: var(--red-text);
 }
 
 .btn-icone-excluir:hover {
-  border-color: var(--blood);
-  color: var(--blood);
+  border-color: var(--accent);
+  color: var(--red-text);
 }
 
 .estado-vazio {

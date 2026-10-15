@@ -14,6 +14,7 @@
   --ev-dim: #aaa59b;
   --ev-blood: #b3121e;
   --ev-accent: #d00012;
+  --ev-red-text: #ff6670;
   --ev-shadow: 7px 7px 0 rgba(0, 0, 0, .45);
   --ev-ease: .18s ease;
 }
@@ -64,7 +65,7 @@
 
 .admin-page .eyebrow {
   margin: 0 0 .65rem;
-  color: var(--ev-accent);
+  color: var(--ev-red-text);
   font-family: 'Permanent Marker', cursive;
   font-size: 1rem;
   line-height: 1.2;
@@ -128,7 +129,7 @@
 .admin-page .btn-primary:hover,
 .admin-page .btn-filter:hover {
   background: var(--ev-accent);
-  border-color: var(--ev-accent);
+  border-color: var(--ev-red-text);
   color: #fff;
 }
 
@@ -182,7 +183,7 @@
 
 .admin-page .toolbar input:focus,
 .admin-page .toolbar select:focus {
-  border-color: var(--ev-accent) !important;
+  border-color: var(--ev-red-text) !important;
   box-shadow: 0 0 0 2px rgba(208, 0, 18, .16);
 }
 
@@ -254,7 +255,7 @@
 
 .admin-page .evento-card:hover {
   transform: translateY(-4px);
-  border-color: var(--ev-blood);
+  border-color: var(--ev-red-text);
 }
 
 .admin-page .evento-card-imagem {
@@ -277,7 +278,7 @@
 
 .admin-page .evento-card-categoria {
   margin: 0 0 .35rem;
-  color: var(--ev-accent);
+  color: var(--ev-red-text);
   font-family: 'Permanent Marker', cursive;
   font-size: .85rem;
   line-height: 1.2;
@@ -352,7 +353,7 @@
 }
 
 .admin-page .btn-icone-excluir:hover {
-  border-color: var(--ev-blood);
+  border-color: var(--ev-red-text);
   background: var(--ev-blood);
   color: #fff;
 }
@@ -377,7 +378,7 @@
 }
 
 .admin-page .estado-vazio a:hover {
-  color: var(--ev-accent);
+  color: var(--ev-red-text);
 }
 
 /* ---------- Responsivo ---------- */
@@ -536,7 +537,7 @@
 .admin-page form:not(.toolbar) input:focus,
 .admin-page form:not(.toolbar) select:focus,
 .admin-page form:not(.toolbar) textarea:focus {
-  border-color: var(--ev-accent);
+  border-color: var(--ev-red-text);
   box-shadow: 0 0 0 2px rgba(208, 0, 18, .16);
 }
 
@@ -563,7 +564,7 @@
 }
 
 .admin-page form:not(.toolbar) a:hover {
-  color: var(--ev-accent);
+  color: var(--ev-red-text);
 }
 
 /* Em telas menores, os campos passam a ocupar a largura disponível */

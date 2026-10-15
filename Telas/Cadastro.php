@@ -11,6 +11,7 @@ require_once dirname(__FILE__) . '/../config/bootstrap.php';
 require_once dirname(__FILE__) . '/Componentes/funcoes_eventos.php';
 
 $erros = array();
+$errosPorCampo = array();
 $sucesso = false;
 
 // Valores para repopular o formulário
@@ -40,20 +41,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // ---- Validações ----
     if ($dados['nome'] === '') {
-        $erros[] = 'Informe seu nome completo.';
+        $errosPorCampo['nome'] = 'Informe seu nome completo.';
+        $erros[] = $errosPorCampo['nome'];
     }
     if ($dados['email'] === '' || !filter_var($dados['email'], FILTER_VALIDATE_EMAIL)) {
-        $erros[] = 'Informe um e-mail válido.';
+        $errosPorCampo['email'] = 'Informe um e-mail válido.';
+        $erros[] = $errosPorCampo['email'];
     }
     if ($senha === '') {
-        $erros[] = 'Informe uma senha.';
+        $errosPorCampo['senha'] = 'Informe uma senha.';
+        $erros[] = $errosPorCampo['senha'];
     } elseif (strlen($senha) < 6) {
-        $erros[] = 'A senha deve ter pelo menos 6 caracteres.';
+        $errosPorCampo['senha'] = 'A senha deve ter pelo menos 6 caracteres.';
+        $erros[] = $errosPorCampo['senha'];
     }
     if ($confirma_senha === '') {
-        $erros[] = 'Confirme a senha.';
+        $errosPorCampo['confirma_senha'] = 'Confirme a senha.';
+        $erros[] = $errosPorCampo['confirma_senha'];
     } elseif ($senha !== $confirma_senha) {
-        $erros[] = 'As senhas não conferem.';
+        $errosPorCampo['confirma_senha'] = 'As senhas não conferem.';
+        $erros[] = $errosPorCampo['confirma_senha'];
+    }
+
+    // Os dados complementares são opcionais, mas precisam ter formato válido quando informados.
+    $cepDigitos = preg_replace('/\D/', '', $dados['cep']);
+    if ($dados['cep'] !== '' && strlen($cepDigitos) !== 8) {
+        $errosPorCampo['cep'] = 'Digite um CEP com 8 números.';
+        $erros[] = $errosPorCampo['cep'];
+    }
+    $telefoneDigitos = preg_replace('/\D/', '', $dados['telefone']);
+    if ($dados['telefone'] !== '' && (strlen($telefoneDigitos) < 10 || strlen($telefoneDigitos) > 11)) {
+        $errosPorCampo['telefone'] = 'Digite um telefone com DDD e 10 ou 11 números.';
+        $erros[] = $errosPorCampo['telefone'];
+    }
+    $cpfDigitos = preg_replace('/\D/', '', $dados['cpf']);
+    if ($dados['cpf'] !== '' && strlen($cpfDigitos) !== 11) {
+        $errosPorCampo['cpf'] = 'Digite um CPF com 11 números.';
+        $erros[] = $errosPorCampo['cpf'];
+    }
+    if ($dados['estado'] !== '' && !preg_match('/^[a-zA-Z]{2}$/', $dados['estado'])) {
+        $errosPorCampo['estado'] = 'Digite a sigla do estado com 2 letras.';
+        $erros[] = $errosPorCampo['estado'];
+    } else {
+        $dados['estado'] = strtoupper($dados['estado']);
     }
 
     // Verifica se e-mail já existe
@@ -63,7 +93,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute();
         $stmt->store_result();
         if ($stmt->num_rows > 0) {
-            $erros[] = 'Este e-mail já está cadastrado.';
+            $errosPorCampo['email'] = 'Este e-mail já está cadastrado.';
+            $erros[] = $errosPorCampo['email'];
         }
         $stmt->close();
     }
@@ -163,7 +194,7 @@ if (isset($_SESSION['id_usuario'])) {
         <?php endif; ?>
 
         <?php if (!empty($erros)): ?>
-          <div class="alert alert-erro" style="margin-bottom:1rem;padding:.8rem;background:rgba(179,18,30,.12);border:2px solid #b3121e;color:#e6dfc9;font-size:.85rem;">
+          <div class="alert alert-erro" id="cadastro-erros" tabindex="-1" style="margin-bottom:1rem;padding:.8rem;background:rgba(179,18,30,.12);border:2px solid #b3121e;color:#e6dfc9;font-size:.85rem;">
             <strong>Corrija os itens abaixo:</strong>
             <ul style="margin:.4rem 0 0;padding-left:1.2rem;">
               <?php foreach ($erros as $erro): ?>
@@ -173,79 +204,97 @@ if (isset($_SESSION['id_usuario'])) {
           </div>
         <?php endif; ?>
 
-<form action="Cadastro.php" method="post" autocomplete="on">
+<form action="Cadastro.php" method="post" autocomplete="on" id="form-cadastro" novalidate>
         <div class="form-group">
-          <label for="nome">Nome completo</label>
-          <input type="text" id="nome" name="nome" placeholder="Seu nome" required
+          <label for="nome">Nome completo <span class="campo-obrigatorio">Obrigatório</span></label>
+          <input type="text" id="nome" name="nome" placeholder="Seu nome" required autocomplete="name" aria-invalid="<?php echo isset($errosPorCampo['nome']) ? 'true' : 'false'; ?>"<?php if (isset($errosPorCampo['nome'])): ?> aria-describedby="erro-nome"<?php endif; ?>
                  value="<?php echo htmlspecialchars($dados['nome']); ?>">
+          <?php if (isset($errosPorCampo['nome'])): ?><small class="erro-campo" id="erro-nome"><?php echo htmlspecialchars($errosPorCampo['nome']); ?></small><?php endif; ?>
         </div>
         <div class="form-group">
-          <label for="email">E-mail</label>
-          <input type="email" id="email" name="email" placeholder="seu@email.com" required
+          <label for="email">E-mail <span class="campo-obrigatorio">Obrigatório</span></label>
+          <input type="email" id="email" name="email" placeholder="seu@email.com" required autocomplete="email" aria-invalid="<?php echo isset($errosPorCampo['email']) ? 'true' : 'false'; ?>"<?php if (isset($errosPorCampo['email'])): ?> aria-describedby="erro-email"<?php endif; ?>
                  value="<?php echo htmlspecialchars($dados['email']); ?>">
+          <?php if (isset($errosPorCampo['email'])): ?><small class="erro-campo" id="erro-email"><?php echo htmlspecialchars($errosPorCampo['email']); ?></small><?php endif; ?>
         </div>
         <div class="form-group">
-          <label for="senha">Senha</label>
-          <input type="password" id="senha" name="senha" placeholder="Crie uma senha (mín. 6 caracteres)" required>
+          <label for="senha">Senha <span class="campo-obrigatorio">Obrigatório</span></label>
+          <p class="ajuda-campo" id="ajuda-senha">Use pelo menos 6 caracteres.</p>
+          <div class="campo-senha">
+            <input type="password" id="senha" name="senha" placeholder="Crie uma senha" minlength="6" autocomplete="new-password" required aria-describedby="ajuda-senha<?php echo isset($errosPorCampo['senha']) ? ' erro-senha' : ''; ?>" aria-invalid="<?php echo isset($errosPorCampo['senha']) ? 'true' : 'false'; ?>">
+            <button type="button" class="alternar-senha" data-target="senha" aria-label="Mostrar senha" aria-pressed="false">Mostrar</button>
+          </div>
+          <?php if (isset($errosPorCampo['senha'])): ?><small class="erro-campo" id="erro-senha"><?php echo htmlspecialchars($errosPorCampo['senha']); ?></small><?php endif; ?>
         </div>
         <div class="form-group">
-          <label for="confirma-senha">Confirmar senha</label>
-          <input type="password" id="confirma-senha" name="confirma_senha" placeholder="Repita a senha" required>
+          <label for="confirma-senha">Confirmar senha <span class="campo-obrigatorio">Obrigatório</span></label>
+          <div class="campo-senha">
+            <input type="password" id="confirma-senha" name="confirma_senha" placeholder="Repita a senha" minlength="6" autocomplete="new-password" required aria-describedby="estado-senhas" aria-invalid="<?php echo isset($errosPorCampo['confirma_senha']) ? 'true' : 'false'; ?>">
+            <button type="button" class="alternar-senha" data-target="confirma-senha" aria-label="Mostrar confirmação de senha" aria-pressed="false">Mostrar</button>
+          </div>
+          <small class="estado-senhas" id="estado-senhas" aria-live="polite"><?php echo isset($errosPorCampo['confirma_senha']) ? htmlspecialchars($errosPorCampo['confirma_senha']) : ''; ?></small>
         </div>
 
-        <fieldset style="margin-top:1.5rem;padding:1rem;border:1px solid var(--rule);border-radius:4px;">
-          <legend style="font-weight:700;text-transform:uppercase;font-size:.75rem;color:var(--paper-dim);letter-spacing:.06em;">Endereço (opcional)</legend>
+        <details class="grupo-opcional"<?php if (isset($errosPorCampo['cep']) || isset($errosPorCampo['estado'])): ?> open<?php endif; ?>>
+          <summary>Endereço <span class="campo-opcional">Opcional</span></summary>
+          <fieldset>
           <div class="form-group">
-            <label for="cep">CEP</label>
-            <input type="text" id="cep" name="cep" maxlength="9" placeholder="00000-000"
+          <label for="cep">CEP <span class="campo-opcional">Opcional</span></label>
+          <input type="text" id="cep" name="cep" maxlength="9" inputmode="numeric" autocomplete="postal-code" placeholder="00000-000" aria-invalid="<?php echo isset($errosPorCampo['cep']) ? 'true' : 'false'; ?>"<?php if (isset($errosPorCampo['cep'])): ?> aria-describedby="erro-cep"<?php endif; ?>
                    value="<?php echo htmlspecialchars($dados['cep']); ?>">
+            <?php if (isset($errosPorCampo['cep'])): ?><small class="erro-campo" id="erro-cep"><?php echo htmlspecialchars($errosPorCampo['cep']); ?></small><?php endif; ?>
           </div>
           <div class="form-group">
-            <label for="endereco">Endereço</label>
+            <label for="endereco">Endereço <span class="campo-opcional">Opcional</span></label>
             <input type="text" id="endereco" name="endereco" maxlength="150" placeholder="Rua, Avenida, etc."
                    value="<?php echo htmlspecialchars($dados['endereco']); ?>">
           </div>
           <div class="form-group">
-            <label for="numero">Número</label>
+            <label for="numero">Número <span class="campo-opcional">Opcional</span></label>
             <input type="text" id="numero" name="numero" maxlength="10" placeholder="Nº"
                    value="<?php echo htmlspecialchars($dados['numero']); ?>">
           </div>
           <div class="form-group">
-            <label for="complemento">Complemento</label>
+            <label for="complemento">Complemento <span class="campo-opcional">Opcional</span></label>
             <input type="text" id="complemento" name="complemento" maxlength="100" placeholder="Apto, Bloco, etc."
                    value="<?php echo htmlspecialchars($dados['complemento']); ?>">
           </div>
           <div class="form-group">
-            <label for="cidade">Cidade</label>
-            <input type="text" id="cidade" name="cidade" maxlength="100" placeholder="Cidade"
+            <label for="cidade">Cidade <span class="campo-opcional">Opcional</span></label>
+            <input type="text" id="cidade" name="cidade" maxlength="100" autocomplete="address-level2" placeholder="Cidade"
                    value="<?php echo htmlspecialchars($dados['cidade']); ?>">
           </div>
           <div class="form-group">
-            <label for="estado">Estado (UF)</label>
-            <input type="text" id="estado" name="estado" maxlength="2" placeholder="SC"
+            <label for="estado">Estado (UF) <span class="campo-opcional">Opcional</span></label>
+            <input type="text" id="estado" name="estado" maxlength="2" pattern="[A-Za-z]{2}" autocomplete="address-level1" placeholder="SC" aria-invalid="<?php echo isset($errosPorCampo['estado']) ? 'true' : 'false'; ?>"<?php if (isset($errosPorCampo['estado'])): ?> aria-describedby="erro-estado"<?php endif; ?>
                    value="<?php echo htmlspecialchars($dados['estado']); ?>">
+            <?php if (isset($errosPorCampo['estado'])): ?><small class="erro-campo" id="erro-estado"><?php echo htmlspecialchars($errosPorCampo['estado']); ?></small><?php endif; ?>
           </div>
-        </fieldset>
+          </fieldset>
+        </details>
 
-        <fieldset style="margin-top:1.5rem;padding:1rem;border:1px solid var(--rule);border-radius:4px;">
-          <legend style="font-weight:700;text-transform:uppercase;font-size:.75rem;color:var(--paper-dim);letter-spacing:.06em;">Dados adicionais (opcional)</legend>
+        <details class="grupo-opcional"<?php if (isset($errosPorCampo['telefone']) || isset($errosPorCampo['cpf'])): ?> open<?php endif; ?>>
+          <summary>Dados adicionais <span class="campo-opcional">Opcional</span></summary>
+          <fieldset>
           <div class="form-group">
-            <label for="telefone">Telefone</label>
-            <input type="tel" id="telefone" name="telefone" maxlength="20" placeholder="(00) 00000-0000"
+          <label for="telefone">Telefone <span class="campo-opcional">Opcional</span></label>
+          <input type="tel" id="telefone" name="telefone" maxlength="15" inputmode="tel" autocomplete="tel" placeholder="(00) 00000-0000" aria-invalid="<?php echo isset($errosPorCampo['telefone']) ? 'true' : 'false'; ?>"<?php if (isset($errosPorCampo['telefone'])): ?> aria-describedby="erro-telefone"<?php endif; ?>
                    value="<?php echo htmlspecialchars($dados['telefone']); ?>">
+            <?php if (isset($errosPorCampo['telefone'])): ?><small class="erro-campo" id="erro-telefone"><?php echo htmlspecialchars($errosPorCampo['telefone']); ?></small><?php endif; ?>
           </div>
           <div class="form-group">
-            <label for="cpf">CPF</label>
-            <input type="text" id="cpf" name="cpf" maxlength="14" placeholder="000.000.000-00"
+          <label for="cpf">CPF <span class="campo-opcional">Opcional</span></label>
+          <input type="text" id="cpf" name="cpf" maxlength="14" inputmode="numeric" autocomplete="off" placeholder="000.000.000-00" aria-invalid="<?php echo isset($errosPorCampo['cpf']) ? 'true' : 'false'; ?>"<?php if (isset($errosPorCampo['cpf'])): ?> aria-describedby="erro-cpf"<?php endif; ?>
                    value="<?php echo htmlspecialchars($dados['cpf']); ?>">
+            <?php if (isset($errosPorCampo['cpf'])): ?><small class="erro-campo" id="erro-cpf"><?php echo htmlspecialchars($errosPorCampo['cpf']); ?></small><?php endif; ?>
           </div>
           <div class="form-group">
-            <label for="data_nascimento">Data de nascimento</label>
+            <label for="data_nascimento">Data de nascimento <span class="campo-opcional">Opcional</span></label>
             <input type="date" id="data_nascimento" name="data_nascimento"
                    value="<?php echo htmlspecialchars($dados['data_nascimento']); ?>">
           </div>
-        </fieldset>
-
+          </fieldset>
+        </details>
         <button type="submit" class="btn-auth">Criar conta</button>
       </form>
 
@@ -266,3 +315,72 @@ if (isset($_SESSION['id_usuario'])) {
 </main>
 
 <?php require dirname(__FILE__) . '/Componentes/footer.php'; ?>
+<script>
+(function () {
+  var form = document.getElementById('form-cadastro');
+  if (!form) return;
+
+  function maskDigits(value, pattern) {
+    var digits = value.replace(/\D/g, '');
+    var result = '';
+    var index = 0;
+    for (var i = 0; i < pattern.length && index < digits.length; i++) {
+      if (pattern.charAt(i) === '0') result += digits.charAt(index++);
+      else result += pattern.charAt(i);
+    }
+    return result;
+  }
+
+  var cep = document.getElementById('cep');
+  var telefone = document.getElementById('telefone');
+  var cpf = document.getElementById('cpf');
+  var estado = document.getElementById('estado');
+  cep.addEventListener('input', function () { this.value = maskDigits(this.value, '00000-000'); });
+  cpf.addEventListener('input', function () { this.value = maskDigits(this.value, '000.000.000-00'); });
+  telefone.addEventListener('input', function () {
+    var digits = this.value.replace(/\D/g, '').substring(0, 11);
+    if (digits.length <= 10) this.value = maskDigits(digits, '(00) 0000-0000');
+    else this.value = maskDigits(digits, '(00) 00000-0000');
+  });
+  estado.addEventListener('input', function () { this.value = this.value.replace(/[^a-z]/gi, '').substring(0, 2).toUpperCase(); });
+
+  var senha = document.getElementById('senha');
+  var confirma = document.getElementById('confirma-senha');
+  var avisoSenhas = document.getElementById('estado-senhas');
+  function validarConfirmacao() {
+    var divergente = confirma.value !== '' && senha.value !== confirma.value;
+    confirma.setCustomValidity(divergente ? 'As senhas não conferem.' : '');
+    confirma.setAttribute('aria-invalid', divergente ? 'true' : 'false');
+    avisoSenhas.textContent = divergente ? 'As senhas não conferem.' : '';
+    return !divergente;
+  }
+  senha.addEventListener('input', validarConfirmacao);
+  confirma.addEventListener('input', validarConfirmacao);
+
+  var toggles = form.querySelectorAll('.alternar-senha');
+  for (var i = 0; i < toggles.length; i++) {
+    toggles[i].addEventListener('click', function () {
+      var campo = document.getElementById(this.getAttribute('data-target'));
+      var mostrar = campo.type === 'password';
+      campo.type = mostrar ? 'text' : 'password';
+      this.textContent = mostrar ? 'Ocultar' : 'Mostrar';
+      this.setAttribute('aria-pressed', mostrar ? 'true' : 'false');
+      this.setAttribute('aria-label', mostrar ? 'Ocultar senha' : 'Mostrar senha');
+    });
+  }
+
+  form.addEventListener('submit', function (event) {
+    if (!validarConfirmacao() || !form.checkValidity()) {
+      event.preventDefault();
+      form.reportValidity();
+    }
+  });
+
+  var campoComErro = form.querySelector('[aria-invalid="true"]');
+  if (campoComErro) campoComErro.focus();
+  else {
+    var resumo = document.getElementById('cadastro-erros');
+    if (resumo) resumo.focus();
+  }
+}());
+</script>

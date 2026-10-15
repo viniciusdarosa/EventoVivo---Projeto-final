@@ -70,7 +70,7 @@ require dirname(__FILE__) . '/Componentes/header.php';
   <section class="page-header">
     <div class="wrap">
       <p class="eyebrow">BUSCA GERAL</p>
-      <h1><?php echo $termoSeguro ? 'Resultados para <span style="color:var(--accent);">"' . $termoSeguro . '"</span>' : 'Busca Geral'; ?></h1>
+      <h1><?php echo $termoSeguro ? 'Resultados para <span style="color: var(--red-text);">"' . $termoSeguro . '"</span>' : 'Busca Geral'; ?></h1>
       <?php if ($termo !== ''): ?>
         <p class="hero-sub">
           Encontramos <strong><?php echo count($eventos); ?> evento(s)</strong> e <strong><?php echo count($artistas); ?> artista(s)</strong>.

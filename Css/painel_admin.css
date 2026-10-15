@@ -51,7 +51,7 @@
 
 .adm-heading .eyebrow {
   margin: 0 0 .35rem;
-  color: var(--accent);
+  color: var(--red-text);
   font-family: var(--font-mark);
   font-size: .78rem;
 }
@@ -572,8 +572,8 @@
 }
 
 .adm-posicao-3 {
-  border-color: var(--blood);
-  color: var(--accent);
+  border-color: var(--accent);
+  color: var(--red-text);
 }
 
 /* ---------- Estrelas ---------- */

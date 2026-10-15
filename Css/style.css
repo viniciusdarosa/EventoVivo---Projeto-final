@@ -47,6 +47,7 @@
                 nos cards de artista */
   --blood: #b3121e;
   --accent: #b8000d;
+  --red-text: #ff6670;
   --yellow: red;
  
   /* -- tipografia -- */
@@ -138,10 +139,10 @@ section[id] { scroll-margin-top: 5.5rem; }
   border-bottom: 2px solid transparent;
   transition: color var(--ease), border-color var(--ease);
 }
-.nav a:hover { color: var(--accent); border-color: var(--accent); }
+.nav a:hover { color: var(--red-text); border-color: var(--accent); }
 
 .logout {
-  color: var(--accent);
+  color: var(--red-text);
   text-transform: uppercase;
   font-size: .75rem;
   font-weight: 700;
@@ -176,7 +177,7 @@ section[id] { scroll-margin-top: 5.5rem; }
   align-items: center;
   justify-content: center;
 }
-.header-search button:hover { background: transparent; color: var(--blood); }
+.header-search button:hover { background: transparent; color: var(--red-text); }
  
  
 /* ==========================================================
@@ -200,7 +201,7 @@ section[id] { scroll-margin-top: 5.5rem; }
 }
 .eyebrow {
   font-family: var(--font-mark);
-  color: var(--accent);
+  color: var(--red-text);
   font-size: 1.15rem;
   margin-bottom: var(--sp-2);
 }
@@ -237,9 +238,9 @@ h1 {
   transition: background var(--ease), color var(--ease);
 }
 .btn-primary { background: var(--blood); color: var(--paper); box-shadow: var(--shadow-hard); }
-.btn-primary:hover { background: transparent; color: var(--blood); }
+.btn-primary:hover { background: transparent; color: var(--red-text); }
 .btn-ghost { background: transparent; color: var(--paper); border-color: var(--paper); }
-.btn-ghost:hover { border-color: var(--blood); color: var(--blood); }
+.btn-ghost:hover { border-color: var(--accent); color: var(--red-text); }
  
  
 /* ==========================================================
@@ -340,7 +341,7 @@ h2 {
 .artist-body { padding: var(--sp-3); }
  
 .artist-nome {
-  color: var(--accent);
+  color: var(--red-text);
   font-weight: 700;
   text-transform: uppercase;
   font-size: 1.1rem;
@@ -382,7 +383,7 @@ h2 {
 .site-footer .logo span { color: var(--blood); }
 .site-footer nav { display: flex; gap: var(--sp-3); flex-wrap: wrap; }
 .site-footer nav a { font-size: .8rem; text-transform: uppercase; letter-spacing: .05em; font-weight: 700; }
-.site-footer nav a:hover { color: var(--accent); }
+.site-footer nav a:hover { color: var(--red-text); }
 .copy { width: 100%; color: var(--paper-dim); font-size: .8rem; margin-top: var(--sp-2); }
  
  
@@ -451,7 +452,7 @@ h2 {
 }
 .auth-brand .brand-accent {
   font-family: var(--font-mark);
-  color: var(--accent);
+  color: var(--red-text);
   font-size: 1.15rem;
   margin-top: var(--sp-3);
 }
@@ -500,10 +501,77 @@ h2 {
   color: var(--paper-dim);
   margin-bottom: .35rem;
 }
+.auth-card .campo-obrigatorio,
+.auth-card .campo-opcional {
+  display: inline-block;
+  margin-left: .35rem;
+  color: var(--paper-dim);
+  font-size: .65rem;
+  font-weight: 400;
+  letter-spacing: .02em;
+  text-transform: none;
+}
+.auth-card .campo-obrigatorio { color: var(--red-text); }
+.auth-card .ajuda-campo,
+.auth-card .estado-senhas {
+  display: block;
+  margin: -.1rem 0 .4rem;
+  color: var(--paper-dim);
+  font-size: .78rem;
+}
+.auth-card .erro-campo {
+  display: block;
+  margin-top: .3rem;
+  color: var(--red-text);
+  font-size: .8rem;
+}
+.auth-card [aria-invalid="true"] { border-color: var(--red-text) !important; }
+.auth-card .campo-senha { display: flex; align-items: stretch; }
+.auth-card .campo-senha input { min-width: 0; flex: 1; }
+.auth-card .grupo-opcional {
+  margin-top: 1rem;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  background: rgba(18, 15, 15, .28);
+}
+.auth-card .grupo-opcional summary {
+  padding: .85rem 1rem;
+  color: var(--paper);
+  font-size: .82rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.auth-card .grupo-opcional summary::marker { color: var(--red-text); }
+.auth-card .grupo-opcional summary:focus-visible {
+  outline: 2px solid var(--red-text);
+  outline-offset: -3px;
+}
+.auth-card .grupo-opcional fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: .85rem 1rem .25rem;
+  border: 0;
+  border-top: 1px solid var(--rule);
+}
+.auth-card .alternar-senha {
+  padding: 0 .75rem;
+  border: 1px solid var(--rule);
+  border-left: 0;
+  color: var(--paper);
+  background: var(--ink-2);
+  font: 700 .72rem var(--font-body);
+  cursor: pointer;
+}
+.auth-card .alternar-senha:hover,
+.auth-card .alternar-senha:focus-visible { color: var(--red-text); outline: 2px solid var(--red-text); outline-offset: 1px; }
 
 .auth-card input[type="text"],
 .auth-card input[type="email"],
-.auth-card input[type="password"] {
+.auth-card input[type="password"],
+.auth-card input[type="tel"],
+.auth-card input[type="date"] {
   width: 100%;
   background: var(--ink);
   border: 1px solid var(--rule);
@@ -519,6 +587,8 @@ h2 {
   outline: none;
   box-shadow: 0 0 0 2px rgba(184,0,13,.25);
 }
+.auth-card input[type="tel"]:focus,
+.auth-card input[type="date"]:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 2px rgba(184,0,13,.25); }
 .auth-card input::placeholder {
   color: var(--paper-dim);
   opacity: .6;
@@ -542,7 +612,7 @@ h2 {
 }
 .auth-card .btn-auth:hover {
   background: transparent;
-  color: var(--blood);
+  color: var(--red-text);
 }
 
 .auth-card .auth-divider {
@@ -570,7 +640,7 @@ h2 {
   color: var(--paper-dim);
 }
 .auth-card .auth-switch a {
-  color: var(--accent);
+  color: var(--red-text);
   font-weight: 700;
   border-bottom: 1px solid transparent;
   transition: border-color var(--ease);
@@ -587,7 +657,7 @@ h2 {
   line-height: 1.5;
 }
 .auth-card .auth-terms a {
-  color: var(--accent);
+  color: var(--red-text);
   text-decoration: underline;
 }
 
@@ -626,6 +696,7 @@ a:focus-visible, button:focus-visible, input:focus-visible {
   letter-spacing: .01em;
   text-shadow: 4px 4px 0 var(--blood);
   margin-bottom: var(--sp-2);
+  margin-inline: auto;
 }
 .page-header .hero-sub { max-width: 60ch; margin-inline: auto; }
 
@@ -666,13 +737,13 @@ a:focus-visible, button:focus-visible, input:focus-visible {
   min-height: 43px;
   background: var(--blood);
   color: var(--paper);
-  border-color: var(--blood);
+  border-color: var(--accent);
   cursor: pointer;
 }
 
 .toolbar .btn-filter:hover {
   background: transparent;
-  color: var(--blood);
+  color: var(--red-text);
 }
 
 .results-section { padding-block: var(--sp-5); }
@@ -765,7 +836,7 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 
 .artist-card-public .artist-body { padding: var(--sp-3); }
 .artist-card-public .artist-nome {
-  color: var(--accent);
+  color: var(--red-text);
   font-weight: 700;
   text-transform: uppercase;
   font-size: 1.1rem;
@@ -814,7 +885,7 @@ a:focus-visible, button:focus-visible, input:focus-visible {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: .04em;
-  color: var(--accent);
+  color: var(--red-text);
   border-bottom: 1px solid transparent;
   transition: border-color var(--ease);
 }

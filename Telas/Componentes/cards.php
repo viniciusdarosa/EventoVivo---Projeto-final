@@ -69,7 +69,7 @@ function render_event_card($evento) {
           }
 
           .event-card .tag {
-            color: var(--accent);
+            color: var(--red-text);
             font-family: var(--font-mark);
             font-size: .9rem;
             line-height: 1.2;

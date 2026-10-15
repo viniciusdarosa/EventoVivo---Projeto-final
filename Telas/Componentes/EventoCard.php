@@ -60,7 +60,7 @@ if (!function_exists('render_evento_card')) {
               }
 
               .evento-card-novo-categoria {
-                color: var(--accent);
+                color: var(--red-text);
                 font-family: var(--font-mark);
                 font-size: .9rem;
                 line-height: 1.2;
