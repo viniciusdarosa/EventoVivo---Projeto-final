@@ -79,15 +79,15 @@ if (isset($_SESSION['id_usuario']) && !$ehDono) {
       height: 3px;
       background: linear-gradient(90deg, var(--blood) 0%, var(--accent) 40%, transparent 100%);
     }
-    .perfil-capa {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+    .perfil-foto {
+      width: 220px;
+      height: 220px;
+      flex-shrink: 0;
       object-fit: cover;
-      opacity: 0.15;
-      z-index: 0;
+      object-position: center 20%;
+      background: var(--ink-2);
+      border: 3px solid var(--rule);
+      box-shadow: var(--shadow-hard);
     }
     .perfil-header {
       position: relative;
@@ -95,7 +95,7 @@ if (isset($_SESSION['id_usuario']) && !$ehDono) {
       display: flex;
       gap: 2rem;
       flex-wrap: wrap;
-      align-items: flex-end;
+      align-items: flex-start;
     }
     .perfil-info h1 {
       font-family: var(--font-display);
@@ -409,6 +409,7 @@ if (isset($_SESSION['id_usuario']) && !$ehDono) {
 
     @media (max-width: 720px) {
       .perfil-header { flex-direction: column; align-items: center; text-align: center; }
+      .perfil-foto { width: 160px; height: 160px; }
       .perfil-meta { justify-content: center; }
       .perfil-contatos { justify-content: center; }
       .avaliar-form { padding: 1.5rem; }
@@ -431,16 +432,16 @@ if (isset($_SESSION['id_usuario']) && !$ehDono) {
 <main class="perfil-page">
   <!-- Hero com a foto de perfil -->
   <section class="perfil-hero">
-    <?php
-    $srcCapa = !empty($freelancer['foto_perfil'])
-        ? freelancer_foto_src($freelancer['foto_perfil'])
-        : '';
-    if ($srcCapa !== ''):
-    ?>
-      <img class="perfil-capa" src="<?php echo htmlspecialchars($srcCapa); ?>" alt="">
-    <?php endif; ?>
     <div class="wrap">
       <div class="perfil-header">
+        <?php
+        $srcFoto = !empty($freelancer['foto_perfil'])
+            ? freelancer_foto_src($freelancer['foto_perfil'])
+            : '';
+        if ($srcFoto !== ''):
+        ?>
+          <img class="perfil-foto" src="<?php echo htmlspecialchars($srcFoto); ?>" alt="Foto de perfil de <?php echo htmlspecialchars($freelancer['nome']); ?>">
+        <?php endif; ?>
 
         <div class="perfil-info">
           <h1><?php echo htmlspecialchars($freelancer['nome']); ?></h1>
