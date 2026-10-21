@@ -15,7 +15,7 @@ Artistas podem apresentar seus trabalhos e serem descobertos; organizadores pode
 
 ## Tecnologias
 
-- PHP e MySQLi
+- PHP e MySQL
 - MySQL
 - HTML, CSS e JavaScript
 - Apache (o projeto foi desenvolvido e organizado para o ambiente EasyPHP)
@@ -59,4 +59,4 @@ Este projeto está disponível sob a licença [MIT](LICENSE).
 
 ---
 
-Desenvolvido por **Vinícius Cardoso da Rosa** · Projeto final do curso de Informática da SATC.
+Desenvolvido por **Vinícius Cardoso da Rosa e Nicolas Aravena Rocha** · Projeto final do curso de Informática da SATC.
