@@ -16,18 +16,13 @@ require_once dirname(__FILE__) . '/Componentes/funcoes_freelancers.php';
 require_once dirname(__FILE__) . '/Componentes/funcoes_eventos.php'; // Para hash_senha se necessário
 
 // Só usuários logados podem cadastrar perfil de freelancer
-if (!isset($_SESSION['id_usuario'])) {
-    header('Location: Login.php');
-    exit;
-}
-
-$usuarioId = (int) $_SESSION['id_usuario'];
+exigir_login('Login.php');
+$usuarioId = usuario_id();
 
 // Verifica se já tem perfil de freelancer
 $freelancerExistente = buscar_freelancer_por_usuario($conexao, $usuarioId);
 if ($freelancerExistente) {
-    header('Location: EditarFreelancer.php');
-    exit;
+    redirecionar('EditarFreelancer.php');
 }
 
 $erros = array();
@@ -43,11 +38,10 @@ $dados = array(
 );
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_exigir();
 
     foreach ($dados as $campo => $valorPadrao) {
-        if (isset($_POST[$campo])) {
-            $dados[$campo] = trim($_POST[$campo]);
-        }
+        $dados[$campo] = entrada_texto($_POST, $campo, $valorPadrao);
     }
 
     // ---- Validação server-side ----
@@ -89,7 +83,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $conexao->prepare($sql);
 
             if ($stmt === false) {
-                $erros[] = 'Erro ao preparar a operação: ' . $conexao->error;
+                registrar_log('Falha ao preparar cadastro de freelancer: ' . $conexao->error, 'ERROR');
+                $erros[] = 'Não foi possível salvar o perfil agora. Tente novamente em instantes.';
                 if ($nomeFoto) {
                     excluir_foto_perfil($nomeFoto);
                 }
@@ -122,7 +117,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if ($nomeFoto) {
                         excluir_foto_perfil($nomeFoto);
                     }
-                    $erros[] = 'Erro ao salvar o perfil: ' . $stmt->error;
+                    registrar_log('Falha ao salvar freelancer: ' . $stmt->error, 'ERROR');
+                    $erros[] = 'Não foi possível salvar o perfil agora. Tente novamente em instantes.';
                 }
 
                 $stmt->close();
@@ -132,22 +128,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $categorias = buscar_categorias_servicos($conexao);
+$pageTitle = 'EventoVivo - Criar Perfil de Artista';
+$extraCss = array('../Css/crud_eventos.css', '../Css/style.css');
+
+require dirname(__FILE__) . '/Componentes/header.php';
 ?>
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EventoVivo — Criar Perfil de Artista</title>
-  <meta name="theme-color" content="#110f0c">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Courier+Prime:wght@400;700&family=Permanent+Marker&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../Css/crud_eventos.css">
-  <link rel="stylesheet" href="../Css/style.css">
-</head>
-<?php require dirname(__FILE__) . '/Componentes/header.php'; ?>
-<body>
 
 <main class="admin-page freelancer-form-page">
   <div class="wrap">
@@ -174,6 +159,7 @@ $categorias = buscar_categorias_servicos($conexao);
     <?php endif; ?>
 
     <form class="freelancer-form" action="CadastrarFreelancer.php" method="post" enctype="multipart/form-data">
+    <?php echo csrf_campo(); ?>
 
       <div class="campo campo-full">
         <label for="categoria_id">Categoria de Serviço</label>
@@ -235,5 +221,3 @@ $categorias = buscar_categorias_servicos($conexao);
 </main>
 
 <?php require dirname(__FILE__) . '/Componentes/footer.php'; ?>
-</body>
-</html>

@@ -8,6 +8,8 @@
  * ou proporção do arquivo original enviado pelo usuário.
  * ========================================================== */
 
+require_once dirname(__FILE__) . '/funcoes_contato.php';
+
 if (!function_exists('render_evento_card')) {
 
     function render_evento_card($evento)
@@ -195,20 +197,27 @@ if (!function_exists('render_evento_card')) {
                   <form
                     method="post"
                     action="ExcluirEvento.php"
-                    onsubmit="return confirm('Tem certeza que deseja excluir este evento?');"
+                    onsubmit="return confirm('Tem certeza que deseja arquivar este evento? Ele deixará de aparecer nas listagens públicas e poderá ser restaurado depois.');"
                     style="display:inline;">
+                    <?php echo csrf_campo(); ?>
                     <input type="hidden" name="id_evento" value="<?php echo $idEvento; ?>">
                     <button type="submit" class="btn-icone btn-icone-excluir">
-                      Excluir
+                      Arquivar
                     </button>
                   </form>
                 <?php else: ?>
-                  <a
-                    class="btn-icone"
-                    href="#contato"
-                    onclick="alert('Faça login para entrar em contato com o organizador.')">
-                    Contatar
-                  </a>
+                  <?php
+                  // Contato com o organizador: localizado pelo usuário DONO
+                  // do evento (eventos.usuario_id), nunca por id de freelancer.
+                  // Visitante recebe pedido de login; autenticado vê os canais
+                  // efetivamente cadastrados (WhatsApp/e-mail).
+                  render_contato_organizador(
+                      $usuarioEvento,
+                      $organizador,
+                      isset($evento['organizador_email']) ? $evento['organizador_email'] : '',
+                      isset($evento['organizador_telefone']) ? $evento['organizador_telefone'] : ''
+                  );
+                  ?>
                 <?php endif; ?>
               </div>
             </div>

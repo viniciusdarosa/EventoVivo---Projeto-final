@@ -13,45 +13,65 @@ require_once dirname(__FILE__) . '/Componentes/funcoes_eventos.php';
 $erroLogin = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = isset($_POST['email']) ? trim($_POST['email']) : '';
-    $senha = isset($_POST['senha']) ? $_POST['senha'] : '';
+    csrf_exigir();
+
+    $email = entrada_texto($_POST, 'email');
+    $senha = isset($_POST['senha']) && is_string($_POST['senha']) ? $_POST['senha'] : '';
 
     if ($email === '' || $senha === '') {
         $erroLogin = 'Preencha e-mail e senha.';
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $erroLogin = 'E-mail ou senha inválidos.';
+    } elseif (login_bloqueado($email, ip_requisicao())) {
+        registrar_log('Login bloqueado (força bruta) para e-mail informado. IP: ' . ip_requisicao(), 'WARNING');
+        $erroLogin = 'Muitas tentativas falharam. Tente novamente em alguns minutos.';
     } else {
         $stmt = $conexao->prepare("SELECT id_usuario, nome, senha, tipo FROM usuario WHERE email = ? LIMIT 1");
-        $stmt->bind_param('s', $email);
-        $stmt->execute();
-        $resultado = $stmt->get_result();
-        $usuario = $resultado->fetch_assoc();
-        $stmt->close();
-
-        if ($usuario && verificar_senha($senha, $usuario['senha'])) {
-            // Login OK — cria sessão
-            session_regenerate_id(true);
-            $_SESSION['id_usuario'] = (int) $usuario['id_usuario'];
-            $_SESSION['nome_usuario'] = $usuario['nome'];
-            $_SESSION['tipo_usuario'] = $usuario['tipo'];
-
-            // Se a senha está no formato legado (texto puro), atualiza para hash seguro
-            if (strpos($usuario['senha'], 'sha256:') !== 0) {
-                $novoHash = hash_senha($senha);
-                $stmtUpd = $conexao->prepare("UPDATE usuario SET senha = ? WHERE id_usuario = ?");
-                $stmtUpd->bind_param('si', $novoHash, $usuario['id_usuario']);
-                $stmtUpd->execute();
-                $stmtUpd->close();
-            }
-
-            // O administrador cai direto no painel de controle do site.
-            if ($usuario['tipo'] === 'admin') {
-                header('Location: PainelAdmin.php');
-                exit;
-            }
-
-            header('Location: CRUD_Eventos.php');
-            exit;
+        if ($stmt === false) {
+            registrar_log('Falha ao preparar consulta de login: ' . $conexao->error, 'ERROR');
+            $erroLogin = 'Não foi possível concluir o login agora. Tente novamente em instantes.';
         } else {
-            $erroLogin = 'E-mail ou senha inválidos.';
+            $stmt->bind_param('s', $email);
+            $stmt->execute();
+            $resultado = $stmt->get_result();
+            $usuario = $resultado->fetch_assoc();
+            $stmt->close();
+
+            if ($usuario && verificar_senha($senha, $usuario['senha'])) {
+                login_limpar_falhas($email, ip_requisicao());
+
+                // Login OK — cria sessão com novo ID (previne fixação de sessão)
+                session_regenerate_id(true);
+                // Rotaciona o token CSRF junto com o login.
+                unset($_SESSION['csrf_token']);
+                $_SESSION['id_usuario'] = (int) $usuario['id_usuario'];
+                $_SESSION['nome_usuario'] = $usuario['nome'];
+                $_SESSION['tipo_usuario'] = $usuario['tipo'];
+
+                // Migração de senhas legadas (texto puro ou sha256) para bcrypt.
+                if (senha_requer_atualizacao($usuario['senha'])) {
+                    $novoHash = hash_senha($senha);
+                    $stmtUpd = $conexao->prepare("UPDATE usuario SET senha = ? WHERE id_usuario = ?");
+                    if ($stmtUpd !== false) {
+                        $stmtUpd->bind_param('si', $novoHash, $usuario['id_usuario']);
+                        $stmtUpd->execute();
+                        $stmtUpd->close();
+                    }
+                }
+
+                // O administrador cai direto no painel de controle do site.
+                if ($usuario['tipo'] === 'admin') {
+                    header('Location: PainelAdmin.php');
+                    exit;
+                }
+
+                header('Location: CRUD_Eventos.php');
+                exit;
+            } else {
+                login_registrar_falha($email, ip_requisicao());
+                registrar_log('Falha de login. IP: ' . ip_requisicao(), 'WARNING');
+                $erroLogin = 'E-mail ou senha inválidos.';
+            }
         }
     }
 }
@@ -107,6 +127,7 @@ if (isset($_SESSION['id_usuario'])) {
         <?php endif; ?>
 
         <form action="Login.php" method="post" autocomplete="on">
+        <?php echo csrf_campo(); ?>
         <div class="form-group">
           <label for="email">E-mail</label>
           <input type="email" id="email" name="email" placeholder="seu@email.com" required>

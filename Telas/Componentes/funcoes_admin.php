@@ -39,6 +39,10 @@ function admin_tipo_usuario($conexao) {
     }
 
     $stmt = $conexao->prepare("SELECT tipo FROM usuario WHERE id_usuario = ? LIMIT 1");
+    if ($stmt === false) {
+        $_SESSION['tipo_usuario'] = 'usuario';
+        return 'usuario';
+    }
     $stmt->bind_param('i', $_SESSION['id_usuario']);
     $stmt->execute();
     $resultado = $stmt->get_result();
@@ -111,6 +115,9 @@ function admin_registrar_acesso($conexao, $usuarioId, $pagina) {
         "INSERT INTO acesso_sistema (usuario_id, sessao, pagina, endereco_ip, data_acesso)
          VALUES (?, ?, ?, ?, NOW())"
     );
+    if ($stmt === false) {
+        return;
+    }
     $stmt->bind_param('isss', $usuarioId, $sessao, $pagina, $ip);
     $stmt->execute();
     $stmt->close();
@@ -505,7 +512,7 @@ function admin_indicador_eventos($conexao, $filtros) {
             COALESCE(SUM(e.vagas), 0) AS vagas
          FROM eventos e
          LEFT JOIN usuario u ON u.id_usuario = e.usuario_id
-         WHERE 1 = 1" . $lista,
+         WHERE e.arquivado = 0" . $lista,
         $tipos,
         $parametros
     );
@@ -521,7 +528,7 @@ function admin_indicador_eventos($conexao, $filtros) {
          FROM categorias_eventos ce
          LEFT JOIN eventos e ON e.categoria_id = ce.id_categoria
          LEFT JOIN usuario u ON u.id_usuario = e.usuario_id
-         WHERE 1 = 1" . $lista . "
+         WHERE (e.arquivado = 0 OR e.id_evento IS NULL)" . $lista . "
          GROUP BY ce.id_categoria, ce.nome
          ORDER BY total DESC, ce.nome ASC",
         $tipos,
@@ -595,6 +602,10 @@ function admin_ranking_artistas($conexao, $filtros, $categoriaFiltro, $criterio,
         'cadastros' => "f.id_freelancer DESC",
     );
 
+    if (!isset($ordenacoes[$criterio])) {
+        $criterio = 'avaliacao';
+    }
+
     $sql .= " ORDER BY " . $ordenacoes[$criterio] . " LIMIT " . (int) $limite;
 
     $linhas = admin_consultar($conexao, $sql, $tipos, $parametros);
@@ -656,6 +667,10 @@ function admin_listar_eventos($conexao, $filtros, $busca, $categoriaFiltro, $sit
         'vagas' => "e.vagas DESC",
     );
 
+    if (!isset($ordenacoes[$ordem])) {
+        $ordem = 'recentes';
+    }
+
     $sql = "SELECT e.id_evento,
                    e.titulo,
                    e.cidade,
@@ -671,7 +686,7 @@ function admin_listar_eventos($conexao, $filtros, $busca, $categoriaFiltro, $sit
             FROM eventos e
             LEFT JOIN categorias_eventos ce ON ce.id_categoria = e.categoria_id
             LEFT JOIN usuario u ON u.id_usuario = e.usuario_id
-            WHERE 1 = 1" . $lista . "
+            WHERE e.arquivado = 0" . $lista . "
             ORDER BY " . $ordenacoes[$ordem] . "
             LIMIT " . (int) $limite;
 

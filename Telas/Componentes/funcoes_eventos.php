@@ -99,11 +99,25 @@ function validar_upload_imagem_evento($arquivo) {
 
     $extensao = strtolower(pathinfo($arquivo['name'], PATHINFO_EXTENSION));
 
-    $tipoOk = in_array($arquivo['type'], $tiposAceitos);
-    $extensaoOk = in_array($extensao, $extensoesAceitas);
+    $tipoOk = in_array($arquivo['type'], $tiposAceitos, true);
+    $extensaoOk = in_array($extensao, $extensoesAceitas, true);
 
     if (!$tipoOk || !$extensaoOk) {
         return array('ok' => false, 'enviado' => true, 'erro' => 'Formato de imagem inválido. Envie JPG, PNG ou GIF.', 'extensao' => null);
+    }
+
+    // Valida o MIME real do conteúdo (não o $_FILES['type'], que o cliente
+    // forja). Usa finfo quando disponível; getimagesize() reforça.
+    $mimeReal = null;
+    if (class_exists('finfo')) {
+        $finfo = @finfo_open(FILEINFO_MIME_TYPE);
+        if ($finfo) {
+            $mimeReal = @finfo_file($finfo, $arquivo['tmp_name']);
+            finfo_close($finfo);
+        }
+    }
+    if ($mimeReal !== null && !in_array($mimeReal, $tiposAceitos, true)) {
+        return array('ok' => false, 'enviado' => true, 'erro' => 'O conteúdo do arquivo não é uma imagem JPG, PNG ou GIF.', 'extensao' => null);
     }
 
     // Confere também os "magic bytes" do arquivo, pra não confiar só
@@ -114,12 +128,17 @@ function validar_upload_imagem_evento($arquivo) {
         return array('ok' => false, 'enviado' => true, 'erro' => 'O arquivo enviado não é uma imagem válida.', 'extensao' => null);
     }
 
+    // Reforço: se finfo informou o tipo e ele é de imagem, precisa ser um dos aceitos.
+    if ($mimeReal === null && isset($infoImagem['mime']) && !in_array($infoImagem['mime'], $tiposAceitos, true)) {
+        return array('ok' => false, 'enviado' => true, 'erro' => 'O conteúdo do arquivo não é uma imagem JPG, PNG ou GIF.', 'extensao' => null);
+    }
+
     return array('ok' => true, 'enviado' => true, 'erro' => null, 'extensao' => $extensao);
 }
 
 /**
  * Move o arquivo de upload já validado para a pasta de eventos,
- * com um nome novo.
+ * com um nome aleatório (imprevisível), sem usar o nome original.
  *
  * @param array  $arquivo   elemento de $_FILES['imagem_capa']
  * @param string $extensao  extensão validada (retornada por validar_upload_imagem_evento)
@@ -131,7 +150,7 @@ function salvar_upload_imagem_evento($arquivo, $extensao) {
         @mkdir(EVENTOS_UPLOAD_DIR, 0755, true);
     }
 
-    $nomeArquivo = uniqid('evento_') . '.' . $extensao;
+    $nomeArquivo = 'evento_' . bin2hex(ev_random_bytes(16)) . '.' . $extensao;
     $caminhoDestino = EVENTOS_UPLOAD_DIR . $nomeArquivo;
 
     if (move_uploaded_file($arquivo['tmp_name'], $caminhoDestino)) {
@@ -161,45 +180,30 @@ function excluir_imagem_evento($imagemCapa) {
 
 
 /**
- * Remove eventos encerrados há mais de 1 mês e suas imagens de capa.
+ * Marca como arquivados os eventos encerrados há mais de 1 mês.
  *
- * A limpeza é executada quando a página Eventos.php é aberta.
- * Para evitar deixar arquivos órfãos, a imagem é removida somente
- * depois que o registro do evento for excluído com sucesso do banco.
+ * A rotina roda quando a página Eventos.php é aberta, mas apenas
+ * ALTERA o registro (eventos.arquivado = 1): nada é apagado do
+ * banco nem do servidor. Eventos arquivados somem das listagens
+ * públicas e podem ser restaurados pelo dono em CRUD_Eventos.php.
  *
  * @param mysqli $conexao conexão já aberta
  */
-function limpar_eventos_antigos($conexao) {
-    $sql = "SELECT id_evento, imagem_capa
-            FROM eventos
-            WHERE data_fim_evento < DATE_SUB(CURDATE(), INTERVAL 1 MONTH)";
+function arquivar_eventos_encerrados($conexao) {
+    $stmt = $conexao->prepare(
+        "UPDATE eventos
+            SET arquivado = 1
+          WHERE arquivado = 0
+            AND data_fim_evento < DATE_SUB(CURDATE(), INTERVAL 1 MONTH)"
+    );
 
-    $resultado = $conexao->query($sql);
-
-    if (!$resultado) {
-        // Não interrompe a página de eventos caso a limpeza falhe.
+    if ($stmt === false) {
+        // Não interrompe a página de eventos caso a rotina falhe.
         return;
     }
 
-    while ($evento = $resultado->fetch_assoc()) {
-        $idEvento = (int) $evento['id_evento'];
-
-        $stmt = $conexao->prepare("DELETE FROM eventos WHERE id_evento = ?");
-
-        if ($stmt === false) {
-            continue;
-        }
-
-        $stmt->bind_param('i', $idEvento);
-
-        if ($stmt->execute()) {
-            excluir_imagem_evento($evento['imagem_capa']);
-        }
-
-        $stmt->close();
-    }
-
-    $resultado->free();
+    $stmt->execute();
+    $stmt->close();
 }
 
 /**
@@ -231,58 +235,47 @@ function formatar_data_evento($data) {
 }
 
 /**
- * Gera um salt aleatório seguro para hash de senha.
- *
- * @param int $length Tamanho do salt em bytes (padrão 32)
- * @return string Salt em hexadecimal
- */
-function gerar_salt($length = 32) {
-    if (function_exists('openssl_random_pseudo_bytes')) {
-        $bytes = openssl_random_pseudo_bytes($length, $crypto_strong);
-        if ($crypto_strong) {
-            return bin2hex($bytes);
-        }
-    }
-    $salt = '';
-    for ($i = 0; $i < $length; $i++) {
-        $salt .= sprintf('%02x', mt_rand(0, 255));
-    }
-    $salt .= uniqid('', true);
-    return substr($salt, 0, $length * 2);
-}
-
-/**
- * Gera hash SHA-256 da senha com salt.
- * Formato retornado: sha256:$salt:$hash (para armazenar no banco)
+ * Gera hash bcrypt da senha para armazenamento no banco.
+ * Usa password_hash() (PHP 5.5+) ou o equivalente baseado em crypt()
+ * definido no bootstrap para PHP 5.3 — ambos geram $2y$ (Blowfish).
  *
  * @param string $senha Senha em texto puro
- * @param string $salt Salt em hexadecimal (se vazio, gera novo)
- * @return string Hash no formato sha256:$salt:$hash
+ * @return string Hash bcrypt (60 caracteres, formato $2y$10$...)
  */
-function hash_senha($senha, $salt = '') {
-    if ($salt === '') {
-        $salt = gerar_salt();
+function hash_senha($senha) {
+    $hash = password_hash($senha, PASSWORD_BCRYPT);
+    if ($hash === false) {
+        // Só acontece se o Blowfish do crypt() estiver indisponível.
+        // Fallback legado para não travar o cadastro (migra no próximo login).
+        $salt = bin2hex(ev_random_bytes(16));
+        return 'sha256:' . $salt . ':' . hash('sha256', $salt . $senha . $salt);
     }
-    $hash = hash('sha256', $salt . $senha . $salt);
-    return 'sha256:' . $salt . ':' . $hash;
+    return $hash;
 }
 
 /**
  * Verifica se a senha confere com o hash armazenado.
- * Suporta dois formatos:
- *   - Novo: sha256:$salt:$hash (seguro, com salt)
- *   - Legado: texto puro (para compatibilidade com usuários existentes)
+ * Suporta três formatos:
+ *   - Atual:  bcrypt $2y$... (password_hash)
+ *   - Legado: sha256:$salt:$hash (formato anterior — migrado no login)
+ *   - Legado: texto puro (cadastro antigo — migrado no login)
+ * Nenhum formato legado é usado em novos cadastros.
  *
  * @param string $senha Senha em texto puro fornecida no login
- * @param string $hashArmazenado Hash do banco (formato sha256:$salt:$hash) ou texto puro
+ * @param string $hashArmazenado Hash do banco
  * @return bool True se a senha estiver correta
  */
 function verificar_senha($senha, $hashArmazenado) {
-    if (empty($hashArmazenado)) {
+    if (!is_string($senha) || !is_string($hashArmazenado) || $hashArmazenado === '') {
         return false;
     }
 
-    // Formato novo: sha256:$salt:$hash
+    // Formato atual: bcrypt (gerado por password_hash)
+    if (strpos($hashArmazenado, '$2y$') === 0 || strpos($hashArmazenado, '$2a$') === 0) {
+        return password_verify($senha, $hashArmazenado);
+    }
+
+    // Formato legado: sha256:$salt:$hash
     if (strpos($hashArmazenado, 'sha256:') === 0) {
         $partes = explode(':', $hashArmazenado);
         if (count($partes) !== 3) {
@@ -294,23 +287,23 @@ function verificar_senha($senha, $hashArmazenado) {
         return hash_equals($hashCalculado, $hashEsperado);
     }
 
-    // Formato legado: comparação direta (texto puro)
-    // Útil para usuários cadastrados antes do sistema de hash
-    return $senha === $hashArmazenado;
+    // Formato mais antigo: texto puro (migração única no primeiro login)
+    return hash_equals($hashArmazenado, $senha);
 }
 
 /**
- * Comparação de strings em tempo constante.
+ * Indica se o hash armazenado precisa ser migrado para bcrypt
+ * (usado pelo login para atualizar senhas legadas).
+ *
+ * @param string $hashArmazenado
+ * @return bool
  */
-if (!function_exists('hash_equals')) {
-    function hash_equals($known_string, $user_string) {
-        if (strlen($known_string) !== strlen($user_string)) {
-            return false;
-        }
-        $result = 0;
-        for ($i = 0; $i < strlen($known_string); $i++) {
-            $result |= (ord($known_string[$i]) ^ ord($user_string[$i]));
-        }
-        return $result === 0;
+function senha_requer_atualizacao($hashArmazenado) {
+    if (!is_string($hashArmazenado) || $hashArmazenado === '') {
+        return true;
     }
+    if (strpos($hashArmazenado, '$2y$') !== 0 && strpos($hashArmazenado, '$2a$') !== 0) {
+        return true;
+    }
+    return password_needs_rehash($hashArmazenado, PASSWORD_BCRYPT);
 }

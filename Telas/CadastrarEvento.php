@@ -17,12 +17,8 @@ require dirname(__FILE__) . '/Componentes/funcoes_eventos.php';
 // Só usuários logados podem cadastrar evento. O id do organizador
 // vem da sessão, nunca de um campo do formulário (evita que alguém
 // cadastre um evento em nome de outro usuário).
-if (!isset($_SESSION['id_usuario'])) {
-    header('Location: Login.php');
-    exit;
-}
-
-$usuarioId = (int) $_SESSION['id_usuario'];
+exigir_login('Login.php');
+$usuarioId = usuario_id();
 
 $erros = array();
 $sucesso = false;
@@ -48,12 +44,12 @@ $dados = array(
 );
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_exigir();
 
-    // Recupera e faz um trim() básico em cada campo de texto.
+    // Recupera e faz um trim() básico em cada campo de texto
+    // (rejeita arrays enviados via ?campo[]=).
     foreach ($dados as $campo => $valorPadrao) {
-        if (isset($_POST[$campo])) {
-            $dados[$campo] = trim($_POST[$campo]);
-        }
+        $dados[$campo] = entrada_texto($_POST, $campo, $valorPadrao);
     }
 
     // ---- Validação server-side dos campos obrigatórios ----
@@ -128,7 +124,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $conexao->prepare($sql);
 
             if ($stmt === false) {
-                $erros[] = 'Erro ao preparar a operação: ' . $conexao->error;
+                registrar_log('Falha ao preparar cadastro de evento: ' . $conexao->error, 'ERROR');
+                $erros[] = 'Não foi possível salvar o evento agora. Tente novamente em instantes.';
             } else {
                 $categoriaId = (int) $dados['categoria_id'];
                 $vagas = (int) $dados['vagas'];
@@ -166,7 +163,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     // Se o INSERT falhar, remove a imagem que já tinha sido salva
                     // no disco para não deixar arquivo órfão.
                     excluir_imagem_evento($nomeImagem);
-                    $erros[] = 'Erro ao salvar o evento: ' . $stmt->error;
+                    registrar_log('Falha ao salvar evento: ' . $stmt->error, 'ERROR');
+                    $erros[] = 'Não foi possível salvar o evento agora. Tente novamente em instantes.';
                 }
 
                 $stmt->close();
@@ -209,6 +207,7 @@ require dirname(__FILE__) . '/Componentes/header.php';
     <?php endif; ?>
 
     <form class="evento-form" action="CadastrarEvento.php" method="post" enctype="multipart/form-data">
+    <?php echo csrf_campo(); ?>
 
       <div class="campo campo-full">
         <label for="titulo">Título do evento</label>

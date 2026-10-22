@@ -11,11 +11,11 @@ require_once dirname(__FILE__) . '/../config/bootstrap.php';
 require_once dirname(__FILE__) . '/Componentes/funcoes_eventos.php';
 require_once dirname(__FILE__) . '/Componentes/funcoes_freelancers.php';
 
-// ---- Filtros (GET) ----
-$busca = isset($_GET['busca']) ? trim($_GET['busca']) : '';
-$categoriaFiltro = isset($_GET['categoria']) && ctype_digit($_GET['categoria']) ? (int) $_GET['categoria'] : 0;
-$cidadeFiltro = isset($_GET['cidade']) ? trim($_GET['cidade']) : '';
-$estadoFiltro = isset($_GET['estado']) ? trim($_GET['estado']) : '';
+// ---- Filtros (GET) — entrada_texto/entrada_inteiro rejeitam arrays ----
+$busca = entrada_texto($_GET, 'busca');
+$categoriaFiltro = entrada_inteiro($_GET, 'categoria');
+$cidadeFiltro = entrada_texto($_GET, 'cidade');
+$estadoFiltro = entrada_texto($_GET, 'estado');
 
 // ---- Busca categorias de serviços ----
 $categoriasServicos = array();
@@ -74,26 +74,30 @@ $sql .= " GROUP BY f.id_freelancer, u.id_usuario, cs.id_categoria ORDER BY u.nom
 $stmt = $conexao->prepare($sql);
 
 if ($stmt === false) {
-    die('Erro ao preparar query: ' . $conexao->error);
+    registrar_log('Falha ao preparar listagem de artistas: ' . $conexao->error, 'ERROR');
+    $artistas = array();
+    $stmt = null;
 }
 
-// bind_param dinâmico
-if ($tipos !== '') {
-    $paramsPorReferencia = array($tipos);
-    for ($i = 0; $i < count($parametros); $i++) {
-        $paramsPorReferencia[] = &$parametros[$i];
+if ($stmt !== null) {
+    // bind_param dinâmico
+    if ($tipos !== '') {
+        $paramsPorReferencia = array($tipos);
+        for ($i = 0; $i < count($parametros); $i++) {
+            $paramsPorReferencia[] = &$parametros[$i];
+        }
+        call_user_func_array(array($stmt, 'bind_param'), $paramsPorReferencia);
     }
-    call_user_func_array(array($stmt, 'bind_param'), $paramsPorReferencia);
-}
 
-$stmt->execute();
-$resultado = $stmt->get_result();
+    $stmt->execute();
+    $resultado = $stmt->get_result();
 
-$artistas = array();
-while ($linha = $resultado->fetch_assoc()) {
-    $artistas[] = $linha;
+    $artistas = array();
+    while ($linha = $resultado->fetch_assoc()) {
+        $artistas[] = $linha;
+    }
+    $stmt->close();
 }
-$stmt->close();
 
 // Busca estados únicos para o filtro
 $estados = array();
@@ -104,23 +108,12 @@ if ($resEstados) {
     }
     $resEstados->free();
 }
+$pageTitle = 'EventoVivo - Artistas e Freelancers';
+$pageDescription = 'Encontre músicos, fotógrafos, videomakers, dançarinos, designers e outros artistas para seu evento.';
+$extraCss = array('../Css/style.css');
+
+require dirname(__FILE__) . '/Componentes/header.php';
 ?>
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EventoVivo — Artistas e Freelancers</title>
-  <meta name="description" content="Encontre músicos, fotógrafos, videomakers, dançarinos, designers e outros artistas para seu evento.">
-  <meta name="theme-color" content="#110f0c">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23110f0c'/%3E%3Ctext x='32' y='46' font-family='Arial, sans-serif' font-weight='900' font-size='38' fill='%23b8000d' text-anchor='middle'%3EV%3C/text%3E%3C/svg%3E">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Courier+Prime:wght@400;700&family=Permanent+Marker&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../Css/style.css">
-</head>
-<?php require dirname(__FILE__) . '/Componentes/header.php'; ?>
-<body>
 
 <main class="list-page">
   <section class="page-header">
@@ -266,5 +259,3 @@ if ($resEstados) {
 </main>
 
 <?php require dirname(__FILE__) . '/Componentes/footer.php'; ?>
-</body>
-</html>

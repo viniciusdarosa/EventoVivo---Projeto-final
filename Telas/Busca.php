@@ -10,8 +10,9 @@
 require_once dirname(__FILE__) . '/../config/bootstrap.php';
 require_once dirname(__FILE__) . '/Componentes/funcoes_eventos.php';
 require_once dirname(__FILE__) . '/Componentes/funcoes_freelancers.php';
+require_once dirname(__FILE__) . '/Componentes/funcoes_contato.php';
 
-$termo = isset($_GET['q']) ? trim($_GET['q']) : '';
+$termo = entrada_texto($_GET, 'q');
 $termoSeguro = htmlspecialchars($termo);
 
 $eventos = array();
@@ -19,23 +20,31 @@ $artistas = array();
 
 if ($termo !== '') {
     // ---- Busca EVENTOS ----
-    $sqlEventos = "SELECT e.*, c.nome AS categoria_nome, u.nome AS organizador_nome
+    // u.email/telefone alimentam o botão de contato: o organizador é o
+    // usuário DONO do evento (e.usuario_id), não um freelancer.
+    $sqlEventos = "SELECT e.*, c.nome AS categoria_nome, u.nome AS organizador_nome,
+                          u.email AS organizador_email, u.telefone AS organizador_telefone
                    FROM eventos e
                    LEFT JOIN categorias_eventos c ON c.id_categoria = e.categoria_id
                    LEFT JOIN usuario u ON u.id_usuario = e.usuario_id
-                   WHERE e.titulo LIKE ? OR e.descricao LIKE ? OR e.cidade LIKE ? OR e.endereco LIKE ?
+                   WHERE e.arquivado = 0
+                     AND (e.titulo LIKE ? OR e.descricao LIKE ? OR e.cidade LIKE ? OR e.endereco LIKE ?)
                    ORDER BY e.data_inicio_evento DESC
                    LIMIT 20";
 
     $param = '%' . $termo . '%';
     $stmt = $conexao->prepare($sqlEventos);
-    $stmt->bind_param('ssss', $param, $param, $param, $param);
-    $stmt->execute();
-    $res = $stmt->get_result();
-    while ($row = $res->fetch_assoc()) {
-        $eventos[] = $row;
+    if ($stmt === false) {
+        registrar_log('Falha ao preparar busca de eventos: ' . $conexao->error, 'ERROR');
+    } else {
+        $stmt->bind_param('ssss', $param, $param, $param, $param);
+        $stmt->execute();
+        $res = $stmt->get_result();
+        while ($row = $res->fetch_assoc()) {
+            $eventos[] = $row;
+        }
+        $stmt->close();
     }
-    $stmt->close();
 
     // ---- Busca ARTISTAS/FREELANCERS ----
     $sqlArtistas = "SELECT f.*, u.nome, u.foto_perfil, u.biografia, u.cidade, u.estado, u.email, u.telefone,
@@ -48,13 +57,17 @@ if ($termo !== '') {
                     LIMIT 20";
 
     $stmt = $conexao->prepare($sqlArtistas);
-    $stmt->bind_param('sssss', $param, $param, $param, $param, $param);
-    $stmt->execute();
-    $res = $stmt->get_result();
-    while ($row = $res->fetch_assoc()) {
-        $artistas[] = $row;
+    if ($stmt === false) {
+        registrar_log('Falha ao preparar busca de artistas: ' . $conexao->error, 'ERROR');
+    } else {
+        $stmt->bind_param('sssss', $param, $param, $param, $param, $param);
+        $stmt->execute();
+        $res = $stmt->get_result();
+        while ($row = $res->fetch_assoc()) {
+            $artistas[] = $row;
+        }
+        $stmt->close();
     }
-    $stmt->close();
 }
 ?>
 
@@ -137,13 +150,23 @@ require dirname(__FILE__) . '/Componentes/header.php';
                       <?php if (isset($_SESSION['id_usuario']) && $_SESSION['id_usuario'] == $evento['usuario_id']): ?>
                         <a class="btn-icone" href="EditarEvento.php?id_evento=<?php echo (int) $evento['id_evento']; ?>">Editar</a>
                         <form method="post" action="ExcluirEvento.php"
-                              onsubmit="return confirm('Tem certeza que deseja excluir este evento?');"
+                              onsubmit="return confirm('Tem certeza que deseja arquivar este evento? Ele deixará de aparecer nas listagens públicas e poderá ser restaurado depois.');"
                               style="display:inline;">
+                          <?php echo csrf_campo(); ?>
                           <input type="hidden" name="id_evento" value="<?php echo (int) $evento['id_evento']; ?>">
-                          <button type="submit" class="btn-icone btn-icone-excluir">Excluir</button>
+                          <button type="submit" class="btn-icone btn-icone-excluir">Arquivar</button>
                         </form>
                       <?php else: ?>
-                        <a class="btn-icone" href="PerfilFreelancer.php?id=<?php echo (int) $evento['id_evento']; ?>" style="pointer-events:none;opacity:.5;" title="Faça login para contatar">Contatar</a>
+                        <?php
+                        // Contato com o organizador: localizado pelo usuário DONO
+                        // do evento (eventos.usuario_id), nunca por id de freelancer.
+                        render_contato_organizador(
+                            $evento['usuario_id'],
+                            isset($evento['organizador_nome']) ? $evento['organizador_nome'] : '',
+                            isset($evento['organizador_email']) ? $evento['organizador_email'] : '',
+                            isset($evento['organizador_telefone']) ? $evento['organizador_telefone'] : ''
+                        );
+                        ?>
                       <?php endif; ?>
                     </div>
                   </div>
@@ -221,8 +244,9 @@ require dirname(__FILE__) . '/Componentes/header.php';
                     <?php if (!empty($artista['email'])): ?>
                       <a href="mailto:<?php echo htmlspecialchars($artista['email']); ?>" class="contact-link">✉ Email</a>
                     <?php endif; ?>
-                    <?php if (!empty($artista['telefone'])): ?>
-                      <a href="tel:<?php echo htmlspecialchars(preg_replace('/\D/', '', $artista['telefone'])); ?>" class="contact-link">📞 WhatsApp</a>
+                    <?php $urlWhatsArtista = whatsapp_url(isset($artista['telefone']) ? $artista['telefone'] : ''); ?>
+                    <?php if ($urlWhatsArtista !== ''): ?>
+                      <a href="<?php echo htmlspecialchars($urlWhatsArtista); ?>" target="_blank" rel="noopener noreferrer" class="contact-link">📞 WhatsApp</a>
                     <?php endif; ?>
                     <?php if (!empty($artista['rede_social'])): ?>
                       <a href="https://instagram.com/<?php echo ltrim($artista['rede_social'], '@'); ?>" target="_blank" class="contact-link">📸 Instagram</a>

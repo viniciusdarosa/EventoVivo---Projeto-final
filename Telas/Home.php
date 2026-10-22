@@ -13,24 +13,33 @@ require_once dirname(__FILE__) . '/Componentes/cards.php';
 $sqlEventos = "SELECT e.*, c.nome AS categoria_nome
                FROM eventos e
                LEFT JOIN categorias_eventos c ON c.id_categoria = e.categoria_id
-               WHERE e.data_fim_evento >= CURDATE()
+               WHERE e.arquivado = 0
+                 AND e.data_fim_evento >= CURDATE()
                ORDER BY e.data_inicio_evento ASC
                LIMIT 4";
 $stmtEventos = $conexao->prepare($sqlEventos);
-$stmtEventos->execute();
-$resultEventos = $stmtEventos->get_result();
-
-$eventos = array();
-while ($linha = $resultEventos->fetch_assoc()) {
-    $eventos[] = array(
-        'data'   => formatar_data_evento($linha['data_inicio_evento']),
-        'local'  => $linha['cidade'] . '/' . $linha['estado'],
-        'titulo' => $linha['titulo'],
-        'desc'   => substr($linha['descricao'], 0, 120) . (strlen($linha['descricao']) > 120 ? '...' : ''),
-        'imagem' => evento_imagem_src($linha['imagem_capa']),
-    );
+if ($stmtEventos === false) {
+    registrar_log('Falha ao preparar destaques de eventos: ' . $conexao->error, 'ERROR');
+    $eventos = array();
+    $stmtEventos = null;
 }
-$stmtEventos->close();
+
+if ($stmtEventos !== null) {
+    $stmtEventos->execute();
+    $resultEventos = $stmtEventos->get_result();
+
+    $eventos = array();
+    while ($linha = $resultEventos->fetch_assoc()) {
+        $eventos[] = array(
+            'data'   => formatar_data_evento($linha['data_inicio_evento']),
+            'local'  => $linha['cidade'] . '/' . $linha['estado'],
+            'titulo' => $linha['titulo'],
+            'desc'   => substr($linha['descricao'], 0, 120) . (strlen($linha['descricao']) > 120 ? '...' : ''),
+            'imagem' => evento_imagem_src($linha['imagem_capa']),
+        );
+    }
+    $stmtEventos->close();
+}
 
 /* ---- Busca 4 artistas melhores avaliados ---- */
 $sqlArtistas = "SELECT f.*, u.nome, u.foto_perfil, u.cidade, u.estado,
@@ -47,20 +56,28 @@ $sqlArtistas = "SELECT f.*, u.nome, u.foto_perfil, u.cidade, u.estado,
                 ORDER BY media_avaliacao DESC, total_avaliacoes DESC
                 LIMIT 4";
 $stmtArtistas = $conexao->prepare($sqlArtistas);
-$stmtArtistas->execute();
-$resultArtistas = $stmtArtistas->get_result();
-
-$artistas = array();
-while ($linha = $resultArtistas->fetch_assoc()) {
-    $artistas[] = array(
-        'foto'       => freelancer_imagem_publica_src($linha['foto_perfil']),
-        'nome'       => $linha['nome'],
-        'tipo'       => $linha['profissao'] ?: $linha['categoria_nome'],
-        'local'      => $linha['cidade'] . '/' . $linha['estado'],
-        'categorias' => array(),
-    );
+if ($stmtArtistas === false) {
+    registrar_log('Falha ao preparar destaques de artistas: ' . $conexao->error, 'ERROR');
+    $artistas = array();
+    $stmtArtistas = null;
 }
-$stmtArtistas->close();
+
+if ($stmtArtistas !== null) {
+    $stmtArtistas->execute();
+    $resultArtistas = $stmtArtistas->get_result();
+
+    $artistas = array();
+    while ($linha = $resultArtistas->fetch_assoc()) {
+        $artistas[] = array(
+            'foto'       => freelancer_imagem_publica_src($linha['foto_perfil']),
+            'nome'       => $linha['nome'],
+            'tipo'       => $linha['profissao'] ?: $linha['categoria_nome'],
+            'local'      => $linha['cidade'] . '/' . $linha['estado'],
+            'categorias' => array(),
+        );
+    }
+    $stmtArtistas->close();
+}
 
 require dirname(__FILE__) . '/Componentes/header.php';
 ?>

@@ -1,0 +1,11 @@
+# Credenciais locais de banco (nunca versionar)
+config/credenciais.local.php
+
+# Logs da aplicação
+logs/*.log
+logs/login-falhas-*.dat
+
+# Arquivos temporários
+*.tmp
+Thumbs.db
+.DS_Store

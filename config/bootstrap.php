@@ -70,6 +70,133 @@ if (!defined('ENT_SUBSTITUTE')) {
     define('ENT_SUBSTITUTE', 0);
 }
 
+// password_hash()/password_verify()/password_needs_rehash(): nasceram no
+// PHP 5.5. No PHP 5.3.9 (EasyPHP) usamos um equivalente baseado em crypt()
+// com Blowfish ($2y$), que já está disponível neste PHP (verificado).
+if (!defined('PASSWORD_BCRYPT')) {
+    define('PASSWORD_BCRYPT', 1);
+    define('PASSWORD_DEFAULT', PASSWORD_BCRYPT);
+}
+if (!defined('PASSWORD_BCRYPT_DEFAULT_COST')) {
+    define('PASSWORD_BCRYPT_DEFAULT_COST', 10);
+}
+
+/**
+ * Gera $tamanho bytes aleatórios criptograficamente seguros, com fallbacks
+ * para PHP antigo (OpenSSL) e, em último caso, fonte fraca (melhor esforço).
+ *
+ * @param int $tamanho
+ * @return string bytes (length === $tamanho)
+ */
+if (!function_exists('ev_random_bytes')) {
+    function ev_random_bytes($tamanho)
+    {
+        $tamanho = (int) $tamanho;
+        if ($tamanho < 1) {
+            $tamanho = 1;
+        }
+
+        if (function_exists('random_bytes')) {
+            try {
+                return random_bytes($tamanho);
+            } catch (Exception $e) {
+                // continua nos próximos fallbacks
+            }
+        }
+
+        if (function_exists('openssl_random_pseudo_bytes')) {
+            $forte = false;
+            $bytes = openssl_random_pseudo_bytes($tamanho, $forte);
+            if ($bytes !== false && $forte) {
+                return $bytes;
+            }
+        }
+
+        // Último recurso: combinação de fontes fracas (PHP 5.3 sem OpenSSL).
+        $saida = '';
+        for ($i = 0; $i < $tamanho; $i++) {
+            $saida .= chr(mt_rand(0, 255));
+        }
+        return substr(hash('sha256', $saida . uniqid('', true) . microtime(true), true), 0, $tamanho);
+    }
+}
+
+if (!function_exists('password_hash')) {
+    /**
+     * Equivalente de password_hash() (bcrypt) para PHP 5.3 via crypt().
+     *
+     * @param string $senha
+     * @param int    $algoritmo Somente PASSWORD_BCRYPT é suportado.
+     * @param array  $opcoes    Aceita 'cost' (4..31).
+     * @return string|false
+     */
+    function password_hash($senha, $algoritmo = PASSWORD_DEFAULT, $opcoes = array())
+    {
+        if (!is_string($senha) || $algoritmo !== PASSWORD_BCRYPT) {
+            return false;
+        }
+        $cost = isset($opcoes['cost']) ? (int) $opcoes['cost'] : PASSWORD_BCRYPT_DEFAULT_COST;
+        if ($cost < 4 || $cost > 31) {
+            $cost = PASSWORD_BCRYPT_DEFAULT_COST;
+        }
+
+        // Salt bcrypt: 22 caracteres da lista ./A-Za-z0-9 (22 bytes codificados
+        // em base64 com '+' trocado por '.' e padding removido).
+        $salt = strtr(rtrim(base64_encode(ev_random_bytes(16)), '='), '+', '.');
+
+        $hash = crypt($senha, '$2y$' . str_pad($cost, 2, '0', STR_PAD_LEFT) . '$' . $salt);
+        if (!is_string($hash) || strlen($hash) !== 60 || substr($hash, 0, 4) !== '$2y$') {
+            return false;
+        }
+        return $hash;
+    }
+}
+
+if (!function_exists('password_verify')) {
+    /**
+     * Equivalente de password_verify() para PHP 5.3 via crypt().
+     * Comparação em tempo constante com hash_equals().
+     *
+     * @param string $senha
+     * @param string $hash
+     * @return bool
+     */
+    function password_verify($senha, $hash)
+    {
+        if (!is_string($senha) || !is_string($hash) || strlen($hash) !== 60 || $hash[0] !== '$') {
+            return false;
+        }
+        $calculado = crypt($senha, $hash);
+        if (!is_string($calculado) || strlen($calculado) !== 60) {
+            return false;
+        }
+        return hash_equals($hash, $calculado);
+    }
+}
+
+if (!function_exists('password_needs_rehash')) {
+    /**
+     * Equivalente de password_needs_rehash() para PHP 5.3.
+     *
+     * @param string $hash
+     * @param int    $algoritmo
+     * @param array  $opcoes
+     * @return bool
+     */
+    function password_needs_rehash($hash, $algoritmo = PASSWORD_DEFAULT, $opcoes = array())
+    {
+        if (!is_string($hash) || $algoritmo !== PASSWORD_BCRYPT || strlen($hash) !== 60) {
+            return true;
+        }
+        $cost = isset($opcoes['cost']) ? (int) $opcoes['cost'] : PASSWORD_BCRYPT_DEFAULT_COST;
+        if ($cost < 4 || $cost > 31) {
+            $cost = PASSWORD_BCRYPT_DEFAULT_COST;
+        }
+        $prefixo = '$2y$' . str_pad($cost, 2, '0', STR_PAD_LEFT) . '$';
+        return substr($hash, 0, 7) !== $prefixo;
+    }
+}
+
 /* ----------------------------------------------------------
  * 1. Caminhos e ambiente
  * ---------------------------------------------------------- */
@@ -379,5 +506,178 @@ if (!function_exists('aviso_sessao')) {
         $mensagem = $_SESSION['aviso_sessao'];
         unset($_SESSION['aviso_sessao']);
         return $mensagem;
+    }
+}
+
+/**
+ * Lê um valor textual de $_GET/$_POST com segurança.
+ * Rejeita arrays (ex.: ?nome[]=x) e aplica trim, evitando warnings do PHP
+ * ao passar array para trim() e evitando arrays dentro dos prepared statements.
+ *
+ * @param array  $origem  Normalmente $_GET ou $_POST.
+ * @param string $chave   Nome do campo.
+ * @param string $padrao  Valor de retorno quando ausente/inválido.
+ * @return string
+ */
+if (!function_exists('entrada_texto')) {
+    function entrada_texto($origem, $chave, $padrao = '')
+    {
+        if (!is_array($origem) || !isset($origem[$chave]) || !is_string($origem[$chave])) {
+            return $padrao;
+        }
+        return trim($origem[$chave]);
+    }
+}
+
+/**
+ * Lê um valor inteiro de $_GET/$_POST com segurança.
+ * Só aceita dígitos (com sinal opcional); arrays e lixo retornam $padrao.
+ *
+ * @param array  $origem Normalmente $_GET ou $_POST.
+ * @param string $chave  Nome do campo.
+ * @param int    $padrao Valor de retorno quando ausente/inválido.
+ * @return int
+ */
+if (!function_exists('entrada_inteiro')) {
+    function entrada_inteiro($origem, $chave, $padrao = 0)
+    {
+        $valor = entrada_texto($origem, $chave, '');
+        if ($valor === '' || !preg_match('/^-?[0-9]+$/', $valor)) {
+            return (int) $padrao;
+        }
+        return (int) $valor;
+    }
+}
+
+/**
+ * Aceita somente destinos internos de redirecionamento (proteção contra
+ * open redirect). Formato permitido: página .php opcionalmente com
+ * querystring simples de segurança (ex.: PerfilFreelancer.php?id=12).
+ * Qualquer outra coisa (http:, //, \\, \r\n, javascript:, caminhos com
+ * ../ etc.) cai no padrão.
+ *
+ * @param string $destino Valor vindo do usuário.
+ * @param string $padrao  Destino seguro de retorno.
+ * @return string Destino validado.
+ */
+if (!function_exists('destino_interno_seguro')) {
+    function destino_interno_seguro($destino, $padrao = 'Home.php')
+    {
+        if (!is_string($destino) || $destino === '') {
+            return $padrao;
+        }
+        if (preg_match('#^[A-Za-z0-9_-]+\.php(\?[A-Za-z0-9_=&%.-]+)?$#', $destino)) {
+            return $destino;
+        }
+        return $padrao;
+    }
+}
+
+/* ----------------------------------------------------------
+ * 8. Limite de tentativas de login (proteção contra força bruta)
+ *    Conta falhas por e-mail + IP em arquivo em logs/ (protegido
+ *    por .htaccess). Após LOGIN_TENTATIVAS_MAX falhas dentro da
+ *    janela, o login é bloqueado temporariamente.
+ * ---------------------------------------------------------- */
+
+if (!defined('LOGIN_TENTATIVAS_MAX')) {
+    define('LOGIN_TENTATIVAS_MAX', 5);
+}
+if (!defined('LOGIN_TENTATIVAS_JANELA')) {
+    define('LOGIN_TENTATIVAS_JANELA', 15 * 60); // 15 minutos
+}
+
+/**
+ * Caminho do arquivo de contagem de falhas de login para e-mail+IP.
+ */
+if (!function_exists('login_arquivo_falhas')) {
+    function login_arquivo_falhas($email, $ip)
+    {
+        $chave = sha1(strtolower($email) . '|' . $ip);
+        return LOG_PATH . '/login-falhas-' . $chave . '.dat';
+    }
+}
+
+/**
+ * Lê as tentativas falhas registradas (timestamps) dentro da janela.
+ *
+ * @return array lista de timestamps
+ */
+if (!function_exists('login_ler_falhas')) {
+    function login_ler_falhas($email, $ip)
+    {
+        $arquivo = login_arquivo_falhas($email, $ip);
+        if (!is_file($arquivo)) {
+            return array();
+        }
+        $conteudo = @file_get_contents($arquivo);
+        if ($conteudo === false || $conteudo === '') {
+            return array();
+        }
+        $agora = time();
+        $falhas = array();
+        foreach (explode(',', $conteudo) as $marca) {
+            $marca = (int) $marca;
+            if ($marca > 0 && ($agora - $marca) <= LOGIN_TENTATIVAS_JANELA) {
+                $falhas[] = $marca;
+            }
+        }
+        return $falhas;
+    }
+}
+
+/**
+ * Indica se o login está bloqueado (muitas falhas recentes).
+ *
+ * @return bool
+ */
+if (!function_exists('login_bloqueado')) {
+    function login_bloqueado($email, $ip)
+    {
+        return count(login_ler_falhas($email, $ip)) >= LOGIN_TENTATIVAS_MAX;
+    }
+}
+
+/**
+ * Registra uma tentativa de login que falhou.
+ */
+if (!function_exists('login_registrar_falha')) {
+    function login_registrar_falha($email, $ip)
+    {
+        $falhas = login_ler_falhas($email, $ip);
+        $falhas[] = time();
+        $arquivo = login_arquivo_falhas($email, $ip);
+        @file_put_contents($arquivo, implode(',', $falhas), LOCK_EX);
+    }
+}
+
+/**
+ * Limpa as falhas após login bem-sucedido (ou quando o usuário reenvia
+ * dados corretos).
+ */
+if (!function_exists('login_limpar_falhas')) {
+    function login_limpar_falhas($email, $ip)
+    {
+        $arquivo = login_arquivo_falhas($email, $ip);
+        if (is_file($arquivo)) {
+            @unlink($arquivo);
+        }
+    }
+}
+
+/**
+ * Retorna o IP da requisição atual (para contagem de tentativas).
+ * Somente para rate limit local, não para auditoria de origem.
+ *
+ * @return string
+ */
+if (!function_exists('ip_requisicao')) {
+    function ip_requisicao()
+    {
+        $ip = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '0.0.0.0';
+        if (!is_string($ip) || !filter_var($ip, FILTER_VALIDATE_IP)) {
+            $ip = '0.0.0.0';
+        }
+        return $ip;
     }
 }

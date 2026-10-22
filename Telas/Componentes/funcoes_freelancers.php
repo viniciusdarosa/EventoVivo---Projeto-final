@@ -64,6 +64,9 @@ function buscar_freelancer_por_usuario($conexao, $usuarioId) {
         WHERE f.usuario_id = ?
         LIMIT 1
     ");
+    if ($stmt === false) {
+        return false;
+    }
     $stmt->bind_param('i', $usuarioId);
     $stmt->execute();
     $resultado = $stmt->get_result();
@@ -90,6 +93,9 @@ function buscar_freelancer_completo($conexao, $idFreelancer) {
         WHERE f.id_freelancer = ?
         LIMIT 1
     ");
+    if ($stmt === false) {
+        return false;
+    }
     $stmt->bind_param('i', $idFreelancer);
     $stmt->execute();
     $resultado = $stmt->get_result();
@@ -115,6 +121,9 @@ function buscar_carrossel_freelancer($conexao, $freelancerId) {
         WHERE freelancer_id = ?
         ORDER BY data_cadastro ASC, id_foto ASC
     ");
+    if ($stmt === false) {
+        return $fotos;
+    }
     $stmt->bind_param('i', $freelancerId);
     $stmt->execute();
     $resultado = $stmt->get_result();
@@ -135,6 +144,9 @@ function buscar_carrossel_freelancer($conexao, $freelancerId) {
  */
 function contar_carrossel_freelancer($conexao, $freelancerId) {
     $stmt = $conexao->prepare("SELECT COUNT(*) AS total FROM carrossel_fotos WHERE freelancer_id = ?");
+    if ($stmt === false) {
+        return 0;
+    }
     $stmt->bind_param('i', $freelancerId);
     $stmt->execute();
     $resultado = $stmt->get_result();
@@ -178,6 +190,9 @@ function inserir_foto_carrossel($conexao, $freelancerId, $imagem, $legenda) {
     }
 
     $stmt = $conexao->prepare("INSERT INTO carrossel_fotos (freelancer_id, imagem, legenda, data_cadastro) VALUES (?, ?, ?, NOW())");
+    if ($stmt === false) {
+        return array('ok' => false, 'erro' => 'Erro ao preparar a inclusão da foto.');
+    }
     $stmt->bind_param('iss', $freelancerId, $imagem, $legenda);
 
     if ($stmt->execute()) {
@@ -185,9 +200,11 @@ function inserir_foto_carrossel($conexao, $freelancerId, $imagem, $legenda) {
         return array('ok' => true, 'erro' => null);
     }
 
-    $erro = $stmt->error;
+    if (function_exists('registrar_log')) {
+        registrar_log('Falha ao inserir foto do carrossel: ' . $stmt->error, 'ERROR');
+    }
     $stmt->close();
-    return array('ok' => false, 'erro' => 'Não foi possível adicionar a foto: ' . $erro);
+    return array('ok' => false, 'erro' => 'Não foi possível adicionar a foto. Tente novamente.');
 }
 
 /**
@@ -206,6 +223,9 @@ function excluir_foto_carrossel($conexao, $idFoto, $freelancerId) {
 
     $imagem = null;
     $stmt = $conexao->prepare("SELECT imagem FROM carrossel_fotos WHERE id_foto = ? AND freelancer_id = ?");
+    if ($stmt === false) {
+        return array('ok' => false, 'erro' => 'Erro ao preparar a busca da foto.', 'imagem' => null);
+    }
     $stmt->bind_param('ii', $idFoto, $freelancerId);
     $stmt->execute();
     $resultado = $stmt->get_result();
@@ -219,6 +239,9 @@ function excluir_foto_carrossel($conexao, $idFoto, $freelancerId) {
     $imagem = $linha['imagem'];
 
     $stmt = $conexao->prepare("DELETE FROM carrossel_fotos WHERE id_foto = ? AND freelancer_id = ?");
+    if ($stmt === false) {
+        return array('ok' => false, 'erro' => 'Erro ao preparar a exclusão da foto.', 'imagem' => $imagem);
+    }
     $stmt->bind_param('ii', $idFoto, $freelancerId);
 
     if ($stmt->execute()) {
@@ -226,9 +249,11 @@ function excluir_foto_carrossel($conexao, $idFoto, $freelancerId) {
         return array('ok' => true, 'erro' => null, 'imagem' => $imagem);
     }
 
-    $erro = $stmt->error;
+    if (function_exists('registrar_log')) {
+        registrar_log('Falha ao excluir foto do carrossel: ' . $stmt->error, 'ERROR');
+    }
     $stmt->close();
-    return array('ok' => false, 'erro' => 'Não foi possível excluir a foto: ' . $erro, 'imagem' => null);
+    return array('ok' => false, 'erro' => 'Não foi possível excluir a foto. Tente novamente.', 'imagem' => null);
 }
 
 /**
@@ -247,6 +272,9 @@ function buscar_avaliacoes_freelancer($conexao, $freelancerId) {
         WHERE a.freelancer_id = ?
         ORDER BY a.data_avaliacao DESC
     ");
+    if ($stmt === false) {
+        return $avaliacoes;
+    }
     $stmt->bind_param('i', $freelancerId);
     $stmt->execute();
     $resultado = $stmt->get_result();
@@ -266,6 +294,9 @@ function buscar_avaliacoes_freelancer($conexao, $freelancerId) {
  */
 function calcular_media_avaliacoes($conexao, $freelancerId) {
     $stmt = $conexao->prepare("SELECT AVG(nota) AS media FROM avaliacoes WHERE freelancer_id = ?");
+    if ($stmt === false) {
+        return '-';
+    }
     $stmt->bind_param('i', $freelancerId);
     $stmt->execute();
     $resultado = $stmt->get_result();
@@ -302,11 +333,24 @@ function validar_upload_imagem_freelancer($arquivo) {
 
     $extensao = strtolower(pathinfo($arquivo['name'], PATHINFO_EXTENSION));
 
-    $tipoOk = in_array($arquivo['type'], $tiposAceitos);
-    $extensaoOk = in_array($extensao, $extensoesAceitas);
+    $tipoOk = in_array($arquivo['type'], $tiposAceitos, true);
+    $extensaoOk = in_array($extensao, $extensoesAceitas, true);
 
     if (!$tipoOk || !$extensaoOk) {
         return array('ok' => false, 'enviado' => true, 'erro' => 'Formato de imagem inválido. Envie JPG, PNG ou GIF.', 'extensao' => null);
+    }
+
+    // Valida o MIME real do conteúdo (não o $_FILES['type'], que o cliente forja).
+    $mimeReal = null;
+    if (class_exists('finfo')) {
+        $finfo = @finfo_open(FILEINFO_MIME_TYPE);
+        if ($finfo) {
+            $mimeReal = @finfo_file($finfo, $arquivo['tmp_name']);
+            finfo_close($finfo);
+        }
+    }
+    if ($mimeReal !== null && !in_array($mimeReal, $tiposAceitos, true)) {
+        return array('ok' => false, 'enviado' => true, 'erro' => 'O conteúdo do arquivo não é uma imagem JPG, PNG ou GIF.', 'extensao' => null);
     }
 
     $infoImagem = @getimagesize($arquivo['tmp_name']);
@@ -314,11 +358,16 @@ function validar_upload_imagem_freelancer($arquivo) {
         return array('ok' => false, 'enviado' => true, 'erro' => 'O arquivo enviado não é uma imagem válida.', 'extensao' => null);
     }
 
+    if ($mimeReal === null && isset($infoImagem['mime']) && !in_array($infoImagem['mime'], $tiposAceitos, true)) {
+        return array('ok' => false, 'enviado' => true, 'erro' => 'O conteúdo do arquivo não é uma imagem JPG, PNG ou GIF.', 'extensao' => null);
+    }
+
     return array('ok' => true, 'enviado' => true, 'erro' => null, 'extensao' => $extensao);
 }
 
 /**
- * Move o arquivo de upload já validado para a pasta de freelancers.
+ * Move o arquivo de upload já validado para a pasta de freelancers,
+ * com um nome aleatório (imprevisível), sem usar o nome original.
  *
  * @param array  $arquivo   elemento de $_FILES
  * @param string $extensao  extensão validada
@@ -329,7 +378,7 @@ function salvar_upload_imagem_freelancer($arquivo, $extensao) {
         @mkdir(FREELANCERS_UPLOAD_DIR, 0755, true);
     }
 
-    $nomeArquivo = uniqid('freelancer_') . '.' . $extensao;
+    $nomeArquivo = 'freelancer_' . bin2hex(ev_random_bytes(16)) . '.' . $extensao;
     $caminhoDestino = FREELANCERS_UPLOAD_DIR . $nomeArquivo;
 
     if (move_uploaded_file($arquivo['tmp_name'], $caminhoDestino)) {
@@ -369,7 +418,7 @@ function salvar_upload_foto_perfil($arquivo, $extensao) {
         @mkdir(PERFIL_UPLOAD_DIR, 0755, true);
     }
 
-    $nomeArquivo = uniqid('perfil_') . '.' . $extensao;
+    $nomeArquivo = 'perfil_' . bin2hex(ev_random_bytes(16)) . '.' . $extensao;
     $caminhoDestino = PERFIL_UPLOAD_DIR . $nomeArquivo;
 
     if (move_uploaded_file($arquivo['tmp_name'], $caminhoDestino)) {

@@ -9,6 +9,7 @@
  */
 require_once dirname(__FILE__) . '/../config/bootstrap.php';
 require_once dirname(__FILE__) . '/Componentes/funcoes_eventos.php';
+require_once dirname(__FILE__) . '/Componentes/funcoes_contato.php';
 
 $erros = array();
 $errosPorCampo = array();
@@ -30,14 +31,14 @@ $dados = array(
 );
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Recupera e faz trim nos campos
+    csrf_exigir();
+
+    // Recupera e faz trim nos campos (rejeita arrays enviados via ?campo[]=)
     foreach ($dados as $campo => $valorPadrao) {
-        if (isset($_POST[$campo])) {
-            $dados[$campo] = trim($_POST[$campo]);
-        }
+        $dados[$campo] = entrada_texto($_POST, $campo);
     }
-    $senha = isset($_POST['senha']) ? $_POST['senha'] : '';
-    $confirma_senha = isset($_POST['confirma_senha']) ? $_POST['confirma_senha'] : '';
+    $senha = isset($_POST['senha']) && is_string($_POST['senha']) ? $_POST['senha'] : '';
+    $confirma_senha = isset($_POST['confirma_senha']) && is_string($_POST['confirma_senha']) ? $_POST['confirma_senha'] : '';
 
     // ---- Validações ----
     if ($dados['nome'] === '') {
@@ -69,16 +70,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errosPorCampo['cep'] = 'Digite um CEP com 8 números.';
         $erros[] = $errosPorCampo['cep'];
     }
-    $telefoneDigitos = preg_replace('/\D/', '', $dados['telefone']);
-    if ($dados['telefone'] !== '' && (strlen($telefoneDigitos) < 10 || strlen($telefoneDigitos) > 11)) {
-        $errosPorCampo['telefone'] = 'Digite um telefone com DDD e 10 ou 11 números.';
-        $erros[] = $errosPorCampo['telefone'];
+    // Telefone: normaliza no servidor (remove pontuação/DDI 55) e valida
+    // a estrutura (fixo 10 dígitos ou celular 11 com DDD). O JavaScript da
+    // máscara é conforto — aqui é que a validação vale.
+    if ($dados['telefone'] !== '') {
+        if (!telefone_valido($dados['telefone'])) {
+            $errosPorCampo['telefone'] = 'Telefone inválido. Use o DDD + número: fixo (11) 1234-5678 ou celular (11) 91234-5678.';
+            $erros[] = $errosPorCampo['telefone'];
+        } else {
+            // Guarda sempre no formato de exibição, consistente para reexibir.
+            $dados['telefone'] = telefone_formatar($dados['telefone']);
+        }
     }
-    $cpfDigitos = preg_replace('/\D/', '', $dados['cpf']);
-    if ($dados['cpf'] !== '' && strlen($cpfDigitos) !== 11) {
-        $errosPorCampo['cpf'] = 'Digite um CPF com 11 números.';
-        $erros[] = $errosPorCampo['cpf'];
+
+    // CPF: valida os dois dígitos verificadores (algoritmo oficial),
+    // além dos 11 números e da regra contra sequências repetidas.
+    if ($dados['cpf'] !== '') {
+        if (!cpf_valido($dados['cpf'])) {
+            $errosPorCampo['cpf'] = 'CPF inválido. Confira os 11 números, incluindo os dois dígitos verificadores.';
+            $erros[] = $errosPorCampo['cpf'];
+        } else {
+            $dados['cpf'] = cpf_formatar($dados['cpf']);
+        }
     }
+
     if ($dados['estado'] !== '' && !preg_match('/^[a-zA-Z]{2}$/', $dados['estado'])) {
         $errosPorCampo['estado'] = 'Digite a sigla do estado com 2 letras.';
         $erros[] = $errosPorCampo['estado'];
@@ -89,19 +104,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Verifica se e-mail já existe
     if (empty($erros)) {
         $stmt = $conexao->prepare("SELECT id_usuario FROM usuario WHERE email = ? LIMIT 1");
-        $stmt->bind_param('s', $dados['email']);
-        $stmt->execute();
-        $stmt->store_result();
-        if ($stmt->num_rows > 0) {
-            $errosPorCampo['email'] = 'Este e-mail já está cadastrado.';
-            $erros[] = $errosPorCampo['email'];
+        if ($stmt === false) {
+            registrar_log('Falha ao preparar consulta de e-mail: ' . $conexao->error, 'ERROR');
+            $erros[] = 'Não foi possível concluir o cadastro agora. Tente novamente em instantes.';
+        } else {
+            $stmt->bind_param('s', $dados['email']);
+            $stmt->execute();
+            $stmt->store_result();
+            if ($stmt->num_rows > 0) {
+                $errosPorCampo['email'] = 'Este e-mail já está cadastrado.';
+                $erros[] = $errosPorCampo['email'];
+            }
+            $stmt->close();
         }
-        $stmt->close();
     }
 
     // ---- Se passou em tudo, insere no banco ----
     if (empty($erros)) {
-        $hashSenha = hash_senha($senha); // gera salt + hash no formato sha256:$salt:$hash
+        $hashSenha = hash_senha($senha); // bcrypt ($2y$) via password_hash
+
+        // Campos opcionais em branco viram NULL: o UNIQUE de cpf
+        // aceita vários NULLs, mas colidiria com strings vazias
+        // repetidas ("Duplicate entry '' for key 'cpf'").
+        $paraInserir = $dados;
+        $camposOpcionais = array(
+            'telefone', 'cpf', 'data_nascimento', 'cidade', 'estado',
+            'cep', 'endereco', 'numero', 'complemento',
+        );
+        foreach ($camposOpcionais as $campoOpcional) {
+            if ($paraInserir[$campoOpcional] === '') {
+                $paraInserir[$campoOpcional] = null;
+            }
+        }
 
         $sql = "INSERT INTO usuario
                     (nome, email, senha, telefone, cpf, data_nascimento,
@@ -111,22 +145,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $stmt = $conexao->prepare($sql);
         if ($stmt === false) {
-            $erros[] = 'Erro ao preparar cadastro: ' . $conexao->error;
+            registrar_log('Falha ao preparar cadastro: ' . $conexao->error, 'ERROR');
+            $erros[] = 'Não foi possível concluir o cadastro agora. Tente novamente em instantes.';
         } else {
             $stmt->bind_param(
                 'ssssssssssss',
-                $dados['nome'],
-                $dados['email'],
+                $paraInserir['nome'],
+                $paraInserir['email'],
                 $hashSenha,
-                $dados['telefone'],
-                $dados['cpf'],
-                $dados['data_nascimento'],
-                $dados['cidade'],
-                $dados['estado'],
-                $dados['cep'],
-                $dados['endereco'],
-                $dados['numero'],
-                $dados['complemento']
+                $paraInserir['telefone'],
+                $paraInserir['cpf'],
+                $paraInserir['data_nascimento'],
+                $paraInserir['cidade'],
+                $paraInserir['estado'],
+                $paraInserir['cep'],
+                $paraInserir['endereco'],
+                $paraInserir['numero'],
+                $paraInserir['complemento']
             );
 
             if ($stmt->execute()) {
@@ -134,19 +169,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $novoId = $conexao->insert_id;
                 // Cria sessão automática após cadastro
                 session_regenerate_id(true);
+                // Rotaciona o token CSRF junto com o login.
+                unset($_SESSION['csrf_token']);
                 $_SESSION['id_usuario'] = (int) $novoId;
                 $_SESSION['nome_usuario'] = $dados['nome'];
                 $_SESSION['tipo_usuario'] = 'usuario';
             } else {
-                $erros[] = 'Erro ao salvar cadastro: ' . $stmt->error;
+                registrar_log('Falha ao salvar cadastro: ' . $stmt->error, 'ERROR');
+                $erros[] = 'Não foi possível concluir o cadastro agora. Tente novamente em instantes.';
             }
             $stmt->close();
         }
     }
 }
 
-// Se já logado, redireciona
-if (isset($_SESSION['id_usuario'])) {
+// Se já logado (e não acabou de criar a conta), redireciona
+if (!$sucesso && isset($_SESSION['id_usuario'])) {
     header('Location: CRUD_Eventos.php');
     exit;
 }
@@ -187,8 +225,10 @@ if (isset($_SESSION['id_usuario'])) {
         <h2>Criar conta</h2>
 
         <?php if ($sucesso): ?>
+          <?php $_SESSION['flash_cadastro'] = 'Conta criada com sucesso! Bem-vindo(a) ao EventoVivo.'; ?>
           <div class="alert alert-sucesso" style="margin-bottom:1rem;padding:.8rem;background:rgba(230,185,35,.12);border:2px solid #e6b923;color:#e6dfc9;font-size:.85rem;">
             Conta criada com sucesso! Redirecionando...
+            <a href="CRUD_Eventos.php" style="color:#e6b923;">Clique aqui se não for redirecionado automaticamente.</a>
             <script>setTimeout(function(){ window.location.href = 'CRUD_Eventos.php'; }, 1500);</script>
           </div>
         <?php endif; ?>
@@ -205,6 +245,7 @@ if (isset($_SESSION['id_usuario'])) {
         <?php endif; ?>
 
 <form action="Cadastro.php" method="post" autocomplete="on" id="form-cadastro" novalidate>
+        <?php echo csrf_campo(); ?>
         <div class="form-group">
           <label for="nome">Nome completo <span class="campo-obrigatorio">Obrigatório</span></label>
           <input type="text" id="nome" name="nome" placeholder="Seu nome" required autocomplete="name" aria-invalid="<?php echo isset($errosPorCampo['nome']) ? 'true' : 'false'; ?>"<?php if (isset($errosPorCampo['nome'])): ?> aria-describedby="erro-nome"<?php endif; ?>
@@ -277,14 +318,16 @@ if (isset($_SESSION['id_usuario'])) {
           <summary>Dados adicionais <span class="campo-opcional">Opcional</span></summary>
           <fieldset>
           <div class="form-group">
-          <label for="telefone">Telefone <span class="campo-opcional">Opcional</span></label>
-          <input type="tel" id="telefone" name="telefone" maxlength="15" inputmode="tel" autocomplete="tel" placeholder="(00) 00000-0000" aria-invalid="<?php echo isset($errosPorCampo['telefone']) ? 'true' : 'false'; ?>"<?php if (isset($errosPorCampo['telefone'])): ?> aria-describedby="erro-telefone"<?php endif; ?>
+          <label for="telefone">Telefone (fixo ou celular) <span class="campo-opcional">Opcional</span></label>
+          <p class="ajuda-campo" id="ajuda-telefone">Com DDD. Ex.: (11) 1234-5678 (fixo) ou (11) 91234-5678 (celular).</p>
+          <input type="tel" id="telefone" name="telefone" maxlength="20" inputmode="tel" autocomplete="tel" placeholder="(11) 91234-5678" aria-invalid="<?php echo isset($errosPorCampo['telefone']) ? 'true' : 'false'; ?>"<?php if (isset($errosPorCampo['telefone'])): ?> aria-describedby="ajuda-telefone erro-telefone"<?php else: ?> aria-describedby="ajuda-telefone"<?php endif; ?>
                    value="<?php echo htmlspecialchars($dados['telefone']); ?>">
             <?php if (isset($errosPorCampo['telefone'])): ?><small class="erro-campo" id="erro-telefone"><?php echo htmlspecialchars($errosPorCampo['telefone']); ?></small><?php endif; ?>
           </div>
           <div class="form-group">
           <label for="cpf">CPF <span class="campo-opcional">Opcional</span></label>
-          <input type="text" id="cpf" name="cpf" maxlength="14" inputmode="numeric" autocomplete="off" placeholder="000.000.000-00" aria-invalid="<?php echo isset($errosPorCampo['cpf']) ? 'true' : 'false'; ?>"<?php if (isset($errosPorCampo['cpf'])): ?> aria-describedby="erro-cpf"<?php endif; ?>
+          <p class="ajuda-campo" id="ajuda-cpf">Se informar, precisa ser um CPF válido (11 números com dígitos verificadores).</p>
+          <input type="text" id="cpf" name="cpf" maxlength="14" inputmode="numeric" autocomplete="off" placeholder="000.000.000-00" aria-invalid="<?php echo isset($errosPorCampo['cpf']) ? 'true' : 'false'; ?>"<?php if (isset($errosPorCampo['cpf'])): ?> aria-describedby="ajuda-cpf erro-cpf"<?php else: ?> aria-describedby="ajuda-cpf"<?php endif; ?>
                    value="<?php echo htmlspecialchars($dados['cpf']); ?>">
             <?php if (isset($errosPorCampo['cpf'])): ?><small class="erro-campo" id="erro-cpf"><?php echo htmlspecialchars($errosPorCampo['cpf']); ?></small><?php endif; ?>
           </div>
@@ -314,34 +357,26 @@ if (isset($_SESSION['id_usuario'])) {
 
 </main>
 
-<?php require dirname(__FILE__) . '/Componentes/footer.php'; ?>
+<script src="Js/mascaras.js"></script>
 <script>
 (function () {
   var form = document.getElementById('form-cadastro');
   if (!form) return;
 
-  function maskDigits(value, pattern) {
-    var digits = value.replace(/\D/g, '');
-    var result = '';
-    var index = 0;
-    for (var i = 0; i < pattern.length && index < digits.length; i++) {
-      if (pattern.charAt(i) === '0') result += digits.charAt(index++);
-      else result += pattern.charAt(i);
-    }
-    return result;
-  }
-
   var cep = document.getElementById('cep');
   var telefone = document.getElementById('telefone');
   var cpf = document.getElementById('cpf');
   var estado = document.getElementById('estado');
-  cep.addEventListener('input', function () { this.value = maskDigits(this.value, '00000-000'); });
-  cpf.addEventListener('input', function () { this.value = maskDigits(this.value, '000.000.000-00'); });
-  telefone.addEventListener('input', function () {
-    var digits = this.value.replace(/\D/g, '').substring(0, 11);
-    if (digits.length <= 10) this.value = maskDigits(digits, '(00) 0000-0000');
-    else this.value = maskDigits(digits, '(00) 00000-0000');
-  });
+
+  // Máscaras com normalização de dígitos, apagagem por dígito e cursor
+  // estável (digitar, colar, editar e apagar). Se o arquivo não carregar,
+  // nada quebra: o servidor valida e normaliza tudo de novo.
+  if (window.Mascaras) {
+    window.Mascaras.telefone(telefone);
+    window.Mascaras.cpf(cpf);
+    window.Mascaras.cep(cep);
+  }
+
   estado.addEventListener('input', function () { this.value = this.value.replace(/[^a-z]/gi, '').substring(0, 2).toUpperCase(); });
 
   var senha = document.getElementById('senha');
@@ -384,3 +419,5 @@ if (isset($_SESSION['id_usuario'])) {
   }
 }());
 </script>
+
+<?php require dirname(__FILE__) . '/Componentes/footer.php'; ?>

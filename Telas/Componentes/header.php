@@ -4,8 +4,10 @@
  * Componente reutilizável de cabeçalho. Monta a navegação principal e os links condicionais de acordo com o estado da sessão.
  * ========================================================== */
 
-if (session_id() == '') {
-    session_start();
+// A sessão é iniciada pelo config/bootstrap.php (com opções seguras).
+// Este componente só deve ser incluído depois do bootstrap.
+if (!defined('EVENTOVIVO_BOOTSTRAP')) {
+    exit('Componente header.php deve ser incluído após config/bootstrap.php.');
 }
 
 // Variáveis opcionais que a tela pode definir antes de incluir este componente.
@@ -17,6 +19,9 @@ if (!isset($pageDescription)) {
 }
 if (!isset($extraCss) || !is_array($extraCss)) {
     $extraCss = array();
+}
+if (!isset($extraStyle)) {
+    $extraStyle = '';
 }
 
 // O link do painel só aparece para sessões marcadas como admin no login.
@@ -41,6 +46,11 @@ $ehAdministrador = isset($_SESSION['tipo_usuario']) && $_SESSION['tipo_usuario']
     <?php foreach ($extraCss as $folha): ?>
         <link rel="stylesheet" href="<?php echo htmlspecialchars($folha); ?>">
     <?php endforeach; ?>
+    <?php if (trim($extraStyle) !== ''): ?>
+        <style>
+<?php echo $extraStyle; ?>
+        </style>
+    <?php endif; ?>
 </head>
 <body>
 
@@ -62,7 +72,10 @@ $ehAdministrador = isset($_SESSION['tipo_usuario']) && $_SESSION['tipo_usuario']
         <span class="header-user">
           Olá, <?php echo htmlspecialchars($_SESSION['nome_usuario']); ?>
         </span>
-        <a href="Logout.php" class="header-logout">Sair</a>
+        <form action="Logout.php" method="post" style="display:inline;">
+          <?php echo csrf_campo(); ?>
+          <button type="submit" class="header-logout" style="background:none;border:0;padding:0;font:inherit;color:inherit;cursor:pointer;">Sair</button>
+        </form>
       <?php else: ?>
         <a href="Login.php">Entrar</a>
         <a href="Cadastro.php">Cadastrar</a>

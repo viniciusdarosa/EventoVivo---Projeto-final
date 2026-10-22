@@ -10,6 +10,7 @@
 require_once dirname(__FILE__) . '/../config/bootstrap.php';
 require_once dirname(__FILE__) . '/Componentes/funcoes_freelancers.php';
 require_once dirname(__FILE__) . '/Componentes/funcoes_eventos.php';
+require_once dirname(__FILE__) . '/Componentes/funcoes_contato.php';
 
 // ID do freelancer vem da URL
 $idFreelancer = isset($_GET['id']) && ctype_digit($_GET['id']) ? (int) $_GET['id'] : 0;
@@ -42,28 +43,19 @@ $ehDono = isset($_SESSION['id_usuario']) && $_SESSION['id_usuario'] == $freelanc
 $jaAvaliou = false;
 if (isset($_SESSION['id_usuario']) && !$ehDono) {
     $stmt = $conexao->prepare("SELECT id FROM avaliacoes WHERE avaliador = ? AND freelancer_id = ? LIMIT 1");
-    $stmt->bind_param('ii', $_SESSION['id_usuario'], $idFreelancer);
-    $stmt->execute();
-    $stmt->store_result();
-    $jaAvaliou = $stmt->num_rows > 0;
-    $stmt->close();
+    if ($stmt !== false) {
+        $stmt->bind_param('ii', $_SESSION['id_usuario'], $idFreelancer);
+        $stmt->execute();
+        $stmt->store_result();
+        $jaAvaliou = $stmt->num_rows > 0;
+        $stmt->close();
+    }
 }
-?>
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><?php echo htmlspecialchars($freelancer['nome']); ?> — EventoVivo</title>
-  <meta name="description" content="<?php echo htmlspecialchars(substr($freelancer['descricao'], 0, 160)); ?>">
-  <meta name="theme-color" content="#110f0c">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23110f0c'/%3E%3Ctext x='32' y='46' font-family='Arial, sans-serif' font-weight='900' font-size='38' fill='%23b8000d' text-anchor='middle'%3EV%3C/text%3E%3C/svg%3E">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Courier+Prime:wght@400;700&family=Permanent+Marker&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../Css/style.css">
-  <link rel="stylesheet" href="../Css/crud_eventos.css">
-  <style>
+
+$pageTitle = $freelancer['nome'] . ' — EventoVivo';
+$pageDescription = substr($freelancer['descricao'], 0, 160);
+$extraCss = array('../Css/style.css', '../Css/crud_eventos.css');
+$extraStyle = <<<'ESTILO_PERFIL'
     .perfil-hero {
       position: relative;
       padding: 4rem 0 3rem;
@@ -202,14 +194,25 @@ if (isset($_SESSION['id_usuario']) && !$ehDono) {
       background: var(--ink-2);
     }
     .carrossel-trilha {
-      display: flex;
-      transition: transform .45s ease;
-      will-change: transform;
+      position: relative;
     }
     .carrossel-slide {
-      flex: 0 0 100%;
-      min-width: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity .6s ease, visibility .6s ease;
+      pointer-events: none;
+    }
+    .carrossel-slide.ativo {
       position: relative;
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
     }
     .carrossel-slide img {
       display: block;
@@ -424,10 +427,10 @@ if (isset($_SESSION['id_usuario']) && !$ehDono) {
       .carrossel-rodape { justify-content: center; }
       .carrossel-contador { width: 100%; text-align: center; order: -1; }
     }
-  </style>
-</head>
-<?php require dirname(__FILE__) . '/Componentes/header.php'; ?>
-<body>
+ESTILO_PERFIL;
+
+require dirname(__FILE__) . '/Componentes/header.php';
+?>
 
 <main class="perfil-page">
   <!-- Hero com a foto de perfil -->
@@ -457,8 +460,9 @@ if (isset($_SESSION['id_usuario']) && !$ehDono) {
             <?php if (!empty($freelancer['email'])): ?>
               <a href="mailto:<?php echo htmlspecialchars($freelancer['email']); ?>" class="btn-contato">✉ Email</a>
             <?php endif; ?>
-            <?php if (!empty($freelancer['telefone'])): ?>
-              <a href="tel:<?php echo htmlspecialchars(preg_replace('/\D/', '', $freelancer['telefone'])); ?>" class="btn-contato">📞 WhatsApp</a>
+            <?php $urlWhatsPerfil = whatsapp_url(isset($freelancer['telefone']) ? $freelancer['telefone'] : ''); ?>
+            <?php if ($urlWhatsPerfil !== ''): ?>
+              <a href="<?php echo htmlspecialchars($urlWhatsPerfil); ?>" target="_blank" rel="noopener noreferrer" class="btn-contato">📞 WhatsApp</a>
             <?php endif; ?>
             <?php if (!empty($freelancer['rede_social'])): ?>
               <a href="https://instagram.com/<?php echo ltrim($freelancer['rede_social'], '@'); ?>" target="_blank" class="btn-contato ghost">📸 Instagram</a>
@@ -507,7 +511,7 @@ if (isset($_SESSION['id_usuario']) && !$ehDono) {
           <div class="carrossel-viewport">
             <div class="carrossel-trilha" id="carrossel-trilha">
               <?php foreach ($fotosCarrossel as $indice => $foto): ?>
-                <figure class="carrossel-slide" role="group" aria-roledescription="slide"
+                <figure class="carrossel-slide<?php echo $indice === 0 ? ' ativo' : ''; ?>" role="group" aria-roledescription="slide"
                         aria-label="<?php echo $indice + 1; ?> de <?php echo $totalCarrossel; ?>"
                         <?php if ($indice > 0): ?>aria-hidden="true"<?php endif; ?>>
                   <img src="<?php echo htmlspecialchars(freelancer_foto_trabalho_src($foto['imagem'])); ?>"
@@ -607,6 +611,7 @@ if (isset($_SESSION['id_usuario']) && !$ehDono) {
       <div class="aba-conteudo" id="aba-escrever" role="tabpanel" aria-labelledby="tab-escrever">
         <h3 style="font-family:var(--font-body);font-size:1.1rem;text-transform:uppercase;letter-spacing:.02em;margin-bottom:1rem;">Deixe sua avaliação</h3>
         <form class="avaliar-form" action="AvaliarFreelancer.php" method="post">
+          <?php echo csrf_campo(); ?>
           <input type="hidden" name="freelancer_id" value="<?php echo $idFreelancer; ?>">
           <input type="hidden" name="redirect" value="PerfilFreelancer.php?id=<?php echo $idFreelancer; ?>">
 
@@ -689,11 +694,15 @@ function mostrarAba(abaId) {
     if (indice >= total) indice = 0;
 
     atual = indice;
-    trilha.style.transform = 'translateX(' + (-atual * 100) + '%)';
 
     for (var i = 0; i < slides.length; i++) {
-      if (i === atual) slides[i].removeAttribute('aria-hidden');
-      else slides[i].setAttribute('aria-hidden', 'true');
+      if (i === atual) {
+        slides[i].className = 'carrossel-slide ativo';
+        slides[i].removeAttribute('aria-hidden');
+      } else {
+        slides[i].className = 'carrossel-slide';
+        slides[i].setAttribute('aria-hidden', 'true');
+      }
     }
 
     for (var d = 0; d < dots.length; d++) {
@@ -819,5 +828,3 @@ function mostrarAba(abaId) {
 </script>
 
 <?php require dirname(__FILE__) . '/Componentes/footer.php'; ?>
-</body>
-</html>

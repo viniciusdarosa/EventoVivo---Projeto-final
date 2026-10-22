@@ -15,17 +15,13 @@
 require_once dirname(__FILE__) . '/../config/bootstrap.php';
 require_once dirname(__FILE__) . '/Componentes/funcoes_eventos.php';
 
-if (!isset($_SESSION['id_usuario'])) {
-    header('Location: Login.php');
-    exit;
-}
+exigir_login('Login.php');
+$usuarioId = usuario_id();
 
-$usuarioId = (int) $_SESSION['id_usuario'];
-
-// ---- Filtros vindos da barra de busca ----
-$busca = isset($_GET['busca']) ? trim($_GET['busca']) : '';
-$categoriaFiltro = isset($_GET['categoria']) && ctype_digit($_GET['categoria']) ? (int) $_GET['categoria'] : 0;
-$periodoFiltro = isset($_GET['periodo']) ? $_GET['periodo'] : 'todos'; // todos | proximos | encerrados
+// ---- Filtros vindos da barra de busca — rejeitam arrays ----
+$busca = entrada_texto($_GET, 'busca');
+$categoriaFiltro = entrada_inteiro($_GET, 'categoria');
+$periodoFiltro = entrada_texto($_GET, 'periodo', 'todos'); // todos | proximos | encerrados
 
 // ---- Monta a query dinamicamente, sempre com parâmetros ----
 $sql = "SELECT e.*, c.nome AS categoria_nome
@@ -57,22 +53,29 @@ if ($periodoFiltro === 'proximos') {
 $sql .= " ORDER BY e.data_inicio_evento ASC";
 
 $stmt = $conexao->prepare($sql);
-
-// bind_param precisa dos argumentos por referência — monta isso dinamicamente.
-$paramsPorReferencia = array($tipos);
-for ($i = 0; $i < count($parametros); $i++) {
-    $paramsPorReferencia[] = &$parametros[$i];
+if ($stmt === false) {
+    registrar_log('Falha ao preparar listagem de eventos do usuário: ' . $conexao->error, 'ERROR');
+    $eventos = array();
+    $stmt = null;
 }
-call_user_func_array(array($stmt, 'bind_param'), $paramsPorReferencia);
 
-$stmt->execute();
-$resultado = $stmt->get_result();
+if ($stmt !== null) {
+    // bind_param precisa dos argumentos por referência — monta isso dinamicamente.
+    $paramsPorReferencia = array($tipos);
+    for ($i = 0; $i < count($parametros); $i++) {
+        $paramsPorReferencia[] = &$parametros[$i];
+    }
+    call_user_func_array(array($stmt, 'bind_param'), $paramsPorReferencia);
 
-$eventos = array();
-while ($linha = $resultado->fetch_assoc()) {
-    $eventos[] = $linha;
+    $stmt->execute();
+    $resultado = $stmt->get_result();
+
+    $eventos = array();
+    while ($linha = $resultado->fetch_assoc()) {
+        $eventos[] = $linha;
+    }
+    $stmt->close();
 }
-$stmt->close();
 
 $categorias = buscar_categorias_eventos($conexao);
 
@@ -81,11 +84,39 @@ $pageDescription = 'Gerencie seus eventos publicados no EventoVivo';
 $extraCss = array('../Css/eventos.css');
 
 require dirname(__FILE__) . '/Componentes/header.php';
+
+$flashCadastro = '';
+if (isset($_SESSION['flash_cadastro'])) {
+    $flashCadastro = $_SESSION['flash_cadastro'];
+    unset($_SESSION['flash_cadastro']);
+}
+
+$flashEventos = '';
+if (isset($_SESSION['flash_eventos'])) {
+    $flashEventos = $_SESSION['flash_eventos'];
+    unset($_SESSION['flash_eventos']);
+}
 ?>
 
 
 
 <main class="admin-page">
+
+  <?php if ($flashCadastro !== ''): ?>
+    <div class="wrap">
+      <div class="alert alert-sucesso" style="margin:1.5rem 0 0;padding:.8rem;background:rgba(230,185,35,.12);border:2px solid #e6b923;color:#e6dfc9;font-size:.85rem;">
+        <?php echo htmlspecialchars($flashCadastro); ?>
+      </div>
+    </div>
+  <?php endif; ?>
+
+  <?php if ($flashEventos !== ''): ?>
+    <div class="wrap">
+      <div class="alert alert-sucesso" style="margin:1.5rem 0 0;padding:.8rem;background:rgba(230,185,35,.12);border:2px solid #e6b923;color:#e6dfc9;font-size:.85rem;">
+        <?php echo htmlspecialchars($flashEventos); ?>
+      </div>
+    </div>
+  <?php endif; ?>
 
   <section class="page-heading">
     <div class="wrap heading-inner">
@@ -163,6 +194,9 @@ require dirname(__FILE__) . '/Componentes/header.php';
                    alt="Capa do evento <?php echo htmlspecialchars($evento['titulo']); ?>">
 
               <div class="evento-card-corpo">
+                <?php if ((int) $evento['arquivado'] === 1): ?>
+                  <span style="display:inline-block;padding:.15rem .5rem;border:1px solid #e6b923;color:#e6b923;font-size:.65rem;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem;">Arquivado</span>
+                <?php endif; ?>
                 <p class="evento-card-categoria"><?php echo htmlspecialchars($evento['categoria_nome']); ?></p>
                 <h3 class="evento-card-titulo"><?php echo htmlspecialchars($evento['titulo']); ?></h3>
 
@@ -182,12 +216,22 @@ require dirname(__FILE__) . '/Componentes/header.php';
                   <div class="evento-card-acoes">
                     <a class="btn-icone" href="EditarEvento.php?id_evento=<?php echo (int) $evento['id_evento']; ?>">Editar</a>
 
-                    <form method="post" action="ExcluirEvento.php"
-                          onsubmit="return confirm('Tem certeza que deseja excluir este evento? Essa ação não pode ser desfeita.');"
-                          style="display:inline;">
-                      <input type="hidden" name="id_evento" value="<?php echo (int) $evento['id_evento']; ?>">
-                      <button type="submit" class="btn-icone btn-icone-excluir">Excluir</button>
-                    </form>
+                    <?php if ((int) $evento['arquivado'] === 1): ?>
+                      <form method="post" action="RestaurarEvento.php"
+                            style="display:inline;">
+                        <?php echo csrf_campo(); ?>
+                        <input type="hidden" name="id_evento" value="<?php echo (int) $evento['id_evento']; ?>">
+                        <button type="submit" class="btn-icone">Restaurar</button>
+                      </form>
+                    <?php else: ?>
+                      <form method="post" action="ExcluirEvento.php"
+                            onsubmit="return confirm('Tem certeza que deseja arquivar este evento? Ele deixará de aparecer nas listagens públicas e poderá ser restaurado depois.');"
+                            style="display:inline;">
+                        <?php echo csrf_campo(); ?>
+                        <input type="hidden" name="id_evento" value="<?php echo (int) $evento['id_evento']; ?>">
+                        <button type="submit" class="btn-icone btn-icone-excluir">Arquivar</button>
+                      </form>
+                    <?php endif; ?>
                   </div>
                 </div>
               </div>

@@ -11,22 +11,25 @@ require_once dirname(__FILE__) . '/../config/bootstrap.php';
 require_once dirname(__FILE__) . '/Componentes/funcoes_eventos.php';
 require_once dirname(__FILE__) . '/Componentes/EventoCard.php';
 
-// Remove automaticamente eventos encerrados há mais de 1 mês antes da listagem.
-limpar_eventos_antigos($conexao);
+// Arquiva (sem apagar) eventos encerrados há mais de 1 mês antes da listagem.
+arquivar_eventos_encerrados($conexao);
 
-// ---- Filtros (GET) ----
-$busca = isset($_GET['busca']) ? trim($_GET['busca']) : '';
-$categoriaFiltro = isset($_GET['categoria']) && ctype_digit($_GET['categoria']) ? (int) $_GET['categoria'] : 0;
-$periodoFiltro = isset($_GET['periodo']) ? $_GET['periodo'] : 'todos'; // todos | proximos | encerrados
-$cidadeFiltro = isset($_GET['cidade']) ? trim($_GET['cidade']) : '';
-$estadoFiltro = isset($_GET['estado']) ? trim($_GET['estado']) : '';
+// ---- Filtros (GET) — entrada_texto/entrada_inteiro rejeitam arrays ----
+$busca = entrada_texto($_GET, 'busca');
+$categoriaFiltro = entrada_inteiro($_GET, 'categoria');
+$periodoFiltro = entrada_texto($_GET, 'periodo', 'todos'); // todos | proximos | encerrados
+$cidadeFiltro = entrada_texto($_GET, 'cidade');
+$estadoFiltro = entrada_texto($_GET, 'estado');
 
 // ---- Monta query dinâmica ----
-$sql = "SELECT e.*, c.nome AS categoria_nome, u.nome AS organizador_nome, u.cidade AS org_cidade, u.estado AS org_estado
+// u.e-mail/telefone alimentam o botão "Contatar organizador" do card:
+// o contato é do usuário DONO do evento (e.usuario_id → usuario).
+$sql = "SELECT e.*, c.nome AS categoria_nome, u.nome AS organizador_nome, u.cidade AS org_cidade, u.estado AS org_estado,
+               u.email AS organizador_email, u.telefone AS organizador_telefone
         FROM eventos e
         LEFT JOIN categorias_eventos c ON c.id_categoria = e.categoria_id
         LEFT JOIN usuario u ON u.id_usuario = e.usuario_id
-        WHERE 1=1";
+        WHERE e.arquivado = 0";
 
 $tipos = '';
 $parametros = array();
@@ -68,56 +71,48 @@ $sql .= " ORDER BY e.data_inicio_evento ASC";
 $stmt = $conexao->prepare($sql);
 
 if ($stmt === false) {
-    die('Erro ao preparar query: ' . $conexao->error);
+    registrar_log('Falha ao preparar listagem de eventos: ' . $conexao->error, 'ERROR');
+    $eventos = array();
+    $stmt = null;
 }
 
-// bind_param dinâmico
-if ($tipos !== '') {
-    $paramsPorReferencia = array($tipos);
-    for ($i = 0; $i < count($parametros); $i++) {
-        $paramsPorReferencia[] = &$parametros[$i];
+if ($stmt !== null) {
+    // bind_param dinâmico
+    if ($tipos !== '') {
+        $paramsPorReferencia = array($tipos);
+        for ($i = 0; $i < count($parametros); $i++) {
+            $paramsPorReferencia[] = &$parametros[$i];
+        }
+        call_user_func_array(array($stmt, 'bind_param'), $paramsPorReferencia);
     }
-    call_user_func_array(array($stmt, 'bind_param'), $paramsPorReferencia);
-}
 
-$stmt->execute();
-$resultado = $stmt->get_result();
+    $stmt->execute();
+    $resultado = $stmt->get_result();
 
-$eventos = array();
-while ($linha = $resultado->fetch_assoc()) {
-    $eventos[] = $linha;
+    $eventos = array();
+    while ($linha = $resultado->fetch_assoc()) {
+        $eventos[] = $linha;
+    }
+    $stmt->close();
 }
-$stmt->close();
 
 $categorias = buscar_categorias_eventos($conexao);
 
 // Busca estados únicos para o filtro
 $estados = array();
-$resEstados = $conexao->query("SELECT DISTINCT estado FROM eventos ORDER BY estado ASC");
+$resEstados = $conexao->query("SELECT DISTINCT estado FROM eventos WHERE arquivado = 0 AND estado IS NOT NULL ORDER BY estado ASC");
 if ($resEstados) {
     while ($row = $resEstados->fetch_assoc()) {
         $estados[] = $row['estado'];
     }
     $resEstados->free();
 }
+$pageTitle = 'EventoVivo — Todos os Eventos';
+$pageDescription = 'Descubra eventos culturais, shows, festivais, teatro e dança na sua cidade.';
+$extraCss = array('../Css/style.css', '../Css/eventos.css', '../Css/crud_eventos.css');
+
+require dirname(__FILE__) . '/Componentes/header.php';
 ?>
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EventoVivo — Todos os Eventos</title>
-  <meta name="description" content="Descubra eventos culturais, shows, festivais, teatro e dança na sua cidade.">
-  <meta name="theme-color" content="#110f0c">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23110f0c'/%3E%3Ctext x='32' y='46' font-family='Arial, sans-serif' font-weight='900' font-size='38' fill='%23b8000d' text-anchor='middle'%3EV%3C/text%3E%3C/svg%3E">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Courier+Prime:wght@400;700&family=Permanent+Marker&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../Css/style.css">
-  <link rel="stylesheet" href="../Css/eventos.css">
-</head>
-<?php require dirname(__FILE__) . '/Componentes/header.php'; ?>
-<body>
 
 <main class="eventos-page">
   <section class="page-header">
@@ -207,5 +202,3 @@ if ($resEstados) {
 </main>
 
 <?php require dirname(__FILE__) . '/Componentes/footer.php'; ?>
-</body>
-</html>

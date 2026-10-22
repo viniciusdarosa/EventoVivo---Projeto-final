@@ -331,7 +331,7 @@ h2 {
  
 .artist-photo-wrap {
   width: 100%;
-  aspect-ratio: 4 / 5;
+  aspect-ratio: 1 / 1;
   overflow: hidden;
   border-bottom: 3px solid var(--accent);
   background: var(--ink-2); /* aparece caso a foto ainda não exista */
@@ -793,7 +793,7 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 /* Grid de artistas */
 .artistas-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 1.5rem;
 }
 
@@ -815,7 +815,7 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 
 .artist-card-public .artist-photo-wrap {
   width: 100%;
-  aspect-ratio: 4 / 5;
+  aspect-ratio: 1 / 1;
   overflow: hidden;
   border-bottom: 3px solid var(--accent);
   background: var(--ink-2);

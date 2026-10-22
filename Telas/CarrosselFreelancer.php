@@ -20,18 +20,13 @@
 require_once dirname(__FILE__) . '/../config/bootstrap.php';
 require_once dirname(__FILE__) . '/Componentes/funcoes_freelancers.php';
 
-if (!isset($_SESSION['id_usuario'])) {
-    header('Location: Login.php');
-    exit;
-}
-
-$usuarioId = (int) $_SESSION['id_usuario'];
+exigir_login('Login.php');
+$usuarioId = usuario_id();
 
 $freelancer = buscar_freelancer_por_usuario($conexao, $usuarioId);
 
 if (!$freelancer) {
-    header('Location: CadastrarFreelancer.php');
-    exit;
+    redirecionar('CadastrarFreelancer.php');
 }
 
 $idFreelancer = (int) $freelancer['id_freelancer'];
@@ -39,8 +34,9 @@ $erros = array();
 $sucesso = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_exigir();
 
-    $acao = isset($_POST['acao']) ? $_POST['acao'] : '';
+    $acao = entrada_texto($_POST, 'acao');
 
     if ($acao === 'adicionar') {
 
@@ -61,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if (empty($erros)) {
-            $legenda = isset($_POST['legenda']) ? trim($_POST['legenda']) : '';
+            $legenda = entrada_texto($_POST, 'legenda');
 
             if (strlen($legenda) > 255) {
                 $erros[] = 'A legenda deve ter no máximo 255 caracteres.';
@@ -89,7 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     } elseif ($acao === 'excluir') {
 
-        $idFoto = isset($_POST['id_foto']) && ctype_digit($_POST['id_foto']) ? (int) $_POST['id_foto'] : 0;
+        $idFoto = entrada_inteiro($_POST, 'id_foto');
 
         if ($idFoto <= 0) {
             $erros[] = 'Foto inválida.';
@@ -112,20 +108,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $fotos = buscar_carrossel_freelancer($conexao, $idFreelancer);
 $totalFotos = count($fotos);
 $carrosselCheio = $totalFotos >= CARROSSEL_MAX_FOTOS;
-?>
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EventoVivo — Fotos do Trabalho</title>
-  <meta name="theme-color" content="#110f0c">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Courier+Prime:wght@400;700&family=Permanent+Marker&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../Css/crud_eventos.css">
-  <link rel="stylesheet" href="../Css/style.css">
-  <style>
+
+$pageTitle = 'EventoVivo — Fotos do Trabalho';
+$extraCss = array('../Css/crud_eventos.css', '../Css/style.css');
+$extraStyle = <<<'ESTILO_CARROSSEL'
     .carrossel-contagem {
       color: var(--paper-dim);
       font-size: .85rem;
@@ -269,10 +255,10 @@ $carrosselCheio = $totalFotos >= CARROSSEL_MAX_FOTOS;
       .carrossel-form { padding: 1.5rem; }
       .carrossel-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
     }
-  </style>
-</head>
-<?php require dirname(__FILE__) . '/Componentes/header.php'; ?>
-<body>
+ESTILO_CARROSSEL;
+
+require dirname(__FILE__) . '/Componentes/header.php';
+?>
 
 <main class="admin-page freelancer-form-page">
   <div class="wrap">
@@ -317,6 +303,7 @@ $carrosselCheio = $totalFotos >= CARROSSEL_MAX_FOTOS;
               </p>
               <form action="CarrosselFreelancer.php" method="post"
                     onsubmit="return confirm('Remover esta foto do carrossel?');">
+                <?php echo csrf_campo(); ?>
                 <input type="hidden" name="acao" value="excluir">
                 <input type="hidden" name="id_foto" value="<?php echo (int) $foto['id_foto']; ?>">
                 <button type="submit" class="btn-excluir-foto">Remover</button>
@@ -336,6 +323,7 @@ $carrosselCheio = $totalFotos >= CARROSSEL_MAX_FOTOS;
       </div>
     <?php else: ?>
       <form class="carrossel-form" action="CarrosselFreelancer.php" method="post" enctype="multipart/form-data">
+        <?php echo csrf_campo(); ?>
 
         <input type="hidden" name="acao" value="adicionar">
 
@@ -371,5 +359,3 @@ $carrosselCheio = $totalFotos >= CARROSSEL_MAX_FOTOS;
 </main>
 
 <?php require dirname(__FILE__) . '/Componentes/footer.php'; ?>
-</body>
-</html>

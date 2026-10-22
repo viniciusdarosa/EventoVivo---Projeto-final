@@ -34,7 +34,9 @@ CREATE TABLE IF NOT EXISTS `acesso_sistema` (
 -- INSERT INTO `usuario`
 --   (`nome`, `email`, `senha`, `data_nascimento`, `cidade`, `estado`, `tipo`)
 -- VALUES
---   ('Administrador', 'admin@eventovivo.com', '123456', '1990-01-01', 'Criciúma', 'SC', 'admin');
+--   ('Administrador', 'admin@eventovivo.com', '<HASH_BCRYPT>', '1990-01-01', 'Criciúma', 'SC', 'admin');
 --
--- A senha em texto puro é convertida em hash com salt no primeiro login.
+-- A coluna `senha` guarda hash bcrypt ($2y$), NUNCA texto puro.
+-- Gere o hash com: php -r "echo password_hash('SUASENHA', PASSWORD_BCRYPT);"
+-- (em PHP 5.3, use a tela de Cadastro do próprio sistema).
 -- ==========================================================

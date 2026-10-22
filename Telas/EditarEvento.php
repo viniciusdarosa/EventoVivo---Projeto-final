@@ -17,26 +17,25 @@
 require_once dirname(__FILE__) . '/../config/bootstrap.php';
 require dirname(__FILE__) . '/Componentes/funcoes_eventos.php';
 
-if (!isset($_SESSION['id_usuario'])) {
-    header('Location: Login.php');
-    exit;
+exigir_login('Login.php');
+$usuarioId = usuario_id();
+
+// id_evento pode vir tanto do GET quanto do POST (somente dígitos).
+$idEvento = isset($_POST['id_evento'])
+    ? entrada_inteiro($_POST, 'id_evento')
+    : entrada_inteiro($_GET, 'id_evento');
+
+if ($idEvento <= 0) {
+    redirecionar('CRUD_Eventos.php');
 }
-
-$usuarioId = (int) $_SESSION['id_usuario'];
-
-// id_evento pode vir tanto do GET quanto do POST .
-$idEvento = isset($_POST['id_evento']) ? $_POST['id_evento'] : (isset($_GET['id_evento']) ? $_GET['id_evento'] : null);
-
-if ($idEvento === null || !ctype_digit((string) $idEvento)) {
-    header('Location: CRUD_Eventos.php');
-    exit;
-}
-
-$idEvento = (int) $idEvento;
 
 // Busca o evento atual. Só permite editar evento que pertence ao
 // usuário logado.
 $stmt = $conexao->prepare("SELECT * FROM eventos WHERE id_evento = ? AND usuario_id = ?");
+if ($stmt === false) {
+    registrar_log('Falha ao preparar busca de evento: ' . $conexao->error, 'ERROR');
+    redirecionar('CRUD_Eventos.php');
+}
 $stmt->bind_param('ii', $idEvento, $usuarioId);
 $stmt->execute();
 $resultado = $stmt->get_result();
@@ -45,8 +44,7 @@ $stmt->close();
 
 if (!$evento) {
     // Evento não existe ou não pertence a este usuário.
-    header('Location: CRUD_Eventos.php');
-    exit;
+    redirecionar('CRUD_Eventos.php');
 }
 
 $erros = array();
@@ -73,11 +71,10 @@ $dados = array(
 $imagemAtual = $evento['imagem_capa'];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    csrf_exigir();
 
     foreach ($dados as $campo => $valorPadrao) {
-        if (isset($_POST[$campo])) {
-            $dados[$campo] = trim($_POST[$campo]);
-        }
+        $dados[$campo] = entrada_texto($_POST, $campo, $valorPadrao);
     }
 
     // ---- Mesma validação do cadastro ----
@@ -159,7 +156,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $conexao->prepare($sql);
 
             if ($stmt === false) {
-                $erros[] = 'Erro ao preparar a operação: ' . $conexao->error;
+                registrar_log('Falha ao preparar atualização de evento: ' . $conexao->error, 'ERROR');
+                $erros[] = 'Não foi possível atualizar o evento agora. Tente novamente em instantes.';
             } else {
                 $categoriaId = (int) $dados['categoria_id'];
                 $vagas = (int) $dados['vagas'];
@@ -189,9 +187,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 if ($stmt->execute()) {
                     $sucesso = true;
+                    // Apaga a imagem antiga só depois do UPDATE confirmado.
+                    if ($uploadInfo['enviado'] && $imagemAtual !== $nomeImagemFinal) {
+                        excluir_imagem_evento($imagemAtual);
+                    }
                     $imagemAtual = $nomeImagemFinal;
                 } else {
-                    $erros[] = 'Erro ao atualizar o evento: ' . $stmt->error;
+                    // UPDATE falhou: remove a imagem nova salva no disco
+                    // para não deixar arquivo órfão (a antiga permanece).
+                    if ($uploadInfo['enviado'] && $imagemAtual !== $nomeImagemFinal) {
+                        excluir_imagem_evento($nomeImagemFinal);
+                    }
+                    registrar_log('Falha ao atualizar evento: ' . $stmt->error, 'ERROR');
+                    $erros[] = 'Não foi possível atualizar o evento agora. Tente novamente em instantes.';
                 }
 
                 $stmt->close();
@@ -234,6 +242,7 @@ require dirname(__FILE__) . '/Componentes/header.php';
     <?php endif; ?>
 
     <form class="evento-form" action="EditarEvento.php" method="post" enctype="multipart/form-data">
+    <?php echo csrf_campo(); ?>
 
       <input type="hidden" name="id_evento" value="<?php echo (int) $idEvento; ?>">
 

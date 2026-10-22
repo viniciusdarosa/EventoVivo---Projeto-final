@@ -2,12 +2,20 @@
 /* ==========================================================
  * COMPONENTE: Logout.php
  * Encerra a sessão do usuário e redireciona para a página inicial.
+ * Aceita apenas POST com token CSRF — evita encerramento de sessão
+ * por meio de link malicioso (logout via CSRF).
  * ========================================================== */
 
 /**
  * Logout.php — Destrói a sessão e redireciona para Home
  */
 require_once dirname(__FILE__) . '/../config/bootstrap.php';
+
+// Apenas POST com token válido (o link do header envia um form POST).
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    redirecionar('Home.php');
+}
+csrf_exigir();
 
 // Destrói todos os dados da sessão
 $_SESSION = array();
@@ -21,9 +29,10 @@ if (ini_get("session.use_cookies")) {
     );
 }
 
-// Destrói a sessão
-session_destroy();
+// Destrói a sessão (apenas se houver sessão ativa)
+if (session_id() !== '') {
+    session_destroy();
+}
 
 // Redireciona para Home
-header('Location: Home.php');
-exit;
+redirecionar('Home.php');
