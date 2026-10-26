@@ -27,6 +27,7 @@ csrf_exigir();
 
 $idEvento = entrada_inteiro($_POST, 'id_evento');
 if ($idEvento <= 0) {
+    flash_definir('Evento inválido para restauração.', 'erro');
     redirecionar('CRUD_Eventos.php');
 }
 
@@ -34,12 +35,15 @@ if ($idEvento <= 0) {
 $stmt = $conexao->prepare("UPDATE eventos SET arquivado = 0 WHERE id_evento = ? AND usuario_id = ?");
 if ($stmt === false) {
     registrar_log('Falha ao preparar restauração: ' . $conexao->error, 'ERROR');
+    flash_definir('Não foi possível restaurar o evento agora. Tente novamente.', 'erro');
     redirecionar('CRUD_Eventos.php');
 }
 $stmt->bind_param('ii', $idEvento, $usuarioId);
 
 if ($stmt->execute() && $stmt->affected_rows > 0) {
     $_SESSION['flash_eventos'] = 'Evento restaurado. Ele volta a aparecer nas listagens públicas.';
+} else {
+    flash_definir('Não foi possível restaurar: evento não encontrado ou sem permissão.', 'erro');
 }
 
 $stmt->close();

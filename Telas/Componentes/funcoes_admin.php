@@ -301,8 +301,8 @@ function admin_indicador_acesso($conexao, $filtros) {
                 COUNT(DISTINCT usuario_id) AS usuarios,
                 SUM(usuario_id IS NULL) AS anonimos
          FROM acesso_sistema a
-         WHERE usuario_id IS NULL
-            OR usuario_id IN (SELECT id_usuario FROM usuario)" .
+         WHERE (usuario_id IS NULL
+            OR usuario_id IN (SELECT id_usuario FROM usuario))" .
         admin_clausula_periodo($filtros['periodo'])
     );
 
@@ -464,7 +464,7 @@ function admin_artistas_por_categoria($conexao, $filtros) {
         "SELECT cs.id_categoria,
                 cs.nome,
                 cs.descricao,
-                COUNT(f.id_freelancer) AS total,
+                COUNT(DISTINCT f.id_freelancer) AS total,
                 COUNT(a.id) AS avaliacoes,
                 AVG(a.nota) AS media
          FROM categorias_servicos cs
@@ -714,29 +714,25 @@ function admin_indicadores_sociais($conexao) {
         $conexao,
         "SELECT
             (SELECT COUNT(*) FROM freelancers) AS artistas,
-            (SELECT COUNT(*) FROM mensagens) AS mensagens,
             (SELECT COUNT(*) FROM avaliacoes) AS avaliacoes,
             (SELECT COUNT(*) FROM favoritos) AS favoritos,
-            (SELECT COUNT(*) FROM carrossel_fotos) AS fotos,
-            (SELECT COUNT(*) FROM notificacoes WHERE lida = 0) AS notificacoes_abertas"
+            (SELECT COUNT(*) FROM carrossel_fotos) AS fotos"
     );
 
     $linha = empty($linhas) ? null : $linhas[0];
 
     if (!$linha) {
         return array(
-            'artistas' => 0, 'mensagens' => 0, 'avaliacoes' => 0,
-            'favoritos' => 0, 'fotos' => 0, 'notificacoes_abertas' => 0,
+            'artistas' => 0, 'avaliacoes' => 0,
+            'favoritos' => 0, 'fotos' => 0,
         );
     }
 
     return array(
         'artistas' => (int) $linha['artistas'],
-        'mensagens' => (int) $linha['mensagens'],
         'avaliacoes' => (int) $linha['avaliacoes'],
         'favoritos' => (int) $linha['favoritos'],
         'fotos' => (int) $linha['fotos'],
-        'notificacoes_abertas' => (int) $linha['notificacoes_abertas'],
     );
 }
 

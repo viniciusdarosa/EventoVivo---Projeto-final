@@ -1,0 +1,1096 @@
+/* ============================================================
+   EventoVivo — site.css  [GLOBAL]
+   Estilos do site: cabeçalho com menu móvel, hero, seções,
+   cards, listagens, rodapé e animações sutis.
+   Carregado pelo header.php em TODAS as páginas.
+
+   Ordem de dependência (definida no header.php):
+     tokens → reset → layout → components → site
+   Folhas de página (auth/eventos/crud/painel/perfil) são
+   carregadas DEPOIS e podem sobrescrever via especificidade.
+   ============================================================ */
+
+/* ==========================================================
+   1. CABEÇALHO
+   ========================================================== */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  background: var(--color-ink);
+  border-bottom: 2px solid var(--color-blood);
+}
+
+.header-inner {
+  position: relative;            /* âncora do painel móvel */
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  min-height: var(--header-height);
+  padding-block: var(--space-2);
+}
+
+.logo {
+  font-family: var(--font-display);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  font-size: var(--font-size-2xl);
+  letter-spacing: 0.03em;
+  line-height: 1;
+  color: var(--color-paper);
+  text-decoration: none;
+}
+.logo:hover { color: var(--color-paper); }
+/* "Vivo" em vermelho-claro (red-text): contraste 6.7:1 sobre ink,
+   o blood puro dava 2.7:1 e reprova no WCAG AA para texto grande. */
+.logo span { color: var(--color-red-text); }
+
+/* -- Navegação (desktop) -- */
+.nav {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3) var(--space-4);
+}
+
+.nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding-bottom: 2px;
+  color: var(--color-paper);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  font-size: var(--font-size-sm);
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  transition: color var(--ease-base), border-color var(--ease-base);
+}
+.nav a:hover {
+  color: var(--color-red-text);
+  border-bottom-color: var(--color-accent);
+}
+.nav a[aria-current="page"] {
+  color: var(--color-red-text);
+  border-bottom-color: var(--color-accent);
+}
+
+/* -- Busca global do cabeçalho -- */
+.nav-busca {
+  display: inline-flex;
+  align-items: stretch;
+  gap: var(--space-2);
+  margin-left: auto;             /* empurra para a direita no desktop */
+}
+.nav-busca input {
+  width: 150px;
+  min-height: 36px;
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-steel);
+  border: 1px solid var(--color-rule);
+  font-size: var(--font-size-sm);
+  transition: border-color var(--ease-base), width var(--ease-base);
+}
+.nav-busca input:focus {
+  border-color: var(--color-accent);
+  width: 190px;
+}
+.nav-busca input::placeholder { color: var(--color-paper-dim); }
+.nav-busca button {
+  min-height: 36px;
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-blood);
+  border: 1px solid var(--color-blood);
+  color: var(--color-white);
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: background var(--ease-base), color var(--ease-base);
+}
+.nav-busca button:hover {
+  background: var(--color-accent-hover);
+}
+
+/* -- Estado do usuário + logout -- */
+.header-user {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding-left: var(--space-3);
+  border-left: 1px solid var(--color-rule);
+  color: var(--color-paper);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  max-width: 22ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.header-logout {
+  min-height: 34px;
+  padding: var(--space-1) var(--space-3);
+  background: transparent;
+  border: 1px solid var(--color-rule);
+  color: var(--color-paper);
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: border-color var(--ease-base), color var(--ease-base);
+}
+.header-logout:hover {
+  border-color: var(--color-accent);
+  color: var(--color-red-text);
+}
+
+.nav-conta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+/* -- Botão hambúrguer (progressive enhancement) -- */
+.menu-toggle {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  width: 44px;
+  height: 44px;
+  margin-left: auto;
+  background: var(--color-ink-2);
+  border: 1px solid var(--color-rule);
+  cursor: pointer;
+  transition: border-color var(--ease-base), background var(--ease-base);
+}
+.menu-toggle:hover { border-color: var(--color-accent); }
+.menu-toggle:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; }
+
+.menu-toggle-barra {
+  width: 20px;
+  height: 2px;
+  background: var(--color-paper);
+  transition: transform var(--ease-base), opacity var(--ease-base);
+}
+
+.menu-toggle[aria-expanded="true"] .menu-toggle-barra:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+.menu-toggle[aria-expanded="true"] .menu-toggle-barra:nth-child(2) {
+  opacity: 0;
+}
+.menu-toggle[aria-expanded="true"] .menu-toggle-barra:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* Sem JS o botão nunca aparece e o menu continua visível
+   (fluxo normal, quebrando linhas). */
+html:not(.js) .menu-toggle { display: none !important; }
+
+/* ==========================================================
+   2. MENU MÓVEL (< 1100px, apenas com JS)
+   ========================================================== */
+@media (max-width: 1099.98px) {
+  .js .menu-toggle { display: flex; }
+
+  .js .nav {
+    position: absolute;
+    top: 100%;
+    left: calc(-1 * clamp(var(--space-4), 4vw, var(--space-6)));
+    right: calc(-1 * clamp(var(--space-4), 4vw, var(--space-6)));
+    z-index: var(--z-dropdown);
+    display: none;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-1);
+    max-height: calc(100vh - var(--header-height));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: var(--space-3) clamp(var(--space-4), 4vw, var(--space-6)) var(--space-4);
+    background: var(--color-ink-2);
+    border-top: 1px solid var(--color-rule);
+    border-bottom: 3px solid var(--color-blood);
+    box-shadow: var(--shadow-soft);
+  }
+  .js .nav.is-open { display: flex; }
+
+  .js .nav a {
+    min-height: 44px;
+    padding: var(--space-2) 0;
+    border-bottom: 1px solid var(--color-rule);
+  }
+  .js .nav a:hover,
+  .js .nav a[aria-current="page"] {
+    border-bottom-color: var(--color-accent);
+    padding-left: var(--space-2);
+  }
+
+  .js .nav-busca {
+    order: 1;                    /* busca fica após os links, em bloco */
+    width: 100%;
+    margin-left: 0;
+    margin-top: var(--space-2);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--color-rule);
+  }
+  .js .nav-busca input { flex: 1; width: auto; min-width: 0; }
+  .js .nav-busca input:focus { width: auto; }
+  .js .nav-busca button { min-height: 40px; padding-inline: var(--space-4); }
+
+  .js .nav-conta {
+    order: 2;
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-top: var(--space-2);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--color-rule);
+  }
+  .js .header-user {
+    border-left: 0;
+    padding-left: 0;
+    max-width: 100%;
+  }
+  .js .header-logout { min-height: 40px; }
+
+  body.menu-aberto { overflow: hidden; }
+}
+
+/* ==========================================================
+   3. ÁREA DE MENSAGENS (flash / aviso de sessão)
+   ========================================================== */
+.wrap-alertas { margin-top: var(--space-4); }
+.wrap-alertas .alert:last-child { margin-bottom: 0; }
+
+/* ==========================================================
+   4. TIPOGRAFIA DE PÁGINA
+   ========================================================== */
+.eyebrow {
+  font-family: var(--font-mark);
+  color: var(--color-red-text);
+  font-size: clamp(1rem, 2.5vw, 1.15rem);
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  margin-bottom: var(--space-3);
+}
+
+h1 {
+  font-family: var(--font-display);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  font-size: clamp(2.4rem, 6.5vw, 4.6rem);
+  line-height: 0.98;
+  letter-spacing: 0.01em;
+  text-shadow: 4px 4px 0 var(--color-blood);
+  max-width: 22ch;
+}
+
+h2 {
+  display: inline-block;
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-size: clamp(1.7rem, 4vw, 2.4rem);
+  letter-spacing: 0.02em;
+  border-bottom: 4px solid var(--color-accent);
+  padding-bottom: var(--space-1);
+  margin-bottom: var(--space-8);
+}
+
+/* ==========================================================
+   5. HERO (Home)
+   ========================================================== */
+.hero {
+  position: relative;
+  padding-block: clamp(3rem, 8vw, 6rem) clamp(2.5rem, 6vw, 4rem);
+  background: linear-gradient(135deg, var(--color-ink) 0%, var(--color-ink-2) 50%, var(--color-ink) 100%);
+  border-bottom: 1px solid var(--color-rule);
+}
+.hero::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, var(--color-blood) 0%, var(--color-accent) 40%, transparent 100%);
+}
+.hero h1 { margin-top: var(--space-8); overflow-wrap: break-word; }
+
+.hero-sub {
+  font-size: var(--font-size-lg);
+  color: var(--color-paper-dim);
+  max-width: 58ch;
+  line-height: var(--line-height-relaxed);
+  margin-block: var(--space-6);
+}
+
+.hero-cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+}
+
+/* ==========================================================
+   6. CABEÇALHO DE LISTAGEM (page-header)
+   ========================================================== */
+.page-header {
+  padding-block: clamp(2.75rem, 7vw, 4.5rem) clamp(2rem, 5vw, 3rem);
+  background: linear-gradient(135deg, var(--color-ink) 0%, var(--color-ink-2) 50%, var(--color-ink) 100%);
+  border-bottom: 1px solid var(--color-rule);
+  text-align: center;
+}
+.page-header .eyebrow { margin-bottom: var(--space-1); }
+.page-header h1 {
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  line-height: 1;
+  margin: 0 auto var(--space-2);
+  overflow-wrap: break-word;
+}
+.page-header .hero-sub {
+  max-width: 60ch;
+  margin-inline: auto;
+  margin-block: var(--space-3) 0;
+  font-size: var(--font-size-base);
+}
+
+/* ==========================================================
+   7. SEÇÕES DA HOME
+   ========================================================== */
+.how {
+  padding-block: var(--space-16);
+  background: var(--color-ink-2);
+  border-block: 1px solid var(--color-rule);
+}
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: var(--space-6);
+}
+.steps li {
+  border-top: 2px solid var(--color-rule);
+  padding-top: var(--space-4);
+  transition: border-color var(--ease-base);
+}
+.steps li:hover { border-top-color: var(--color-accent); }
+.steps .num {
+  display: block;
+  font-family: var(--font-display);
+  color: var(--color-red-text);
+  font-size: var(--font-size-3xl);
+  line-height: 1;
+  margin-bottom: var(--space-2);
+  transition: color var(--ease-base);
+}
+.steps li:hover .num { color: var(--color-yellow); }
+.steps h3 {
+  font-family: var(--font-body);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  font-size: var(--font-size-md);
+  letter-spacing: 0.03em;
+  margin-bottom: var(--space-2);
+}
+.steps p {
+  color: var(--color-paper-dim);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
+  margin: 0;
+}
+
+.destaque { padding-block: var(--space-16); }
+.destaque.alt {
+  background: var(--color-ink-2);
+  border-top: 1px solid var(--color-rule);
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+.section-header h2 { margin-bottom: 0; }
+.section-header .btn-ghost {
+  min-height: 40px;
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--font-size-base);
+}
+
+/* ==========================================================
+   8. GRIDS DE CARDS
+   ========================================================== */
+.grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
+  gap: var(--space-6);
+}
+.eventos-grid,
+.artistas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(270px, 100%), 1fr));
+  gap: var(--space-6);
+}
+
+/* Base comum a todos os cards do site */
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--color-steel);
+  border: 1px solid var(--color-rule);
+  box-shadow: var(--shadow-hard);
+  color: inherit;
+  text-decoration: none;
+  overflow: hidden;
+  transition:
+    transform var(--ease-base),
+    border-color var(--ease-base),
+    box-shadow var(--ease-base);
+}
+.card:hover {
+  transform: translateY(-2px);
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow-hard-hover);
+}
+
+/* ==========================================================
+   9. CARD DE EVENTO (Home — cards.php)
+   ========================================================== */
+.event-card-imagem-wrap {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: var(--color-ink-2);
+  border-bottom: 3px solid var(--color-accent);
+}
+.event-card-imagem,
+.event-card-placeholder {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.event-card-imagem {
+  object-fit: cover;
+  object-position: center;
+  transition: transform var(--ease-slow);
+}
+.card:hover .event-card-imagem { transform: scale(1.03); }
+.event-card-placeholder svg { width: 100%; height: 100%; }
+
+.event-card-corpo {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: var(--space-6);
+}
+.event-card .tag {
+  color: var(--color-red-text);
+  font-family: var(--font-mark);
+  font-size: 0.9rem;
+  line-height: 1.2;
+  margin: 0 0 var(--space-2);
+}
+.event-card h3 {
+  font-family: var(--font-display);
+  font-size: var(--font-size-2xl);
+  line-height: 1.05;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  margin: 0 0 var(--space-3);
+}
+.event-card .desc {
+  color: var(--color-paper-dim);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-snug);
+  margin: 0;
+}
+
+/* ==========================================================
+   10. CARD DE ARTISTA (Home — cards.php)
+   ========================================================== */
+.artist-photo-wrap {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background: var(--color-ink-2);
+  border-bottom: 3px solid var(--color-accent);
+}
+.artist-photo-wrap > a {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.artist-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 20%;
+  transition: transform var(--ease-slow);
+}
+.card:hover .artist-photo { transform: scale(1.03); }
+.artist-photo-placeholder { width: 100%; height: 100%; }
+.artist-photo-placeholder svg { width: 100%; height: 100%; }
+
+.artist-body { padding: var(--space-6); }
+
+.artist-nome {
+  color: var(--color-red-text);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  font-size: var(--font-size-xl);
+  letter-spacing: 0.02em;
+  margin-bottom: var(--space-1);
+}
+.artist-tipo {
+  color: var(--color-white);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-base);
+  margin-bottom: var(--space-1);
+}
+.artist-titulo {
+  color: var(--color-paper-dim);
+  font-style: italic;
+  font-size: var(--font-size-base);
+  margin-bottom: var(--space-1);
+}
+.artist-local {
+  font-family: var(--font-mark);
+  color: var(--color-yellow);
+  font-size: var(--font-size-base);
+  margin-bottom: var(--space-3);
+}
+.artist-bio {
+  color: var(--color-paper-dim);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-snug);
+  margin-bottom: var(--space-3);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.categorias {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.categorias li { list-style: none; }
+.card:hover .categoria {
+  border-color: var(--color-accent);
+  color: var(--color-paper);
+}
+
+/* ==========================================================
+   11. CARD DE EVENTO DA LISTAGEM (EventoCard.php)
+   ========================================================== */
+.evento-card-novo-imagem {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: var(--color-ink-2);
+  border-bottom: 3px solid var(--color-accent);
+}
+.evento-card-novo-imagem img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: center;
+  transition: transform var(--ease-slow);
+}
+.evento-card-novo:hover .evento-card-novo-imagem img { transform: scale(1.03); }
+
+.evento-card-novo-corpo {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: var(--space-6);
+}
+.evento-card-novo-categoria {
+  color: var(--color-red-text);
+  font-family: var(--font-mark);
+  font-size: 0.9rem;
+  line-height: 1.2;
+  margin-bottom: var(--space-2);
+}
+.evento-card-novo-titulo {
+  font-family: var(--font-display);
+  font-size: var(--font-size-2xl);
+  line-height: 1.05;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  margin-bottom: var(--space-3);
+}
+.evento-card-novo-meta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  color: var(--color-paper);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-snug);
+  margin-bottom: var(--space-3);
+}
+.evento-card-novo-meta .secundario { color: var(--color-paper-dim); }
+
+.evento-card-novo-rodape {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: auto;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-rule);
+}
+.evento-card-novo-valor {
+  font-weight: var(--font-weight-bold);
+  color: var(--color-yellow);
+  font-size: var(--font-size-lg);
+}
+.evento-card-novo-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.evento-card-novo-acoes .btn-icone { min-height: 34px; }
+
+/* ==========================================================
+   12. CARD DE EVENTO DO PAINEL (listagens CRUD)
+   ========================================================== */
+.evento-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--color-ink-2);
+  border: 1px solid var(--color-rule);
+  box-shadow: var(--shadow-hard);
+  overflow: hidden;
+  transition:
+    transform var(--ease-base),
+    border-color var(--ease-base),
+    box-shadow var(--ease-base);
+}
+.evento-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow-hard-hover);
+}
+.evento-card-imagem {
+  width: 100%;
+  aspect-ratio: 5 / 3;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  background: var(--color-steel);
+  border-bottom: 1px solid var(--color-rule);
+}
+.evento-card-corpo {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: var(--space-4) var(--space-5) var(--space-5);
+}
+.evento-card-categoria {
+  color: var(--color-red-text);
+  font-family: var(--font-mark);
+  font-size: var(--font-size-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: var(--space-1);
+}
+.evento-card-titulo {
+  font-family: var(--font-display);
+  font-size: var(--font-size-xl);
+  line-height: 1.1;
+  text-transform: uppercase;
+  margin-bottom: var(--space-2);
+  overflow-wrap: break-word;
+}
+.evento-card-info {
+  color: var(--color-paper-dim);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-snug);
+  margin-bottom: var(--space-1);
+}
+.evento-card-rodape {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: auto;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-rule);
+}
+.evento-card-valor {
+  font-weight: var(--font-weight-bold);
+  color: var(--color-yellow);
+  font-size: var(--font-size-base);
+}
+.evento-card-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* ==========================================================
+   13. CARD PÚBLICO DE ARTISTA (Artistas / Busca / Favoritos)
+   ========================================================== */
+.artist-card-public { padding: 0; }
+
+.artist-contato {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px dashed var(--color-rule);
+}
+.artist-valor {
+  margin-right: var(--space-2);
+  color: var(--color-yellow);
+  font-family: var(--font-mark);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+}
+.contact-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding-block: 4px;
+  color: var(--color-red-text);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid transparent;
+  transition: border-color var(--ease-base);
+}
+.contact-link:hover { border-bottom-color: var(--color-accent); }
+
+/* ==========================================================
+   14. FILTROS / TOOLBAR DAS LISTAGENS
+   ========================================================== */
+.filters-section {
+  padding-block: var(--space-6);
+  background: var(--color-ink-2);
+  border-bottom: 1px solid var(--color-rule);
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  background: rgba(18, 15, 15, 0.45);
+  border: 1px solid var(--color-rule);
+  box-shadow: var(--shadow-hard);
+}
+.toolbar .search-box {
+  flex: 2 1 240px;
+  min-width: 0;
+}
+.toolbar .filter-box {
+  flex: 1 1 160px;
+  min-width: 0;
+}
+.toolbar label { margin-bottom: var(--space-1); }
+.toolbar input,
+.toolbar select {
+  min-height: 43px;
+  padding: var(--space-3) var(--space-4);
+}
+.toolbar .btn-filter {
+  flex: 0 1 auto;
+  min-width: 130px;
+}
+.toolbar .btn-ghost {
+  flex: 0 1 auto;
+  min-width: 110px;
+}
+
+@media (max-width: 600px) {
+  .toolbar { padding: var(--space-4); gap: var(--space-3); }
+  .toolbar .search-box,
+  .toolbar .filter-box { flex-basis: 100%; }
+  .toolbar .btn-filter,
+  .toolbar .btn-ghost { flex: 1 1 100%; min-width: 0; }
+}
+
+/* ==========================================================
+   15. RESULTADOS
+   ========================================================== */
+.results-section,
+.busca-resultados { padding-block: var(--space-8) var(--space-16); }
+
+.resultados-bloco { margin-bottom: var(--space-8); }
+
+.results-header,
+.resultados-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+}
+.results-header h2,
+.resultados-header h2 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  border-bottom-width: 3px;
+  margin-bottom: 0;
+}
+.results-header .counter,
+.resultados-header .counter { font-size: var(--font-size-base); }
+
+/* ==========================================================
+   16. PÁGINAS DE LISTAGEM (shells)
+   ========================================================== */
+.list-page,
+.eventos-page,
+.busca-page { padding-bottom: var(--space-16); }
+
+/* ==========================================================
+   17. PAINEL / PÁGINAS ADMINISTRATIVAS (shell base)
+   ========================================================== */
+.admin-page {
+  min-height: calc(100vh - var(--header-height));
+  padding-bottom: var(--space-16);
+  background:
+    radial-gradient(ellipse at 50% -20%, rgba(179, 18, 30, 0.16), transparent 60%),
+    var(--color-ink);
+}
+
+.page-heading {
+  padding-block: var(--space-10) var(--space-6);
+  border-bottom: 1px solid var(--color-rule);
+}
+.heading-inner {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-6);
+}
+.page-heading .eyebrow { margin-bottom: var(--space-2); }
+.page-heading h1 {
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  max-width: none;
+  margin-bottom: var(--space-2);
+}
+.heading-sub {
+  max-width: 62ch;
+  color: var(--color-paper-dim);
+  font-size: var(--font-size-base);
+  margin: 0;
+}
+
+.events-section { padding-block: var(--space-6); }
+.events-section > .wrap > .toolbar { margin-bottom: var(--space-8); }
+
+.list-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+  padding-bottom: var(--space-3);
+  border-bottom: 2px solid var(--color-rule);
+}
+.list-header h2 {
+  font-size: clamp(1.4rem, 3vw, 1.9rem);
+  border-bottom: 0;
+  padding-bottom: 0;
+  margin-bottom: var(--space-1);
+}
+.list-header .counter { display: block; }
+
+/* ==========================================================
+   18. RODAPÉ
+   ========================================================== */
+.site-footer {
+  padding-block: var(--space-8);
+  background: var(--color-ink-2);
+  border-top: 2px solid var(--color-blood);
+}
+.footer-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+.site-footer .logo {
+  font-size: var(--font-size-xl);
+  color: var(--color-paper);
+}
+.site-footer nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+}
+.site-footer nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding-block: 4px;
+  color: var(--color-paper-dim);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.site-footer nav a:hover { color: var(--color-red-text); }
+.site-footer .copy {
+  width: 100%;
+  margin: var(--space-2) 0 0;
+  color: var(--color-paper-muted);
+  font-size: var(--font-size-sm);
+}
+
+/* ==========================================================
+   19. APOIOS DIVERSOS (substituem estilos inline das páginas)
+   ========================================================== */
+
+/* Alertas no topo das páginas administrativas */
+.admin-page .wrap > .alert { margin-top: var(--space-6); }
+.admin-page .wrap-alertas .alert { margin-top: 0; }
+
+/* Link dentro do nome do artista no card */
+.artist-nome a {
+  display: inline-block;
+  padding-block: 3px;
+  color: inherit;
+  text-decoration: none;
+}
+.artist-nome a:hover { color: var(--color-yellow); }
+
+/* Contato centralizado (cards da listagem pública) */
+.artist-contato.centralizado { justify-content: center; }
+
+/* Blocos/cabeçalhos com espaçamento extra (2º resultado) */
+.resultados-bloco.destacado,
+.results-header.destacado { margin-top: var(--space-12); }
+
+/* Card de evento/perfil usado como link */
+a.evento-card {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Placeholder de foto (card sem imagem) */
+.placeholder-cover {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-steel);
+}
+.placeholder-cover::before {
+  content: "";
+  position: absolute;
+  width: 75px;
+  height: 110px;
+  border: 1px solid rgba(230, 223, 201, 0.15);
+  transform: rotate(16deg);
+}
+.placeholder-cover span {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-display);
+  font-size: 3rem;
+  line-height: 1;
+  color: var(--color-paper-dim);
+}
+
+/* Título de seção genérico (perfil e gestão de carrossel) */
+.section-title {
+  display: inline-block;
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  border-bottom: 3px solid var(--color-accent);
+  padding-bottom: var(--space-2);
+  margin-bottom: var(--space-8);
+}
+
+/* ==========================================================
+   20. ANIMAÇÕES SUTIS
+   Só quando o usuário NÃO pede menos movimento
+   (o bloco reduce do tokens.css desliga tudo).
+   ========================================================== */
+@media (prefers-reduced-motion: no-preference) {
+  /* entrada discreta dos cards ao carregar a página */
+  .grid > *,
+  .eventos-grid > *,
+  .artistas-grid > * {
+    animation: ev-entrada 0.35s ease both;
+  }
+  .grid > *:nth-child(2),
+  .eventos-grid > *:nth-child(2),
+  .artistas-grid > *:nth-child(2) { animation-delay: 0.05s; }
+  .grid > *:nth-child(3),
+  .eventos-grid > *:nth-child(3),
+  .artistas-grid > *:nth-child(3) { animation-delay: 0.1s; }
+  .grid > *:nth-child(4),
+  .eventos-grid > *:nth-child(4),
+  .artistas-grid > *:nth-child(4) { animation-delay: 0.15s; }
+  .grid > *:nth-child(n+5),
+  .eventos-grid > *:nth-child(n+5),
+  .artistas-grid > *:nth-child(n+5) { animation-delay: 0.2s; }
+}
+
+@keyframes ev-entrada {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==========================================================
+   20. AJUSTES FINOS POR LARGURA
+   ========================================================== */
+@media (max-width: 820px) {
+  .heading-inner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-4);
+  }
+}
+
+@media (max-width: 600px) {
+  .event-card-corpo,
+  .artist-body,
+  .evento-card-novo-corpo { padding: var(--space-4); }
+  .evento-card-corpo { padding: var(--space-4); }
+  .hero h1 { margin-top: var(--space-4); }
+  .section-header { gap: var(--space-3); }
+  .heading-inner { align-items: flex-start; }
+}
+
+@media (max-width: 420px) {
+  .section-header .btn-ghost { width: 100%; }
+}

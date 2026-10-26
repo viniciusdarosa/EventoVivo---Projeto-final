@@ -10,6 +10,7 @@
 require_once dirname(__FILE__) . '/../config/bootstrap.php';
 require_once dirname(__FILE__) . '/Componentes/funcoes_eventos.php';
 require_once dirname(__FILE__) . '/Componentes/funcoes_freelancers.php';
+require_once dirname(__FILE__) . '/Componentes/funcoes_contato.php';
 
 // ---- Filtros (GET) — entrada_texto/entrada_inteiro rejeitam arrays ----
 $busca = entrada_texto($_GET, 'busca');
@@ -110,7 +111,7 @@ if ($resEstados) {
 }
 $pageTitle = 'EventoVivo - Artistas e Freelancers';
 $pageDescription = 'Encontre músicos, fotógrafos, videomakers, dançarinos, designers e outros artistas para seu evento.';
-$extraCss = array('../Css/style.css');
+$extraCss = array();
 
 require dirname(__FILE__) . '/Componentes/header.php';
 ?>
@@ -166,7 +167,7 @@ require dirname(__FILE__) . '/Componentes/header.php';
         </div>
 
         <button class="btn btn-filter" type="submit">FILTRAR</button>
-        <a class="btn btn-ghost" href="Artistas.php" style="align-self:flex-end;">LIMPAR</a>
+        <a class="btn btn-ghost" href="Artistas.php">LIMPAR</a>
       </form>
     </div>
   </section>
@@ -185,8 +186,17 @@ require dirname(__FILE__) . '/Componentes/header.php';
       <?php else: ?>
         <div class="artistas-grid">
           <?php foreach ($artistas as $artista): ?>
-            <a href="PerfilFreelancer.php?id=<?php echo (int) $artista['id_freelancer']; ?>" class="artist-card-public" style="text-decoration:none;color:inherit;display:block;">
+            <?php
+            // Card NÃO envolve tudo em <a>: contatos precisam ser
+            // links clicáveis reais (mailto/WhatsApp/Instagram), o que
+            // seria HTML inválido dentro de outro link. A navegação
+            // para o perfil fica no link "Ver Perfil" + no nome.
+            $urlWhatsLista = whatsapp_url(isset($artista['telefone']) ? $artista['telefone'] : '');
+            ?>
+            <article class="artist-card-public">
               <div class="artist-photo-wrap">
+                <a href="PerfilFreelancer.php?id=<?php echo (int) $artista['id_freelancer']; ?>"
+                   aria-label="Ver perfil de <?php echo htmlspecialchars($artista['nome']); ?>">
                 <?php
                   // Usa a foto de perfil de usuario.foto_perfil;
                   // sem arquivo, cai no placeholder.
@@ -203,10 +213,13 @@ require dirname(__FILE__) . '/Componentes/header.php';
                   <img class="artist-photo" src="<?php echo htmlspecialchars($imagemArtista); ?>"
                        alt="Foto de <?php echo htmlspecialchars($artista['nome']); ?>">
                 <?php endif; ?>
+                </a>
               </div>
 
               <div class="artist-body">
-                <h3 class="artist-nome"><?php echo htmlspecialchars($artista['nome']); ?></h3>
+                <h3 class="artist-nome">
+                  <a href="PerfilFreelancer.php?id=<?php echo (int) $artista['id_freelancer']; ?>"><?php echo htmlspecialchars($artista['nome']); ?></a>
+                </h3>
 
                 <?php if (!empty($artista['categoria_nome'])): ?>
                 <p class="artist-tipo"><?php echo htmlspecialchars($artista['categoria_nome']); ?></p>
@@ -240,17 +253,21 @@ require dirname(__FILE__) . '/Componentes/header.php';
                     <span class="artist-valor">R$ <?php echo number_format($artista['valor_hora'], 2, ',', '.'); ?>/h</span>
                   <?php endif; ?>
                   <?php if (!empty($artista['email'])): ?>
-                    <span class="contact-link" style="pointer-events:none;">✉ Email</span>
+                    <a href="mailto:<?php echo htmlspecialchars($artista['email']); ?>" class="contact-link">✉ Email</a>
                   <?php endif; ?>
-                  <?php if (!empty($artista['telefone'])): ?>
-                    <span class="contact-link" style="pointer-events:none;">📞 WhatsApp</span>
+                  <?php if ($urlWhatsLista !== ''): ?>
+                    <a href="<?php echo htmlspecialchars($urlWhatsLista); ?>" target="_blank" rel="noopener noreferrer" class="contact-link">📞 WhatsApp</a>
                   <?php endif; ?>
                   <?php if (!empty($artista['rede_social'])): ?>
-                    <span class="contact-link" style="pointer-events:none;">📸 Instagram</span>
+                    <a href="https://instagram.com/<?php echo ltrim($artista['rede_social'], '@'); ?>" target="_blank" rel="noopener noreferrer" class="contact-link">📸 Instagram</a>
                   <?php endif; ?>
                 </div>
               </div>
-            </a>
+
+              <div class="artist-contato centralizado">
+                <a href="PerfilFreelancer.php?id=<?php echo (int) $artista['id_freelancer']; ?>" class="contact-link">Ver Perfil →</a>
+              </div>
+            </article>
           <?php endforeach; ?>
         </div>
       <?php endif; ?>

@@ -8,107 +8,22 @@
  * cards.php
  * Componentes reutilizáveis de card. Cada função recebe um array
  * associativo com os dados e imprime o HTML do card.
+ * Estilos: Css/site.css (globais).
  * Campos esperados: data, local, titulo, desc, imagem (opcional)
  */
 function render_event_card($evento) {
-    static $estilos_inseridos = false;
-
-    if (!$estilos_inseridos) {
-        $estilos_inseridos = true;
-        ?>
-        <style>
-          .event-card {
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            min-width: 0;
-            background: var(--steel);
-            border: 1px solid var(--rule);
-            box-shadow: var(--shadow-hard);
-            overflow: hidden;
-            transition: transform var(--ease), border-color var(--ease), box-shadow var(--ease);
-          }
-
-          .event-card:hover {
-            transform: translateY(-2px);
-            border-color: var(--accent);
-            box-shadow: 8px 8px 0 rgba(0,0,0,.55);
-          }
-
-          .event-card-imagem-wrap {
-            width: 100%;
-            aspect-ratio: 16 / 9;
-            overflow: hidden;
-            background: var(--ink-2);
-            border-bottom: 3px solid var(--accent);
-          }
-
-          .event-card-imagem,
-          .event-card-placeholder {
-            width: 100%;
-            height: 100%;
-            display: block;
-          }
-
-          .event-card-imagem {
-            object-fit: cover;
-            object-position: center;
-          }
-
-          .event-card-placeholder svg {
-            width: 100%;
-            height: 100%;
-            display: block;
-          }
-
-          .event-card-corpo {
-            display: flex;
-            flex-direction: column;
-            flex: 1;
-            padding: var(--sp-3);
-          }
-
-          .event-card .tag {
-            color: var(--red-text);
-            font-family: var(--font-mark);
-            font-size: .9rem;
-            line-height: 1.2;
-            margin: 0 0 .45rem;
-          }
-
-          .event-card h3 {
-            font-family: var(--font-display);
-            font-size: 1.35rem;
-            line-height: 1.05;
-            text-transform: uppercase;
-            letter-spacing: .01em;
-            margin: 0 0 .8rem;
-          }
-
-          .event-card .desc {
-            color: var(--paper);
-            font-size: .82rem;
-            line-height: 1.45;
-            margin: 0;
-          }
-
-          @media (max-width: 600px) {
-            .event-card-corpo {
-              padding: var(--sp-2);
-            }
-          }
-        </style>
-        <?php
-    }
-
     $data   = isset($evento['data'])   ? htmlspecialchars($evento['data'])   : '';
     $local  = isset($evento['local'])  ? htmlspecialchars($evento['local'])  : '';
     $titulo = isset($evento['titulo']) ? htmlspecialchars($evento['titulo']) : '';
     $desc   = isset($evento['desc'])   ? htmlspecialchars($evento['desc'])   : '';
     $imagem = isset($evento['imagem']) ? htmlspecialchars($evento['imagem']) : '';
     $temImagem = $imagem !== '' && strpos($imagem, 'data:image') !== 0;
+    // Card clicável: leva à listagem já filtrada pelo título do evento
+    // (o projeto não tem página de detalhe do evento).
+    $tituloCru = (isset($evento['titulo']) && is_string($evento['titulo'])) ? $evento['titulo'] : '';
+    $destinoEvento = 'Eventos.php' . ($tituloCru !== '' ? '?busca=' . urlencode($tituloCru) : '');
     ?>
-    <article class="card event-card">
+    <a class="card event-card" href="<?php echo htmlspecialchars($destinoEvento); ?>">
       <div class="event-card-imagem-wrap">
         <?php if ($temImagem): ?>
           <img
@@ -140,7 +55,7 @@ function render_event_card($evento) {
           <p class="desc"><?php echo $desc; ?></p>
         <?php endif; ?>
       </div>
-    </article>
+    </a>
     <?php
 }
 
@@ -154,8 +69,11 @@ function render_artist_card($artista) {
     $tipo       = isset($artista['tipo'])  ? htmlspecialchars($artista['tipo'])  : '';
     $local      = isset($artista['local']) ? htmlspecialchars($artista['local']) : '';
     $categorias = isset($artista['categorias']) ? $artista['categorias'] : array();
+    // Card clicável: perfil do artista (sem id, volta para a listagem).
+    $idArtista = isset($artista['id']) ? (int) $artista['id'] : 0;
+    $destinoArtista = ($idArtista > 0) ? ('PerfilFreelancer.php?id=' . $idArtista) : 'Artistas.php';
     ?>
-    <article class="card artist-card">
+    <a class="card artist-card" href="<?php echo $destinoArtista; ?>">
       <div class="artist-photo-wrap">
         <img class="artist-photo" src="<?php echo $foto; ?>" alt="Foto de <?php echo $nome; ?>">
       </div>
@@ -171,6 +89,6 @@ function render_artist_card($artista) {
         </ul>
         <?php endif; ?>
       </div>
-    </article>
+    </a>
     <?php
 }

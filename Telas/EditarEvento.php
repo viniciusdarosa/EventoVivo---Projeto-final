@@ -48,7 +48,6 @@ if (!$evento) {
 }
 
 $erros = array();
-$sucesso = false;
 
 // Preenche $dados com os valores atuais do evento (pré-preenchimento).
 $dados = array(
@@ -77,49 +76,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $dados[$campo] = entrada_texto($_POST, $campo, $valorPadrao);
     }
 
-    // ---- Mesma validação do cadastro ----
-    if ($dados['categoria_id'] === '' || !ctype_digit($dados['categoria_id'])) {
-        $erros[] = 'Selecione uma categoria.';
-    }
-    if ($dados['titulo'] === '') {
-        $erros[] = 'Informe o título do evento.';
-    }
-    if ($dados['data_inicio_evento'] === '') {
-        $erros[] = 'Informe a data de início.';
-    }
-    if ($dados['data_fim_evento'] === '') {
-        $erros[] = 'Informe a data de término.';
-    }
-    if ($dados['data_inicio_evento'] !== '' && $dados['data_fim_evento'] !== ''
-        && $dados['data_fim_evento'] < $dados['data_inicio_evento']) {
-        $erros[] = 'A data de término não pode ser anterior à data de início.';
-    }
-    if ($dados['hora_inicio'] === '') {
-        $erros[] = 'Informe o horário de início.';
-    }
-    if ($dados['hora_fim'] === '') {
-        $erros[] = 'Informe o horário de término.';
-    }
-    if ($dados['endereco'] === '') {
-        $erros[] = 'Informe o endereço.';
-    }
-    if ($dados['cidade'] === '') {
-        $erros[] = 'Informe a cidade.';
-    }
-    if ($dados['estado'] === '' || strlen($dados['estado']) !== 2) {
-        $erros[] = 'Informe o estado (sigla com 2 letras, ex: SC).';
-    }
-    if ($dados['valor'] === '' || !is_numeric($dados['valor']) || (float) $dados['valor'] < 0) {
-        $erros[] = 'Informe um valor válido (use 0 para evento gratuito).';
-    }
-    if ($dados['vagas'] === '' || !ctype_digit((string) $dados['vagas'])) {
-        $erros[] = 'Informe a quantidade de vagas.';
-    }
-
+    // ---- Mesma validação do cadastro (regras do servidor) ----
     $faixasValidas = array('Livre', '10', '12', '14', '16', '18+');
     if (!in_array($dados['faixa_etaria'], $faixasValidas)) {
         $dados['faixa_etaria'] = 'Livre';
     }
+
+    $erros = validar_dados_evento($conexao, $dados);
 
     // ---- Upload de nova imagem é OPCIONAL na edição ----
     $uploadInfo = validar_upload_imagem_evento(isset($_FILES['imagem_capa']) ? $_FILES['imagem_capa'] : null);
@@ -138,8 +101,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($novoNomeImagem === false) {
                 $erros[] = 'Não foi possível salvar a nova imagem. Tente novamente.';
             } else {
-                // Apaga o arquivo antigo do servidor antes de gravar o novo nome.
-                excluir_imagem_evento($imagemAtual);
+                // A imagem antiga só é apagada DEPOIS que o UPDATE for
+                // confirmado (mais abaixo): apagar antes deixaria o banco
+                // apontando para um arquivo já removido se a gravação falhasse.
                 $nomeImagemFinal = $novoNomeImagem;
             }
         }
@@ -186,12 +150,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 );
 
                 if ($stmt->execute()) {
-                    $sucesso = true;
                     // Apaga a imagem antiga só depois do UPDATE confirmado.
                     if ($uploadInfo['enviado'] && $imagemAtual !== $nomeImagemFinal) {
                         excluir_imagem_evento($imagemAtual);
                     }
-                    $imagemAtual = $nomeImagemFinal;
+                    $stmt->close();
+                    // PRG: evita reenvio do formulário no F5 e leva o
+                    // feedback para a listagem.
+                    flash_definir('Evento atualizado com sucesso!');
+                    redirecionar('CRUD_Eventos.php');
                 } else {
                     // UPDATE falhou: remove a imagem nova salva no disco
                     // para não deixar arquivo órfão (a antiga permanece).
@@ -223,13 +190,6 @@ require dirname(__FILE__) . '/Componentes/header.php';
     <p class="eyebrow">PAINEL DE CONTROLE</p>
     <h1>EDITAR EVENTO</h1>
 
-    <?php if ($sucesso): ?>
-      <div class="alert alert-sucesso">
-        Evento atualizado com sucesso!
-        <a href="CRUD_Eventos.php">Ver meus eventos</a>
-      </div>
-    <?php endif; ?>
-
     <?php if (!empty($erros)): ?>
       <div class="alert alert-erro">
         <strong>Corrija os itens abaixo:</strong>
@@ -241,7 +201,7 @@ require dirname(__FILE__) . '/Componentes/header.php';
       </div>
     <?php endif; ?>
 
-    <form class="evento-form" action="EditarEvento.php" method="post" enctype="multipart/form-data">
+    <form class="evento-form" action="EditarEvento.php" method="post" enctype="multipart/form-data" data-loading="true">
     <?php echo csrf_campo(); ?>
 
       <input type="hidden" name="id_evento" value="<?php echo (int) $idEvento; ?>">
@@ -254,7 +214,7 @@ require dirname(__FILE__) . '/Componentes/header.php';
 
       <div class="campo campo-full">
         <label for="descricao">Descrição</label>
-        <textarea id="descricao" name="descricao"><?php echo htmlspecialchars($dados['descricao']); ?></textarea>
+        <textarea id="descricao" name="descricao" maxlength="20000" required><?php echo htmlspecialchars($dados['descricao']); ?></textarea>
       </div>
 
       <div class="campo">
@@ -343,7 +303,7 @@ require dirname(__FILE__) . '/Componentes/header.php';
 
       <div class="campo">
         <label for="vagas">Vagas</label>
-        <input type="number" id="vagas" name="vagas" min="0" step="1" required
+        <input type="number" id="vagas" name="vagas" min="1" step="1" required
                value="<?php echo htmlspecialchars($dados['vagas']); ?>">
       </div>
 

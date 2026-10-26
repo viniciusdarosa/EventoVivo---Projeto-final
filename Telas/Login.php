@@ -11,6 +11,10 @@ require_once dirname(__FILE__) . '/../config/bootstrap.php';
 require_once dirname(__FILE__) . '/Componentes/funcoes_eventos.php';
 
 $erroLogin = '';
+$email = '';
+// Aviso de sessão expirada (quem tentou acessar uma área sem sessão
+// cai aqui; esta tela não inclui o header, por isso o consumo local).
+$avisoLogin = aviso_sessao();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_exigir();
@@ -89,22 +93,29 @@ if (isset($_SESSION['id_usuario'])) {
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+    <script>document.documentElement.classList.add('js');</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EventoVivo — Entrar na sua conta</title>
     <meta name="description" content="Entre na sua conta EventoVivo e acesse artistas, eventos e a cena independente da sua cidade.">
-    <meta name="theme-color" content="#110f0c">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23110f0c'/%3E%3Ctext x='32' y='46' font-family='Arial, sans-serif' font-weight='900' font-size='38' fill='%23b8000d' text-anchor='middle'%3EV%3C/text%3E%3C/svg%3E">
+    <meta name="theme-color" content="#120f0f">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23120f0f'/%3E%3Ctext x='32' y='46' font-family='Arial, sans-serif' font-weight='900' font-size='38' fill='%23b3121e' text-anchor='middle'%3EV%3C/text%3E%3C/svg%3E">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Anton&family=Courier+Prime:wght@400;700&family=Permanent+Marker&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../Css/style.css">
+    <link rel="stylesheet" href="../Css/tokens.css">
+    <link rel="stylesheet" href="../Css/reset.css">
+    <link rel="stylesheet" href="../Css/layout.css">
+    <link rel="stylesheet" href="../Css/components.css">
+    <link rel="stylesheet" href="../Css/site.css">
+    <link rel="stylesheet" href="../Css/auth.css">
+    <script src="Js/menu.js" defer></script>
 </head>
 <body>
 
 
-<div style="padding:1rem 1.5rem;">
-  <a href="Home.php" style="display:inline-block;text-decoration:none;font-weight:700;text-transform:uppercase;letter-spacing:.05em;">← Voltar para Home</a>
+<div class="auth-topo">
+  <a href="Home.php">&larr; Voltar para Home</a>
 </div>
 
 <main class="auth-split">
@@ -120,17 +131,24 @@ if (isset($_SESSION['id_usuario'])) {
 <div class="auth-card">
         <h2>Entrar</h2>
 
+        <?php if ($avisoLogin !== ''): ?>
+          <div class="alert alert-atencao">
+            <?php echo htmlspecialchars($avisoLogin); ?>
+          </div>
+        <?php endif; ?>
+
         <?php if ($erroLogin !== ''): ?>
-          <div class="alert alert-erro" style="margin-bottom:1rem;padding:.8rem;background:rgba(179,18,30,.12);border:2px solid #b3121e;color:#e6dfc9;font-size:.85rem;">
+          <div class="alert alert-erro">
             <?php echo htmlspecialchars($erroLogin); ?>
           </div>
         <?php endif; ?>
 
-        <form action="Login.php" method="post" autocomplete="on">
+        <form action="Login.php" method="post" autocomplete="on" data-loading="true">
         <?php echo csrf_campo(); ?>
         <div class="form-group">
           <label for="email">E-mail</label>
-          <input type="email" id="email" name="email" placeholder="seu@email.com" required>
+          <input type="email" id="email" name="email" placeholder="seu@email.com" required
+                 value="<?php echo htmlspecialchars($email); ?>">
         </div>
         <div class="form-group">
           <label for="senha">Senha</label>

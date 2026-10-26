@@ -1,0 +1,171 @@
+/* ============================================================
+   EventoVivo — Reset & Base
+   Normalizes browser defaults, sets up base typography.
+   ============================================================ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background-color: var(--color-ink);
+  color: var(--color-paper);
+  font-family: var(--font-body);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
+  text-rendering: optimizeLegibility;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  color: var(--color-paper);
+}
+
+h1 { font-size: var(--font-size-5xl); }
+h2 { font-size: var(--font-size-4xl); }
+h3 { font-size: var(--font-size-3xl); }
+h4 { font-size: var(--font-size-2xl); }
+h5 { font-size: var(--font-size-xl); }
+h6 { font-size: var(--font-size-lg); }
+
+p { margin: 0 0 var(--space-4); }
+
+a {
+  color: var(--color-red-text);
+  text-decoration: none;
+  transition: color var(--ease-base), border-color var(--ease-base);
+}
+
+a:hover { color: var(--color-yellow); }
+
+a:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+img, picture, video, canvas, svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+ul, ol { margin: 0; padding: 0; list-style: none; }
+
+button, input, select, textarea {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  border-radius: 0;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+button { cursor: pointer; }
+
+/* Form elements */
+input, select, textarea {
+  width: 100%;
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--color-paper-muted);
+  opacity: 1;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+  border-color: var(--color-focus);
+}
+
+/* Selection */
+::selection {
+  background-color: var(--color-accent);
+  color: var(--color-paper);
+}
+
+/* Visually hidden (accessible) */
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* Skip link */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: var(--space-4);
+  z-index: var(--z-toast);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-blood);
+  color: var(--color-paper);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  font-size: var(--font-size-sm);
+  letter-spacing: 0.05em;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-hard);
+  transition: top var(--ease-base);
+}
+
+.skip-link:focus {
+  top: var(--space-4);
+}
+
+/* Focus visible polyfill fallback */
+:focus:not(:focus-visible) { outline: none; }
+:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* Container */
+.container {
+  width: 100%;
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding-inline: var(--container-padding);
+}
+
+/* Section spacing */
+section[id] { scroll-margin-top: calc(var(--header-height) + var(--space-8)); }
+
+/* Horizontal rule */
+hr {
+  border: 0;
+  border-top: 1px solid var(--color-rule);
+  margin: var(--space-8) 0;
+}
+
+/* Selection disabled for interactive elements */
+button::selection, input::selection, select::selection, textarea::selection {
+  background: transparent;
+}

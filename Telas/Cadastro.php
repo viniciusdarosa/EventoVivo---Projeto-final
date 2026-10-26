@@ -13,7 +13,6 @@ require_once dirname(__FILE__) . '/Componentes/funcoes_contato.php';
 
 $erros = array();
 $errosPorCampo = array();
-$sucesso = false;
 
 // Valores para repopular o formulário
 $dados = array(
@@ -101,6 +100,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $dados['estado'] = strtoupper($dados['estado']);
     }
 
+    // Data de nascimento: precisa ser uma data real e não pode ser
+    // futura (quando informada — o campo é opcional).
+    if ($dados['data_nascimento'] !== ''
+        && (!evento_data_valida($dados['data_nascimento'])
+            || $dados['data_nascimento'] > date('Y-m-d'))) {
+        $errosPorCampo['data_nascimento'] = 'Informe uma data de nascimento válida (não pode ser no futuro).';
+        $erros[] = $errosPorCampo['data_nascimento'];
+    }
+
+    // Limites de tamanho do servidor (o maxlength é só no HTML):
+    // espelham o tamanho das colunas da tabela usuario.
+    $limites = array(
+        'nome'        => 120,
+        'email'       => 150,
+        'cidade'      => 100,
+        'endereco'    => 150,
+        'numero'      => 10,
+        'complemento' => 100,
+        'cep'         => 9,
+        'telefone'    => 20,
+        'cpf'         => 14,
+        'data_nascimento' => 10,
+    );
+    foreach ($limites as $campoLimite => $tamanhoMaximo) {
+        if (strlen($dados[$campoLimite]) > $tamanhoMaximo) {
+            $errosPorCampo[$campoLimite] = 'Este campo pode ter no máximo ' . $tamanhoMaximo . ' caracteres.';
+            $erros[] = $errosPorCampo[$campoLimite];
+        }
+    }
+
     // Verifica se e-mail já existe
     if (empty($erros)) {
         $stmt = $conexao->prepare("SELECT id_usuario FROM usuario WHERE email = ? LIMIT 1");
@@ -114,6 +143,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($stmt->num_rows > 0) {
                 $errosPorCampo['email'] = 'Este e-mail já está cadastrado.';
                 $erros[] = $errosPorCampo['email'];
+            }
+            $stmt->close();
+        }
+    }
+
+    // CPF é UNIQUE no banco: avisa ANTES do INSERT para o usuário
+    // receber a mensagem certa (em vez de um erro genérico).
+    if (empty($erros) && $dados['cpf'] !== '') {
+        $stmt = $conexao->prepare("SELECT id_usuario FROM usuario WHERE cpf = ? LIMIT 1");
+        if ($stmt === false) {
+            registrar_log('Falha ao preparar consulta de CPF: ' . $conexao->error, 'ERROR');
+            $erros[] = 'Não foi possível concluir o cadastro agora. Tente novamente em instantes.';
+        } else {
+            $stmt->bind_param('s', $dados['cpf']);
+            $stmt->execute();
+            $stmt->store_result();
+            if ($stmt->num_rows > 0) {
+                $errosPorCampo['cpf'] = 'Este CPF já está cadastrado em outra conta.';
+                $erros[] = $errosPorCampo['cpf'];
             }
             $stmt->close();
         }
@@ -165,8 +213,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             );
 
             if ($stmt->execute()) {
-                $sucesso = true;
                 $novoId = $conexao->insert_id;
+                $stmt->close();
                 // Cria sessão automática após cadastro
                 session_regenerate_id(true);
                 // Rotaciona o token CSRF junto com o login.
@@ -174,6 +222,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['id_usuario'] = (int) $novoId;
                 $_SESSION['nome_usuario'] = $dados['nome'];
                 $_SESSION['tipo_usuario'] = 'usuario';
+                // PRG: redireciona com feedback, evitando reenvio do
+                // formulário no F5 (que rejeitaria o token CSRF antigo).
+                flash_definir('Conta criada com sucesso! Bem-vindo(a) ao EventoVivo.');
+                redirecionar('CRUD_Eventos.php');
             } else {
                 registrar_log('Falha ao salvar cadastro: ' . $stmt->error, 'ERROR');
                 $erros[] = 'Não foi possível concluir o cadastro agora. Tente novamente em instantes.';
@@ -183,32 +235,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Se já logado (e não acabou de criar a conta), redireciona
-if (!$sucesso && isset($_SESSION['id_usuario'])) {
-    header('Location: CRUD_Eventos.php');
-    exit;
+// Se já logado (o caminho de sucesso já saiu com redirecionar acima),
+// não mostra o formulário de cadastro de novo.
+if (isset($_SESSION['id_usuario'])) {
+    redirecionar('CRUD_Eventos.php');
 }
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+    <script>document.documentElement.classList.add('js');</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EventoVivo — Cadastre-se</title>
     <meta name="description" content="Crie sua conta EventoVivo, divulgue seu trabalho como artista independente ou descubra eventos perto de você.">
-    <meta name="theme-color" content="#110f0c">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23110f0c'/%3E%3Ctext x='32' y='46' font-family='Arial, sans-serif' font-weight='900' font-size='38' fill='%23b8000d' text-anchor='middle'%3EV%3C/text%3E%3C/svg%3E">
+    <meta name="theme-color" content="#120f0f">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23120f0f'/%3E%3Ctext x='32' y='46' font-family='Arial, sans-serif' font-weight='900' font-size='38' fill='%23b3121e' text-anchor='middle'%3EV%3C/text%3E%3C/svg%3E">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Anton&family=Courier+Prime:wght@400;700&family=Permanent+Marker&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../Css/style.css">
+    <link rel="stylesheet" href="../Css/tokens.css">
+    <link rel="stylesheet" href="../Css/reset.css">
+    <link rel="stylesheet" href="../Css/layout.css">
+    <link rel="stylesheet" href="../Css/components.css">
+    <link rel="stylesheet" href="../Css/site.css">
+    <link rel="stylesheet" href="../Css/auth.css">
+    <script src="Js/menu.js" defer></script>
 </head>
 <body>
 
 
 
-<div style="padding:1rem 1.5rem;">
-  <a href="Home.php" style="display:inline-block;text-decoration:none;font-weight:700;text-transform:uppercase;letter-spacing:.05em;">← Voltar para Home</a>
+<div class="auth-topo">
+  <a href="Home.php">&larr; Voltar para Home</a>
 </div>
 
 <main class="auth-split">
@@ -224,19 +283,10 @@ if (!$sucesso && isset($_SESSION['id_usuario'])) {
 <div class="auth-card">
         <h2>Criar conta</h2>
 
-        <?php if ($sucesso): ?>
-          <?php $_SESSION['flash_cadastro'] = 'Conta criada com sucesso! Bem-vindo(a) ao EventoVivo.'; ?>
-          <div class="alert alert-sucesso" style="margin-bottom:1rem;padding:.8rem;background:rgba(230,185,35,.12);border:2px solid #e6b923;color:#e6dfc9;font-size:.85rem;">
-            Conta criada com sucesso! Redirecionando...
-            <a href="CRUD_Eventos.php" style="color:#e6b923;">Clique aqui se não for redirecionado automaticamente.</a>
-            <script>setTimeout(function(){ window.location.href = 'CRUD_Eventos.php'; }, 1500);</script>
-          </div>
-        <?php endif; ?>
-
         <?php if (!empty($erros)): ?>
-          <div class="alert alert-erro" id="cadastro-erros" tabindex="-1" style="margin-bottom:1rem;padding:.8rem;background:rgba(179,18,30,.12);border:2px solid #b3121e;color:#e6dfc9;font-size:.85rem;">
+          <div class="alert alert-erro" id="cadastro-erros" tabindex="-1">
             <strong>Corrija os itens abaixo:</strong>
-            <ul style="margin:.4rem 0 0;padding-left:1.2rem;">
+            <ul>
               <?php foreach ($erros as $erro): ?>
                 <li><?php echo htmlspecialchars($erro); ?></li>
               <?php endforeach; ?>
@@ -244,7 +294,7 @@ if (!$sucesso && isset($_SESSION['id_usuario'])) {
           </div>
         <?php endif; ?>
 
-<form action="Cadastro.php" method="post" autocomplete="on" id="form-cadastro" novalidate>
+<form action="Cadastro.php" method="post" autocomplete="on" id="form-cadastro" novalidate data-loading="true">
         <?php echo csrf_campo(); ?>
         <div class="form-group">
           <label for="nome">Nome completo <span class="campo-obrigatorio">Obrigatório</span></label>
@@ -342,9 +392,8 @@ if (!$sucesso && isset($_SESSION['id_usuario'])) {
       </form>
 
       <p class="auth-terms">
-        Ao criar sua conta você concorda com os
-        <a href="#">Termos de Uso</a> e a
-        <a href="#">Politica de Privacidade</a> do EventoVivo.
+        Ao criar sua conta você concorda com as regras de uso e
+        de privacidade do EventoVivo.
       </p>
 
       <div class="auth-divider">ou</div>

@@ -137,7 +137,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $categorias = buscar_categorias_servicos($conexao);
 $pageTitle = 'EventoVivo - Editar Perfil de Artista';
-$extraCss = array('../Css/crud_eventos.css', '../Css/style.css');
+$extraCss = array('../Css/crud_eventos.css');
 
 require dirname(__FILE__) . '/Componentes/header.php';
 ?>
@@ -166,7 +166,7 @@ require dirname(__FILE__) . '/Componentes/header.php';
       </div>
     <?php endif; ?>
 
-    <form class="freelancer-form" action="EditarFreelancer.php" method="post" enctype="multipart/form-data">
+    <form class="freelancer-form" action="EditarFreelancer.php" method="post" enctype="multipart/form-data" data-loading="true">
     <?php echo csrf_campo(); ?>
 
       <input type="hidden" name="id_freelancer" value="<?php echo $idFreelancer; ?>">

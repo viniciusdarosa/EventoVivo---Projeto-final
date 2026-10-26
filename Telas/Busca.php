@@ -11,6 +11,7 @@ require_once dirname(__FILE__) . '/../config/bootstrap.php';
 require_once dirname(__FILE__) . '/Componentes/funcoes_eventos.php';
 require_once dirname(__FILE__) . '/Componentes/funcoes_freelancers.php';
 require_once dirname(__FILE__) . '/Componentes/funcoes_contato.php';
+require_once dirname(__FILE__) . '/Componentes/funcoes_favoritos.php';
 
 $termo = entrada_texto($_GET, 'q');
 $termoSeguro = htmlspecialchars($termo);
@@ -74,7 +75,7 @@ if ($termo !== '') {
 <?php
 $pageTitle = $termoSeguro ? 'Busca por "' . $termoSeguro . '"' : 'Busca Geral';
 $pageDescription = $termoSeguro ? 'Resultados da busca por "' . $termoSeguro . '"' : 'Busca geral de eventos e artistas no EventoVivo';
-$extraCss = array('../Css/style.css', '../Css/crud_eventos.css');
+$extraCss = array();
 
 require dirname(__FILE__) . '/Componentes/header.php';
 ?>
@@ -83,7 +84,7 @@ require dirname(__FILE__) . '/Componentes/header.php';
   <section class="page-header">
     <div class="wrap">
       <p class="eyebrow">BUSCA GERAL</p>
-      <h1><?php echo $termoSeguro ? 'Resultados para <span style="color: var(--red-text);">"' . $termoSeguro . '"</span>' : 'Busca Geral'; ?></h1>
+      <h1><?php echo $termoSeguro ? 'Resultados para <span class="text-accent">"' . $termoSeguro . '"</span>' : 'Busca Geral'; ?></h1>
       <?php if ($termo !== ''): ?>
         <p class="hero-sub">
           Encontramos <strong><?php echo count($eventos); ?> evento(s)</strong> e <strong><?php echo count($artistas); ?> artista(s)</strong>.
@@ -102,7 +103,7 @@ require dirname(__FILE__) . '/Componentes/header.php';
         <div class="resultados-header">
           <h2>Eventos <span class="counter"><?php echo count($eventos); ?></span></h2>
           <?php if ($termo !== '' && count($eventos) >= 20): ?>
-            <a href="Eventos.php?busca=<?php echo urlencode($termo); ?>" class="btn btn-ghost" style="font-size:.8rem;">Ver todos os eventos</a>
+            <a href="Eventos.php?busca=<?php echo urlencode($termo); ?>" class="btn btn-ghost btn-sm">Ver todos os eventos</a>
           <?php endif; ?>
         </div>
 
@@ -147,11 +148,19 @@ require dirname(__FILE__) . '/Componentes/header.php';
                     <span class="evento-card-valor"><?php echo formatar_valor_evento($evento['valor']); ?></span>
 
                     <div class="evento-card-acoes">
+                      <?php
+                      // Favorito do evento: retorna para esta mesma busca.
+                      $destinoBusca = 'Busca.php' . (($_GET !== array() && preg_match('/^[A-Za-z0-9_=&%.-]*$/', (string) http_build_query($_GET))) ? '?' . http_build_query($_GET) : '');
+                      $salvoEventoBusca = false;
+                      if (isset($_SESSION['id_usuario']) && $conexao instanceof mysqli) {
+                          $salvoEventoBusca = favorito_esta($conexao, (int) $_SESSION['id_usuario'], 'evento', (int) $evento['id_evento']);
+                      }
+                      render_favorito_form('evento', (int) $evento['id_evento'], $destinoBusca, $salvoEventoBusca);
+                      ?>
                       <?php if (isset($_SESSION['id_usuario']) && $_SESSION['id_usuario'] == $evento['usuario_id']): ?>
                         <a class="btn-icone" href="EditarEvento.php?id_evento=<?php echo (int) $evento['id_evento']; ?>">Editar</a>
                         <form method="post" action="ExcluirEvento.php"
-                              onsubmit="return confirm('Tem certeza que deseja arquivar este evento? Ele deixará de aparecer nas listagens públicas e poderá ser restaurado depois.');"
-                              style="display:inline;">
+                              onsubmit="return confirm('Tem certeza que deseja arquivar este evento? Ele deixará de aparecer nas listagens públicas e poderá ser restaurado depois.');">
                           <?php echo csrf_campo(); ?>
                           <input type="hidden" name="id_evento" value="<?php echo (int) $evento['id_evento']; ?>">
                           <button type="submit" class="btn-icone btn-icone-excluir">Arquivar</button>
@@ -178,11 +187,11 @@ require dirname(__FILE__) . '/Componentes/header.php';
       </section>
 
       <!-- ARTISTAS -->
-      <section class="resultados-bloco" style="margin-top:3rem;">
+      <section class="resultados-bloco destacado">
         <div class="resultados-header">
           <h2>Artistas <span class="counter"><?php echo count($artistas); ?></span></h2>
           <?php if ($termo !== '' && count($artistas) >= 20): ?>
-            <a href="Artistas.php?busca=<?php echo urlencode($termo); ?>" class="btn btn-ghost" style="font-size:.8rem;">Ver todos os artistas</a>
+            <a href="Artistas.php?busca=<?php echo urlencode($termo); ?>" class="btn btn-ghost btn-sm">Ver todos os artistas</a>
           <?php endif; ?>
         </div>
 

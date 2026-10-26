@@ -11,6 +11,15 @@ comando etc.):
 | 2 | `instalacao/01_esquema.sql` | Cria as 11 tabelas na ordem correta das chaves estrangeiras. Usa `CREATE TABLE IF NOT EXISTS`: **nunca apaga** tabelas existentes. |
 | 3 | `instalacao/02_dados_demonstracao.sql` | **Opcional.** Popula categorias, usuários (inclusive um admin), eventos, artistas, avaliações etc. Só para banco vazio recém-criado — os INSERTs usam IDs fixos e falham com erro se já houver dados (de propósito: nada é sobrescrito). |
 
+> **Charset na importação:** importe os `.sql` com o cliente em
+> UTF-8 (linha de comando: `--default-character-set=utf8mb4`;
+> phpMyAdmin: codificação UTF-8 do arquivo). Importar com o padrão
+> latin1/CP850 do Windows grava texto de demo com acentos
+> corrompidos ("Música" vira "M║sica" no navegador) — nesse caso,
+> apague as tabelas de demonstração e reimporte `02` com o charset
+> correto (os IDs são fixos; contas e arquivos de imagem continuam
+> válidos).
+
 Contas de demonstração (senha `123456`; no banco ela já é gravada
 como hash bcrypt `$2y$` — nenhuma senha fica em texto puro):
 

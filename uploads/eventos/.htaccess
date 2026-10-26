@@ -1,13 +1,23 @@
 # Impede que qualquer arquivo .php enviado por engano/malicia
-# seja executado se alguém colocar/renomear algo nesta pasta.
-<FilesMatch "\.(php|phtml|php\d)$">
-  Require all denied
-</FilesMatch>
+# seja executado se alguem colocar/renomear algo nesta pasta.
+# Sintaxe dupla (Apache 2.4 e 2.2) — no EasyPHP com Apache 2.2 a
+# diretiva "Require" sozinha derrubava a pasta com erro 500; agora
+# o acesso .php cai em 403 (bloqueio limpo) nas duas versões.
+<IfModule mod_authz_core.c>
+  <FilesMatch "\.(php|phtml|php\d)$">
+    Require all denied
+  </FilesMatch>
+</IfModule>
+<IfModule !mod_authz_core.c>
+  <FilesMatch "\.(php|phtml|php\d)$">
+    Order allow,deny
+    Deny from all
+  </FilesMatch>
+</IfModule>
 
-# Sintaxe alternativa para Apache 2.2 (EasyPHP costuma usar 2.2/2.4
-# dependendo da versão). Descomente se a diretiva acima não funcionar
-# no seu Apache:
-# <FilesMatch "\.(php|phtml|php\d)$">
-#   Order allow,deny
-#   Deny from all
-# </FilesMatch>
+# Reforço extra (remove o handler do PHP caso a pasta seja servida):
+RemoveHandler .php
+RemoveType .php
+<IfModule mod_php5.c>
+  php_flag engine off
+</IfModule>

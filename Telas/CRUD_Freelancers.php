@@ -24,7 +24,7 @@ $usuarioId = (int) $_SESSION['id_usuario'];
 $freelancer = buscar_freelancer_por_usuario($conexao, $usuarioId);
 $temPerfil = $freelancer !== false;
 $pageTitle = 'EventoVivo - Gerenciar Perfil de Artista';
-$extraCss = array('../Css/crud_eventos.css', '../Css/style.css');
+$extraCss = array();
 
 require dirname(__FILE__) . '/Componentes/header.php';
 ?>
@@ -72,7 +72,7 @@ require dirname(__FILE__) . '/Componentes/header.php';
       <?php else: ?>
 
         <div class="eventos-grid">
-          <a href="PerfilFreelancer.php?id=<?php echo (int) $freelancer['id_freelancer']; ?>" target="_blank" class="evento-card freelancer-card" style="text-decoration:none;color:inherit;display:block;">
+          <a href="PerfilFreelancer.php?id=<?php echo (int) $freelancer['id_freelancer']; ?>" target="_blank" class="evento-card freelancer-card">
 
             <?php
             $srcCard = !empty($freelancer['foto_perfil'])
@@ -84,8 +84,8 @@ require dirname(__FILE__) . '/Componentes/header.php';
                    src="<?php echo htmlspecialchars($srcCard); ?>"
                    alt="Foto de perfil de <?php echo htmlspecialchars($_SESSION['nome_usuario']); ?>">
             <?php else: ?>
-              <div class="evento-card-imagem placeholder-cover" style="display:flex;align-items:center;justify-content:center;background:var(--steel);">
-                <span style="font-family:var(--font-display);font-size:3rem;color:var(--paper-dim);">🎨</span>
+              <div class="evento-card-imagem placeholder-cover">
+                <span aria-hidden="true">🎨</span>
               </div>
             <?php endif; ?>
 
@@ -112,8 +112,7 @@ require dirname(__FILE__) . '/Componentes/header.php';
                   <a class="btn-icone" href="EditarFreelancer.php">Editar</a>
 
                   <form method="post" action="ExcluirFreelancer.php"
-                        onsubmit="return confirm('Tem certeza que deseja excluir seu perfil de artista? Essa ação não pode ser desfeita.');"
-                        style="display:inline;">
+                        onsubmit="return confirm('Tem certeza que deseja excluir seu perfil de artista? Essa ação não pode ser desfeita.');">
                     <?php echo csrf_campo(); ?>
                     <input type="hidden" name="id_freelancer" value="<?php echo (int) $freelancer['id_freelancer']; ?>">
                     <button type="submit" class="btn-icone btn-icone-excluir">Excluir</button>

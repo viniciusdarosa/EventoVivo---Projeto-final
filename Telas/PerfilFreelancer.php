@@ -11,21 +11,22 @@ require_once dirname(__FILE__) . '/../config/bootstrap.php';
 require_once dirname(__FILE__) . '/Componentes/funcoes_freelancers.php';
 require_once dirname(__FILE__) . '/Componentes/funcoes_eventos.php';
 require_once dirname(__FILE__) . '/Componentes/funcoes_contato.php';
+require_once dirname(__FILE__) . '/Componentes/funcoes_favoritos.php';
 
 // ID do freelancer vem da URL
 $idFreelancer = isset($_GET['id']) && ctype_digit($_GET['id']) ? (int) $_GET['id'] : 0;
 
 if ($idFreelancer <= 0) {
-    header('Location: Artistas.php');
-    exit;
+    flash_definir('Artista não encontrado.', 'erro');
+    redirecionar('Artistas.php');
 }
 
 // Busca dados completos do freelancer
 $freelancer = buscar_freelancer_completo($conexao, $idFreelancer);
 
 if (!$freelancer) {
-    header('Location: Artistas.php');
-    exit;
+    flash_definir('Artista não encontrado.', 'erro');
+    redirecionar('Artistas.php');
 }
 
 // Busca fotos do carrossel do trabalho
@@ -38,6 +39,12 @@ $mediaAvaliacoes = calcular_media_avaliacoes($conexao, $idFreelancer);
 
 // Verifica se o usuário logado é o dono do perfil
 $ehDono = isset($_SESSION['id_usuario']) && $_SESSION['id_usuario'] == $freelancer['usuario_id'];
+
+// Estado do favorito deste perfil (botão Salvar/Salvo do cabeçalho)
+$salvoFavorito = false;
+if (isset($_SESSION['id_usuario'])) {
+    $salvoFavorito = favorito_esta($conexao, (int) $_SESSION['id_usuario'], 'freelancer', $idFreelancer);
+}
 
 // Verifica se já avaliou
 $jaAvaliou = false;
@@ -54,380 +61,7 @@ if (isset($_SESSION['id_usuario']) && !$ehDono) {
 
 $pageTitle = $freelancer['nome'] . ' — EventoVivo';
 $pageDescription = substr($freelancer['descricao'], 0, 160);
-$extraCss = array('../Css/style.css', '../Css/crud_eventos.css');
-$extraStyle = <<<'ESTILO_PERFIL'
-    .perfil-hero {
-      position: relative;
-      padding: 4rem 0 3rem;
-      background: linear-gradient(135deg, var(--ink) 0%, var(--ink-2) 50%, var(--ink) 100%);
-      border-bottom: 1px solid var(--rule);
-    }
-    .perfil-hero::after {
-      content: "";
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      height: 3px;
-      background: linear-gradient(90deg, var(--blood) 0%, var(--accent) 40%, transparent 100%);
-    }
-    .perfil-foto {
-      width: 220px;
-      height: 220px;
-      flex-shrink: 0;
-      object-fit: cover;
-      object-position: center 20%;
-      background: var(--ink-2);
-      border: 3px solid var(--rule);
-      box-shadow: var(--shadow-hard);
-    }
-    .perfil-header {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      gap: 2rem;
-      flex-wrap: wrap;
-      align-items: flex-start;
-    }
-    .perfil-info h1 {
-      font-family: var(--font-display);
-      text-transform: uppercase;
-      font-size: clamp(2rem, 5vw, 3rem);
-      line-height: 1.1;
-      margin-bottom: .5rem;
-    }
-    .perfil-meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1.5rem;
-      margin-top: 1rem;
-      color: var(--paper-dim);
-      font-size: .9rem;
-    }
-    .perfil-meta span { display: flex; align-items: center; gap: .35rem; }
-    .perfil-categoria {
-      display: inline-block;
-      background: rgba(184,0,13,.15);
-      border: 1px solid var(--accent);
-      color: var(--red-text);
-      padding: .25rem .75rem;
-      font-size: .7rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: .06em;
-      margin-top: .5rem;
-    }
-    .perfil-valor {
-      color: var(--yellow);
-      font-family: var(--font-mark);
-      font-size: 1.1rem;
-      font-weight: 700;
-    }
-    .perfil-contatos {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-      margin-top: 1.5rem;
-    }
-    .btn-contato {
-      display: inline-flex;
-      align-items: center;
-      gap: .5rem;
-      padding: .7rem 1.2rem;
-      background: var(--blood);
-      color: var(--paper);
-      border: 2px solid var(--blood);
-      font-weight: 700;
-      text-transform: uppercase;
-      font-size: .8rem;
-      letter-spacing: .05em;
-      transition: background var(--ease), color var(--ease);
-    }
-    .btn-contato:hover { background: transparent; color: var(--red-text); }
-    .btn-contato.ghost { background: transparent; border-color: var(--rule); color: var(--paper); }
-    .btn-contato.ghost:hover { border-color: var(--accent); color: var(--red-text); }
-
-    .perfil-section { padding: 3rem 0; }
-    .perfil-section.alt { background: var(--ink-2); border-top: 1px solid var(--rule); }
-    .section-title {
-      font-family: var(--font-display);
-      text-transform: uppercase;
-      font-size: clamp(1.5rem, 3vw, 2rem);
-      border-bottom: 3px solid var(--accent);
-      padding-bottom: .5rem;
-      margin-bottom: 2rem;
-      display: inline-block;
-    }
-
-    .descricao-texto {
-      color: var(--paper-dim);
-      line-height: 1.8;
-      font-size: 1rem;
-      max-width: 80ch;
-    }
-
-    .experiencia-lista {
-      list-style: disc;
-      padding-left: 1.5rem;
-      color: var(--paper-dim);
-      line-height: 1.8;
-    }
-    .experiencia-lista li { margin-bottom: .5rem; }
-
-    /* ---- Carrossel de fotos do trabalho ---- */
-    .carrossel {
-      position: relative;
-      /* Toda foto cai na mesma caixa. A largura acompanha a mesma
-         referência de altura (66vh) usada abaixo, senão o max-height
-         estica o box e ele deixa de ter a proporção declarada — no
-         desktop a caixa estava 1128x594 em vez de 3/2. */
-      max-width: max(640px, calc(66vh * 1.5));
-      margin: 0 auto;
-      background: var(--steel);
-      border: 2px solid var(--rule);
-      box-shadow: var(--shadow-hard);
-    }
-    .carrossel-viewport {
-      position: relative;
-      width: 100%;
-      overflow: hidden;
-      background: var(--ink-2);
-    }
-    .carrossel-trilha {
-      position: relative;
-    }
-    .carrossel-slide {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      margin: 0;
-      opacity: 0;
-      visibility: hidden;
-      transition: opacity .6s ease, visibility .6s ease;
-      pointer-events: none;
-    }
-    .carrossel-slide.ativo {
-      position: relative;
-      opacity: 1;
-      visibility: visible;
-      pointer-events: auto;
-    }
-    .carrossel-slide img {
-      display: block;
-      width: 100%;
-      height: auto;
-      aspect-ratio: 3 / 2;
-      max-height: 66vh;
-      /* contain em vez de cover: a foto inteira cabe na caixa,
-         sem corte e sem ultrapassar os limites do carrossel. */
-      object-fit: contain;
-      object-position: center;
-      background: var(--ink-2);
-    }
-    .carrossel-legenda {
-      position: absolute;
-      left: 0;
-      bottom: 0;
-      width: 100%;
-      padding: 2.5rem 1.25rem .9rem;
-      background: linear-gradient(to top, rgba(0,0,0,.88) 0%, rgba(0,0,0,.55) 55%, transparent 100%);
-      color: var(--paper);
-      font-family: var(--font-body);
-      font-size: .9rem;
-      line-height: 1.5;
-      margin: 0;
-    }
-    .carrossel-seta {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      z-index: 3;
-      width: 44px;
-      height: 44px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(18,15,15,.82);
-      border: 2px solid var(--rule);
-      color: var(--paper);
-      font-size: 1.3rem;
-      line-height: 1;
-      cursor: pointer;
-      padding: 0;
-      transition: background var(--ease), border-color var(--ease), color var(--ease);
-    }
-    .carrossel-seta:hover {
-      background: var(--blood);
-      border-color: var(--accent);
-      color: var(--paper);
-    }
-    .carrossel-seta:focus-visible { outline: 2px solid var(--yellow); outline-offset: 2px; }
-    .carrossel-seta.anterior { left: .75rem; }
-    .carrossel-seta.proximo { right: .75rem; }
-    .carrossel-seta[disabled] { opacity: 0; pointer-events: none; }
-
-    .carrossel-rodape {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-      padding: .75rem 1rem;
-      border-top: 1px solid var(--rule);
-      flex-wrap: wrap;
-    }
-    .carrossel-dots {
-      display: flex;
-      gap: .5rem;
-      flex-wrap: wrap;
-      margin: 0;
-      padding: 0;
-      list-style: none;
-    }
-    .carrossel-dot {
-      display: block;
-      width: 11px;
-      height: 11px;
-      padding: 0;
-      background: transparent;
-      border: 2px solid var(--rule);
-      cursor: pointer;
-      transition: background var(--ease), border-color var(--ease);
-    }
-    .carrossel-dot:hover { border-color: var(--paper-dim); }
-    .carrossel-dot[aria-current="true"] { background: var(--accent); border-color: var(--accent); }
-    .carrossel-dot:focus-visible { outline: 2px solid var(--yellow); outline-offset: 2px; }
-    .carrossel-contador {
-      color: var(--paper-dim);
-      font-family: var(--font-body);
-      font-size: .8rem;
-      letter-spacing: .08em;
-      margin-left: auto;
-    }
-
-    .carrossel-vazio {
-      background: var(--steel);
-      border: 2px dashed var(--rule);
-      padding: 2.5rem 1.5rem;
-      text-align: center;
-      color: var(--paper-dim);
-    }
-    .carrossel-gestao { margin-top: 1.25rem; }
-
-    /* Abas de avaliações */
-    .abas-avaliacoes {
-      display: flex;
-      gap: .5rem;
-      margin-bottom: 1.5rem;
-      border-bottom: 2px solid var(--rule);
-      flex-wrap: wrap;
-    }
-    .aba-btn {
-      background: transparent;
-      border: none;
-      color: var(--paper-dim);
-      font-family: var(--font-body);
-      font-size: .9rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: .05em;
-      padding: .75rem 1.5rem;
-      cursor: pointer;
-      border-bottom: 3px solid transparent;
-      margin-bottom: -2px;
-      transition: color var(--ease), border-color var(--ease);
-    }
-    .aba-btn:hover { color: var(--red-text); }
-    .aba-btn.ativa {
-      color: var(--red-text);
-      border-bottom-color: var(--accent);
-    }
-    .aba-conteudo { display: none; }
-    .aba-conteudo.ativa { display: block; animation: fadeIn .2s ease; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
-
-    .avaliacoes-lista { display: flex; flex-direction: column; gap: 1.5rem; }
-    .avaliacao-card {
-      background: var(--steel);
-      border: 2px solid var(--rule);
-      box-shadow: var(--shadow-hard);
-      padding: 1.5rem;
-    }
-    .avaliacao-header { display: flex; align-items: center; gap: 1rem; margin-bottom: .75rem; }
-    .avaliador-foto {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid var(--rule);
-      background: var(--ink-2);
-    }
-    .avaliador-info { flex: 1; }
-    .avaliador-nome { font-weight: 700; text-transform: uppercase; font-size: .9rem; }
-    .avaliacao-data { color: var(--paper-dim); font-size: .75rem; }
-    .avaliacao-estrelas { color: var(--yellow); font-family: var(--font-mark); font-size: 1.1rem; letter-spacing: .1em; }
-    .avaliacao-comentario { color: var(--paper-dim); line-height: 1.6; }
-
-    .avaliar-form {
-      background: var(--steel);
-      border: 2px solid var(--rule);
-      box-shadow: var(--shadow-hard);
-      padding: 2rem;
-      max-width: 600px;
-    }
-    .avaliar-form .campo { margin-bottom: 1rem; }
-    .avaliar-form label { display: block; margin-bottom: .35rem; font-weight: 700; text-transform: uppercase; font-size: .75rem; color: var(--paper-dim); letter-spacing: .05em; }
-    .estrelas-input { display: flex; gap: .5rem; direction: rtl; }
-    .estrelas-input input { display: none; }
-    .estrelas-input label {
-      font-size: 2rem;
-      color: var(--rule);
-      cursor: pointer;
-      transition: color var(--ease);
-    }
-    .estrelas-input input:checked ~ label,
-    .estrelas-input label:hover,
-    .estrelas-input label:hover ~ label { color: var(--yellow); }
-    .avaliar-form textarea {
-      width: 100%;
-      min-height: 100px;
-      background: var(--ink);
-      border: 2px solid var(--rule);
-      color: var(--paper);
-      padding: .75rem;
-      font-family: var(--font-body);
-      font-size: .9rem;
-      resize: vertical;
-    }
-    .avaliar-form textarea:focus { outline: none; border-color: var(--accent); }
-
-    .sem-avaliacao { color: var(--paper-dim); font-style: italic; }
-    .estrelas-avaliacao { display: flex; align-items: center; gap: .5rem; }
-    .estrela { font-size: 1.2rem; }
-    .estrela.cheia { color: var(--yellow); }
-    .estrela.meia { color: var(--yellow); opacity: .5; }
-    .estrela.vazia { color: var(--rule); }
-    .media-numero { color: var(--paper-dim); font-size: .9rem; }
-
-    @media (max-width: 720px) {
-      .perfil-header { flex-direction: column; align-items: center; text-align: center; }
-      .perfil-foto { width: 160px; height: 160px; }
-      .perfil-meta { justify-content: center; }
-      .perfil-contatos { justify-content: center; }
-      .avaliar-form { padding: 1.5rem; }
-      .abas-avaliacoes { justify-content: center; }
-      .carrossel-seta { width: 38px; height: 38px; font-size: 1.1rem; }
-      .carrossel-seta.anterior { left: .4rem; }
-      .carrossel-seta.proximo { right: .4rem; }
-      .carrossel-legenda { font-size: .8rem; padding: 2rem .75rem .7rem; }
-      .carrossel-contador { margin-left: 0; }
-    }
-    @media (max-width: 480px) {
-      .carrossel-rodape { justify-content: center; }
-      .carrossel-contador { width: 100%; text-align: center; order: -1; }
-    }
-ESTILO_PERFIL;
+$extraCss = array('../Css/perfil.css');
 
 require dirname(__FILE__) . '/Componentes/header.php';
 ?>
@@ -467,6 +101,14 @@ require dirname(__FILE__) . '/Componentes/header.php';
             <?php if (!empty($freelancer['rede_social'])): ?>
               <a href="https://instagram.com/<?php echo ltrim($freelancer['rede_social'], '@'); ?>" target="_blank" class="btn-contato ghost">📸 Instagram</a>
             <?php endif; ?>
+            <?php
+            render_favorito_form(
+                'freelancer',
+                $idFreelancer,
+                'PerfilFreelancer.php?id=' . $idFreelancer,
+                $salvoFavorito
+            );
+            ?>
             <?php if ($ehDono): ?>
               <a href="EditarFreelancer.php" class="btn-contato ghost">✎ Editar Perfil</a>
             <?php endif; ?>
@@ -485,7 +127,7 @@ require dirname(__FILE__) . '/Componentes/header.php';
       </div>
 
       <?php if (!empty($freelancer['experiencia'])): ?>
-        <h3 style="margin-top:2rem;font-family:var(--font-body);font-size:1.1rem;text-transform:uppercase;letter-spacing:.02em;">Experiência</h3>
+        <h3 class="perfil-subtitulo">Experiência</h3>
         <ul class="experiencia-lista">
           <?php
           $expLinhas = explode("\n", $freelancer['experiencia']);
@@ -560,9 +202,9 @@ require dirname(__FILE__) . '/Componentes/header.php';
   <!-- Avaliações -->
   <section class="perfil-section">
     <div class="wrap">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:1.5rem;">
-        <h2 class="section-title" style="margin-bottom:0;">Avaliações</h2>
-        <div class="estrelas-avaliacao" style="font-size:1.5rem;">
+      <div class="perfil-avaliacoes-topo">
+        <h2 class="section-title">Avaliações</h2>
+        <div class="estrelas-avaliacao">
           <?php echo render_estrelas_avaliacao($mediaAvaliacoes); ?>
         </div>
       </div>
@@ -609,15 +251,15 @@ require dirname(__FILE__) . '/Componentes/header.php';
       <!-- Conteúdo da aba Escrever Avaliação -->
       <?php if (isset($_SESSION['id_usuario']) && !$ehDono && !$jaAvaliou): ?>
       <div class="aba-conteudo" id="aba-escrever" role="tabpanel" aria-labelledby="tab-escrever">
-        <h3 style="font-family:var(--font-body);font-size:1.1rem;text-transform:uppercase;letter-spacing:.02em;margin-bottom:1rem;">Deixe sua avaliação</h3>
-        <form class="avaliar-form" action="AvaliarFreelancer.php" method="post">
+        <h3 class="perfil-subtitulo avaliar">Deixe sua avaliação</h3>
+        <form class="avaliar-form" action="AvaliarFreelancer.php" method="post" data-loading="true">
           <?php echo csrf_campo(); ?>
           <input type="hidden" name="freelancer_id" value="<?php echo $idFreelancer; ?>">
           <input type="hidden" name="redirect" value="PerfilFreelancer.php?id=<?php echo $idFreelancer; ?>">
 
           <div class="campo">
               <label>Sua nota</label>
-              <div class="estrelas-input" style="direction:ltr;">
+              <div class="estrelas-input esquerda">
                 <input type="radio" id="estrela5" name="nota" value="5" required><label for="estrela5" title="5 estrelas">★</label>
                 <input type="radio" id="estrela4" name="nota" value="4"><label for="estrela4" title="4 estrelas">★</label>
                 <input type="radio" id="estrela3" name="nota" value="3"><label for="estrela3" title="3 estrelas">★</label>
@@ -636,11 +278,11 @@ require dirname(__FILE__) . '/Componentes/header.php';
         </div>
       <?php elseif (isset($_SESSION['id_usuario']) && $jaAvaliou): ?>
       <div class="aba-conteudo" id="aba-escrever" role="tabpanel" aria-labelledby="tab-escrever">
-        <p style="margin-top:2rem;color:var(--paper-dim);">Você já avaliou este artista.</p>
+        <p class="perfil-nota">Você já avaliou este artista.</p>
       </div>
       <?php elseif (!isset($_SESSION['id_usuario'])): ?>
       <div class="aba-conteudo" id="aba-escrever" role="tabpanel" aria-labelledby="tab-escrever">
-        <p style="margin-top:2rem;color:var(--paper-dim);"><a href="Login.php" style="color: var(--red-text);">Faça login</a> para avaliar este artista.</p>
+        <p class="perfil-nota"><a href="Login.php" class="text-accent">Faça login</a> para avaliar este artista.</p>
       </div>
       <?php endif; ?>
     </div>

@@ -9,123 +9,13 @@
  * ========================================================== */
 
 require_once dirname(__FILE__) . '/funcoes_contato.php';
+require_once dirname(__FILE__) . '/funcoes_favoritos.php';
 
 if (!function_exists('render_evento_card')) {
 
     function render_evento_card($evento)
     {
-        static $estilos_inseridos = false;
-
-        if (!$estilos_inseridos) {
-            $estilos_inseridos = true;
-            ?>
-            <style>
-              .evento-card-novo {
-                position: relative;
-                display: flex;
-                flex-direction: column;
-                min-width: 0;
-                background: var(--steel);
-                border: 1px solid var(--rule);
-                box-shadow: var(--shadow-hard);
-                overflow: hidden;
-                transition: transform var(--ease), border-color var(--ease), box-shadow var(--ease);
-              }
-
-              .evento-card-novo:hover {
-                transform: translateY(-2px);
-                border-color: var(--accent);
-                box-shadow: 8px 8px 0 rgba(0,0,0,.55);
-              }
-
-              .evento-card-novo-imagem {
-                width: 100%;
-                aspect-ratio: 16 / 9;
-                overflow: hidden;
-                background: var(--ink-2);
-                border-bottom: 3px solid var(--accent);
-              }
-
-              .evento-card-novo-imagem img {
-                width: 100%;
-                height: 100%;
-                display: block;
-                object-fit: cover;
-                object-position: center;
-              }
-
-              .evento-card-novo-corpo {
-                display: flex;
-                flex-direction: column;
-                flex: 1;
-                padding: var(--sp-3);
-              }
-
-              .evento-card-novo-categoria {
-                color: var(--red-text);
-                font-family: var(--font-mark);
-                font-size: .9rem;
-                line-height: 1.2;
-                margin-bottom: .45rem;
-              }
-
-              .evento-card-novo-titulo {
-                font-family: var(--font-display);
-                font-size: 1.35rem;
-                line-height: 1.05;
-                text-transform: uppercase;
-                letter-spacing: .01em;
-                margin-bottom: .8rem;
-              }
-
-              .evento-card-novo-meta {
-                display: flex;
-                flex-direction: column;
-                gap: .25rem;
-                color: var(--paper);
-                font-size: .82rem;
-                line-height: 1.45;
-              }
-
-              .evento-card-novo-meta .secundario {
-                color: var(--paper-dim);
-              }
-
-              .evento-card-novo-rodape {
-                display: flex;
-                align-items: flex-end;
-                justify-content: space-between;
-                gap: .75rem;
-                flex-wrap: wrap;
-                margin-top: auto;
-                padding-top: var(--sp-2);
-              }
-
-              .evento-card-novo-valor {
-                font-weight: 700;
-                color: var(--white);
-                font-size: .95rem;
-              }
-
-              .evento-card-novo-acoes {
-                display: flex;
-                gap: .4rem;
-                flex-wrap: wrap;
-              }
-
-              .evento-card-novo-acoes .btn-icone {
-                font-size: .7rem;
-                padding: .25rem .5rem;
-              }
-
-              @media (max-width: 600px) {
-                .evento-card-novo-corpo {
-                  padding: var(--sp-2);
-                }
-              }
-            </style>
-            <?php
-        }
+        global $conexao;
 
         $imagem = evento_imagem_src(
             isset($evento['imagem_capa']) ? $evento['imagem_capa'] : ''
@@ -187,6 +77,25 @@ if (!function_exists('render_evento_card')) {
               </span>
 
               <div class="evento-card-novo-acoes">
+                <?php
+                // Favorito: destino = página atual com a querystring
+                // original (o formulário volta exatamente para onde o
+                // usuário estava, dentro do whitelist interno).
+                $destinoAtual = basename(isset($_SERVER['SCRIPT_NAME']) ? $_SERVER['SCRIPT_NAME'] : 'Eventos.php');
+                if (!preg_match('/^[A-Za-z0-9_-]+\.php$/', $destinoAtual)) {
+                    $destinoAtual = 'Eventos.php';
+                }
+                $consultaAtual = isset($_GET) && is_array($_GET) ? http_build_query($_GET) : '';
+                $destinoCard = $destinoAtual;
+                if ($consultaAtual !== '' && preg_match('/^[A-Za-z0-9_=&%.-]+$/', $consultaAtual)) {
+                    $destinoCard .= '?' . $consultaAtual;
+                }
+                $salvoEvento = false;
+                if (isset($_SESSION['id_usuario']) && $idEvento > 0 && $conexao instanceof mysqli) {
+                    $salvoEvento = favorito_esta($conexao, (int) $_SESSION['id_usuario'], 'evento', $idEvento);
+                }
+                render_favorito_form('evento', $idEvento, $destinoCard, $salvoEvento);
+                ?>
                 <?php if (isset($_SESSION['id_usuario']) && $_SESSION['id_usuario'] == $usuarioEvento): ?>
                   <a
                     class="btn-icone"
@@ -197,8 +106,7 @@ if (!function_exists('render_evento_card')) {
                   <form
                     method="post"
                     action="ExcluirEvento.php"
-                    onsubmit="return confirm('Tem certeza que deseja arquivar este evento? Ele deixará de aparecer nas listagens públicas e poderá ser restaurado depois.');"
-                    style="display:inline;">
+                    onsubmit="return confirm('Tem certeza que deseja arquivar este evento? Ele deixará de aparecer nas listagens públicas e poderá ser restaurado depois.');">
                     <?php echo csrf_campo(); ?>
                     <input type="hidden" name="id_evento" value="<?php echo $idEvento; ?>">
                     <button type="submit" class="btn-icone btn-icone-excluir">

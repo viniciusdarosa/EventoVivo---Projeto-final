@@ -32,6 +32,7 @@ csrf_exigir();
 
 $idEvento = entrada_inteiro($_POST, 'id_evento');
 if ($idEvento <= 0) {
+    flash_definir('Evento inválido para arquivamento.', 'erro');
     redirecionar('CRUD_Eventos.php');
 }
 
@@ -40,16 +41,18 @@ if ($idEvento <= 0) {
 $stmt = $conexao->prepare("UPDATE eventos SET arquivado = 1 WHERE id_evento = ? AND usuario_id = ?");
 if ($stmt === false) {
     registrar_log('Falha ao preparar arquivamento: ' . $conexao->error, 'ERROR');
+    flash_definir('Não foi possível arquivar o evento agora. Tente novamente.', 'erro');
     redirecionar('CRUD_Eventos.php');
 }
 $stmt->bind_param('ii', $idEvento, $usuarioId);
 
 if ($stmt->execute() && $stmt->affected_rows > 0) {
     $_SESSION['flash_eventos'] = 'Evento arquivado. Ele não aparece mais nas listagens públicas e pode ser restaurado nesta página.';
+} else {
+    // Evento não encontrado, não pertence ao usuário ou já arquivado.
+    flash_definir('Não foi possível arquivar: evento não encontrado ou sem permissão.', 'erro');
 }
 
 $stmt->close();
 
-// Evento não encontrado (ou não é do usuário) — simplesmente volta
-// para a listagem, sem erro exposto ao usuário.
 redirecionar('CRUD_Eventos.php');

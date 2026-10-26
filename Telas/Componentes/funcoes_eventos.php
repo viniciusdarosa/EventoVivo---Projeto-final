@@ -171,7 +171,9 @@ function excluir_imagem_evento($imagemCapa) {
         return;
     }
 
-    $caminho = EVENTOS_UPLOAD_DIR . $imagemCapa;
+    // basename() garante que só o nome do arquivo seja usado, nunca
+    // caminhos com ../ que possam vir armazenados por engano.
+    $caminho = EVENTOS_UPLOAD_DIR . basename($imagemCapa);
 
     if (is_file($caminho)) {
         @unlink($caminho);
@@ -180,30 +182,219 @@ function excluir_imagem_evento($imagemCapa) {
 
 
 /**
- * Marca como arquivados os eventos encerrados há mais de 1 mês.
+ * REGRA DE PUBLICAÇÃO DE EVENTOS (validada no servidor).
  *
- * A rotina roda quando a página Eventos.php é aberta, mas apenas
- * ALTERA o registro (eventos.arquivado = 1): nada é apagado do
- * banco nem do servidor. Eventos arquivados somem das listagens
- * públicas e podem ser restaurados pelo dono em CRUD_Eventos.php.
+ * Quem pode CRIAR eventos são as contas de organizador:
+ *   - tipo 'empresa' (produtoras/organizadoras);
+ *   - tipo 'admin'   (administração do sistema).
+ *
+ * Contas comuns do tipo 'usuario' podem navegar, avaliar artistas,
+ * favoritar e gerenciar os próprios eventos já criados, mas não
+ * publicam novos. Esta regra é aplicada aqui (servidor) e refletida
+ * na interface (botão "+ Novo Evento" só aparece para quem pode) —
+ * esconder o botão nunca é a única barreira.
  *
  * @param mysqli $conexao conexão já aberta
+ * @return bool
  */
-function arquivar_eventos_encerrados($conexao) {
-    $stmt = $conexao->prepare(
-        "UPDATE eventos
-            SET arquivado = 1
-          WHERE arquivado = 0
-            AND data_fim_evento < DATE_SUB(CURDATE(), INTERVAL 1 MONTH)"
-    );
+function usuario_pode_publicar_eventos($conexao) {
+    $tipo = isset($_SESSION['tipo_usuario']) ? (string) $_SESSION['tipo_usuario'] : '';
 
-    if ($stmt === false) {
-        // Não interrompe a página de eventos caso a rotina falhe.
-        return;
+    // Sessão legada (criada antes deste cache existir): consulta o banco.
+    if ($tipo === '' && usuario_logado()) {
+        $stmt = $conexao->prepare("SELECT tipo FROM usuario WHERE id_usuario = ? LIMIT 1");
+        if ($stmt !== false) {
+            $id = usuario_id();
+            $stmt->bind_param('i', $id);
+            $stmt->execute();
+            $stmt->bind_result($tipoBanco);
+            if ($stmt->fetch()) {
+                $tipo = (string) $tipoBanco;
+                $_SESSION['tipo_usuario'] = $tipo;
+            }
+            $stmt->close();
+        }
     }
 
-    $stmt->execute();
-    $stmt->close();
+    return ($tipo === 'empresa' || $tipo === 'admin');
+}
+
+/**
+ * Valida os campos de um evento (cadastro e edição usam as mesmas regras).
+ * Devolve a lista de mensagens de erro — vazia quando tudo está válido.
+ *
+ * Regras: datas reais no formato aaaa-mm-dd, fim >= início, horários
+ * reais com fim > início, categoria existente, vagas >= 1, valor >= 0,
+ * estado com 2 letras, CEP com 8 dígitos quando informado e limites
+ * de tamanho compatíveis com as colunas do banco.
+ *
+ * @param mysqli $conexao
+ * @param array  $dados campos do formulário (após entrada_texto)
+ * @return array lista de erros (strings)
+ */
+function validar_dados_evento($conexao, $dados) {
+    $erros = array();
+
+    // ---- Categoria: precisa existir em categorias_eventos ----
+    if (!isset($dados['categoria_id']) || $dados['categoria_id'] === '' || !ctype_digit($dados['categoria_id'])) {
+        $erros[] = 'Selecione uma categoria.';
+    } else {
+        $stmt = $conexao->prepare("SELECT id_categoria FROM categorias_eventos WHERE id_categoria = ? LIMIT 1");
+        if ($stmt === false) {
+            $erros[] = 'Não foi possível validar a categoria agora. Tente novamente.';
+            registrar_log('Falha ao preparar validação de categoria: ' . $conexao->error, 'ERROR');
+        } else {
+            $categoriaId = (int) $dados['categoria_id'];
+            $stmt->bind_param('i', $categoriaId);
+            $stmt->execute();
+            $stmt->store_result();
+            if ($stmt->num_rows === 0) {
+                $erros[] = 'A categoria selecionada não existe.';
+            }
+            $stmt->close();
+        }
+    }
+
+    // ---- Título ----
+    $titulo = isset($dados['titulo']) ? $dados['titulo'] : '';
+    if ($titulo === '') {
+        $erros[] = 'Informe o título do evento.';
+    } elseif (strlen($titulo) > 200) {
+        $erros[] = 'O título pode ter no máximo 200 caracteres.';
+    }
+
+    // ---- Descrição: obrigatória e com limite de tamanho ----
+    $descricao = isset($dados['descricao']) ? trim($dados['descricao']) : '';
+    if ($descricao === '') {
+        $erros[] = 'Informe a descrição do evento.';
+    } elseif (strlen($descricao) > 20000) {
+        $erros[] = 'A descrição pode ter no máximo 20000 caracteres.';
+    }
+
+    // ---- Datas: formato real aaaa-mm-dd ----
+    $dataInicio = isset($dados['data_inicio_evento']) ? $dados['data_inicio_evento'] : '';
+    $dataFim = isset($dados['data_fim_evento']) ? $dados['data_fim_evento'] : '';
+
+    if ($dataInicio === '') {
+        $erros[] = 'Informe a data de início.';
+    } elseif (!evento_data_valida($dataInicio)) {
+        $erros[] = 'A data de início não é uma data válida.';
+    }
+    if ($dataFim === '') {
+        $erros[] = 'Informe a data de término.';
+    } elseif (!evento_data_valida($dataFim)) {
+        $erros[] = 'A data de término não é uma data válida.';
+    }
+    if ($dataInicio !== '' && $dataFim !== ''
+        && evento_data_valida($dataInicio) && evento_data_valida($dataFim)
+        && $dataFim < $dataInicio) {
+        $erros[] = 'A data de término não pode ser anterior à data de início.';
+    }
+
+    // ---- Horários: formato real hh:mm (ou hh:mm:ss) e fim > início ----
+    $horaInicio = isset($dados['hora_inicio']) ? $dados['hora_inicio'] : '';
+    $horaFim = isset($dados['hora_fim']) ? $dados['hora_fim'] : '';
+
+    if ($horaInicio === '') {
+        $erros[] = 'Informe o horário de início.';
+    } elseif (!evento_hora_valida($horaInicio)) {
+        $erros[] = 'O horário de início não é válido (use o formato 14:30).';
+    }
+    if ($horaFim === '') {
+        $erros[] = 'Informe o horário de término.';
+    } elseif (!evento_hora_valida($horaFim)) {
+        $erros[] = 'O horário de término não é válido (use o formato 14:30).';
+    }
+    if ($horaInicio !== '' && $horaFim !== ''
+        && evento_hora_valida($horaInicio) && evento_hora_valida($horaFim)
+        && evento_hora_normalizar($horaFim) <= evento_hora_normalizar($horaInicio)) {
+        $erros[] = 'O horário de término deve ser posterior ao horário de início.';
+    }
+
+    // ---- Local ----
+    $endereco = isset($dados['endereco']) ? $dados['endereco'] : '';
+    if ($endereco === '') {
+        $erros[] = 'Informe o endereço.';
+    } elseif (strlen($endereco) > 150) {
+        $erros[] = 'O endereço pode ter no máximo 150 caracteres.';
+    }
+    if (isset($dados['numero']) && strlen($dados['numero']) > 10) {
+        $erros[] = 'O número pode ter no máximo 10 caracteres.';
+    }
+    $cidade = isset($dados['cidade']) ? $dados['cidade'] : '';
+    if ($cidade === '') {
+        $erros[] = 'Informe a cidade.';
+    } elseif (strlen($cidade) > 100) {
+        $erros[] = 'A cidade pode ter no máximo 100 caracteres.';
+    }
+    $estado = isset($dados['estado']) ? $dados['estado'] : '';
+    if ($estado === '' || !preg_match('/^[A-Za-z]{2}$/', $estado)) {
+        $erros[] = 'Informe o estado (sigla com 2 letras, ex: SC).';
+    }
+    if (isset($dados['cep']) && $dados['cep'] !== '') {
+        $cepDigitos = preg_replace('/\D/', '', $dados['cep']);
+        if (strlen($cepDigitos) !== 8) {
+            $erros[] = 'O CEP deve ter 8 números (ou deixe em branco).';
+        }
+    }
+
+    // ---- Valor e vagas ----
+    if (!isset($dados['valor']) || $dados['valor'] === '' || !is_numeric($dados['valor']) || (float) $dados['valor'] < 0) {
+        $erros[] = 'Informe um valor válido (use 0 para evento gratuito).';
+    } elseif ((float) $dados['valor'] > 99999999.99) {
+        $erros[] = 'O valor informado é grande demais.';
+    }
+    if (!isset($dados['vagas']) || $dados['vagas'] === '' || !ctype_digit((string) $dados['vagas'])) {
+        $erros[] = 'Informe a quantidade de vagas.';
+    } elseif ((int) $dados['vagas'] < 1) {
+        $erros[] = 'A quantidade de vagas deve ser pelo menos 1.';
+    }
+
+    return $erros;
+}
+
+/**
+ * Confere se um valor é uma data real no formato aaaa-mm-dd.
+ *
+ * @param string $valor
+ * @return bool
+ */
+function evento_data_valida($valor) {
+    if (!is_string($valor) || !preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', $valor, $pedacos)) {
+        return false;
+    }
+    return checkdate((int) $pedacos[2], (int) $pedacos[3], (int) $pedacos[1]);
+}
+
+/**
+ * Confere se um valor é um horário real no formato hh:mm ou hh:mm:ss.
+ *
+ * @param string $valor
+ * @return bool
+ */
+function evento_hora_valida($valor) {
+    return is_string($valor)
+        && preg_match('/^([01][0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/', $valor) === 1;
+}
+
+/**
+ * Normaliza um horário para hh:mm:ss (comparações de ordenação).
+ *
+ * @param string $valor
+ * @return string
+ */
+function evento_hora_normalizar($valor) {
+    if (!is_string($valor)) {
+        return '00:00:00';
+    }
+    $partes = explode(':', $valor);
+    if (count($partes) === 2) {
+        $partes[] = '00';
+    }
+    if (count($partes) !== 3) {
+        return '00:00:00';
+    }
+    return str_pad($partes[0], 2, '0', STR_PAD_LEFT) . ':' . str_pad($partes[1], 2, '0', STR_PAD_LEFT) . ':' . str_pad($partes[2], 2, '0', STR_PAD_LEFT);
 }
 
 /**

@@ -6,11 +6,13 @@ Artistas podem apresentar seus trabalhos e serem descobertos; organizadores pode
 
 ## O que você encontra
 
-- **Busca e descoberta:** navegue por artistas, freelancers e eventos culturais.
+- **Busca e descoberta:** navegue por artistas, freelancers e eventos culturais, com busca geral pelo cabeçalho e filtros por categoria, período, cidade e estado.
 - **Perfis profissionais:** divulgue descrição, categoria de serviço, experiência, portfólio, redes sociais e avaliações.
-- **Eventos:** consulte informações como data, local, categoria, preço e classificação etária.
-- **Contas de usuário:** cadastro e login para acessar as áreas de gerenciamento.
-- **Área administrativa:** acompanhe indicadores de acesso, eventos e artistas.
+- **Eventos:** consulte informações como data, local, categoria, preço e classificação etária. Publicar eventos é restrito a contas de organizador (tipo `empresa` ou `admin`), regra validada também no servidor; contas do tipo `usuario` podem gerenciar eventos legados próprios.
+- **Favoritos:** salve eventos e perfis de artista com o botão ☆ Salvar e acompanhe tudo em **Meus Favoritos**.
+- **Contatos diretos:** cards de evento oferecem "Contatar organizador" (WhatsApp/e-mail) e a busca lista contatos reais dos artistas.
+- **Contas de usuário:** cadastro (com validação de CPF e telefone) e login para acessar as áreas de gerenciamento.
+- **Área administrativa:** acompanhe indicadores de acesso, eventos e artistas (visível apenas para contas `admin`).
 - **Interface responsiva:** páginas feitas em HTML, CSS e JavaScript, com conteúdo dinâmico em PHP.
 
 ## Tecnologias
@@ -52,6 +54,15 @@ Artistas podem apresentar seus trabalhos e serem descobertos; organizadores pode
 ## Sobre o projeto
 
 O EventoVivo foi criado para um projeto acadêmico e demonstra um fluxo completo de descoberta e divulgação da cena cultural independente, com páginas públicas e recursos de gerenciamento conectados a um banco relacional.
+
+## Funcionalidades futuras
+
+As tabelas `mensagens` e `notificacoes` já existem no banco (com dados de demonstração), mas as interfaces de envio/leitura de mensagens e de central de notificações **ainda não foram implementadas** — por isso não há botões ou contadores delas na interface. O plano previsto é:
+
+- **Mensagens privadas** entre público/organizador e artistas (envio, caixa de entrada e leitura).
+- **Notificações** geradas por eventos relevantes para o usuário (ex.: avaliação recebida, favoritos novos) com central de leitura.
+
+Enquanto isso, o contato acontece pelos canais já prontos: WhatsApp, e-mail e Instagram nos perfis e cards.
 
 ## Licença
 

@@ -27,6 +27,7 @@ csrf_exigir();
 
 $idFreelancer = entrada_inteiro($_POST, 'id_freelancer');
 if ($idFreelancer <= 0) {
+    flash_definir('Perfil inválido para exclusão.', 'erro');
     redirecionar('CRUD_Freelancers.php');
 }
 
@@ -42,6 +43,7 @@ $stmt = $conexao->prepare("
 ");
 if ($stmt === false) {
     registrar_log('Falha ao preparar busca de fotos: ' . $conexao->error, 'ERROR');
+    flash_definir('Não foi possível excluir o perfil agora. Tente novamente.', 'erro');
     redirecionar('CRUD_Freelancers.php');
 }
 $stmt->bind_param('ii', $idFreelancer, $usuarioId);
@@ -57,16 +59,24 @@ $stmt->close();
 $stmtDelete = $conexao->prepare("DELETE FROM freelancers WHERE id_freelancer = ? AND usuario_id = ?");
 if ($stmtDelete === false) {
     registrar_log('Falha ao preparar exclusão: ' . $conexao->error, 'ERROR');
+    flash_definir('Não foi possível excluir o perfil agora. Tente novamente.', 'erro');
     redirecionar('CRUD_Freelancers.php');
 }
 $stmtDelete->bind_param('ii', $idFreelancer, $usuarioId);
 
 if ($stmtDelete->execute()) {
-    foreach ($fotosCarrossel as $imagem) {
-        excluir_imagem_freelancer($imagem);
+    if ($stmtDelete->affected_rows > 0) {
+        foreach ($fotosCarrossel as $imagem) {
+            excluir_imagem_freelancer($imagem);
+        }
+        flash_definir('Perfil de artista excluído. As fotos do carrossel também foram removidas.');
+    } else {
+        // Perfil não encontrado ou não pertence ao usuário logado.
+        flash_definir('Não foi possível excluir: perfil não encontrado ou sem permissão.', 'erro');
     }
 } else {
     registrar_log('Falha ao excluir freelancer: ' . $stmtDelete->error, 'ERROR');
+    flash_definir('Não foi possível excluir o perfil agora. Tente novamente.', 'erro');
 }
 
 $stmtDelete->close();

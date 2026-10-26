@@ -110,152 +110,7 @@ $totalFotos = count($fotos);
 $carrosselCheio = $totalFotos >= CARROSSEL_MAX_FOTOS;
 
 $pageTitle = 'EventoVivo — Fotos do Trabalho';
-$extraCss = array('../Css/crud_eventos.css', '../Css/style.css');
-$extraStyle = <<<'ESTILO_CARROSSEL'
-    .carrossel-contagem {
-      color: var(--paper-dim);
-      font-size: .85rem;
-      margin: .75rem 0 1.5rem;
-      text-transform: uppercase;
-      letter-spacing: .05em;
-    }
-    .carrossel-contagem strong { color: var(--paper); }
-
-    .carrossel-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 1.5rem;
-      margin-bottom: 2.5rem;
-    }
-    .carrossel-card {
-      background: var(--steel);
-      border: 2px solid var(--rule);
-      box-shadow: var(--shadow-hard);
-      overflow: hidden;
-      transition: transform var(--ease), border-color var(--ease);
-    }
-    .carrossel-card:hover {
-      transform: translateY(-2px);
-      border-color: var(--accent);
-    }
-    .carrossel-card-img {
-      display: block;
-      width: 100%;
-      height: auto;
-      /* Mesma caixa para todo mundo, com a foto inteira (sem corte). */
-      aspect-ratio: 4/3;
-      object-fit: contain;
-      background: var(--ink-2);
-    }
-    .carrossel-card-corpo { padding: 1rem; }
-    .carrossel-card-legenda {
-      color: var(--paper-dim);
-      font-size: .8rem;
-      line-height: 1.5;
-      margin-bottom: .75rem;
-      min-height: 2.4em;
-    }
-    .carrossel-card form { margin: 0; }
-    .btn-excluir-foto {
-      display: block;
-      width: 100%;
-      background: transparent;
-      border: 2px solid var(--rule);
-      color: var(--paper-dim);
-      font-family: var(--font-body);
-      font-size: .75rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: .05em;
-      padding: .5rem;
-      cursor: pointer;
-      transition: border-color var(--ease), color var(--ease), background var(--ease);
-    }
-    .btn-excluir-foto:hover {
-      border-color: var(--accent);
-      color: var(--red-text);
-      background: rgba(179, 18, 30, .1);
-    }
-
-    .carrossel-vazio {
-      background: var(--steel);
-      border: 2px dashed var(--rule);
-      padding: 2.5rem 1.5rem;
-      text-align: center;
-      color: var(--paper-dim);
-      margin-bottom: 2.5rem;
-    }
-
-    .carrossel-form {
-      background: var(--steel);
-      border: 2px solid var(--rule);
-      box-shadow: var(--shadow-hard);
-      padding: 2rem;
-      max-width: 640px;
-    }
-    .carrossel-form .campo { margin-bottom: 1rem; }
-    .carrossel-form label {
-      display: block;
-      margin-bottom: .35rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      font-size: .75rem;
-      color: var(--paper-dim);
-      letter-spacing: .05em;
-    }
-    .carrossel-form input[type="file"] {
-      display: block;
-      width: 100%;
-      max-width: 100%;
-      min-width: 0;
-      box-sizing: border-box;
-      color: var(--paper);
-      font-family: var(--font-body);
-      font-size: .9rem;
-    }
-    .carrossel-form input[type="text"] {
-      width: 100%;
-      max-width: 100%;
-      min-width: 0;
-      box-sizing: border-box;
-      background: var(--ink);
-      border: 2px solid var(--rule);
-      color: var(--paper);
-      padding: .75rem;
-      font-family: var(--font-body);
-      font-size: .9rem;
-    }
-    .carrossel-form input[type="text"]:focus { outline: none; border-color: var(--accent); }
-    .carrossel-form .ajuda {
-      color: var(--paper-dim);
-      font-size: .75rem;
-      margin-top: .35rem;
-    }
-    .carrossel-form fieldset {
-      border: 1px solid var(--rule);
-      padding: 1rem;
-      margin: 0 0 1.5rem;
-      min-width: 0;
-    }
-    .carrossel-form legend {
-      color: var(--paper-dim);
-      font-size: .7rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: .08em;
-      padding: 0 .5rem;
-    }
-    .carrossel-acoes { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
-    /* .btn-primary usa white-space: nowrap; aqui ele precisa quebrar. */
-    .carrossel-acoes .btn,
-    .carrossel-acoes .btn-icone { min-width: 0; max-width: 100%; box-sizing: border-box; }
-    .carrossel-acoes .btn-primary { white-space: normal; text-align: center; }
-
-    @media (max-width: 720px) {
-      .carrossel-form { padding: 1.5rem; }
-      .carrossel-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
-    }
-ESTILO_CARROSSEL;
+$extraCss = array('../Css/crud_eventos.css');
 
 require dirname(__FILE__) . '/Componentes/header.php';
 ?>
@@ -314,7 +169,7 @@ require dirname(__FILE__) . '/Componentes/header.php';
       </div>
     <?php endif; ?>
 
-    <h2 style="font-family:var(--font-display);text-transform:uppercase;font-size:1.4rem;border-bottom:3px solid var(--accent);padding-bottom:.4rem;margin-bottom:1.5rem;display:inline-block;">Adicionar foto</h2>
+    <h2 class="section-title">Adicionar foto</h2>
 
     <?php if ($carrosselCheio): ?>
       <div class="alert alert-erro">
@@ -322,7 +177,7 @@ require dirname(__FILE__) . '/Componentes/header.php';
         Exclua uma foto acima para adicionar outra.
       </div>
     <?php else: ?>
-      <form class="carrossel-form" action="CarrosselFreelancer.php" method="post" enctype="multipart/form-data">
+      <form class="carrossel-form" action="CarrosselFreelancer.php" method="post" enctype="multipart/form-data" data-loading="true">
         <?php echo csrf_campo(); ?>
 
         <input type="hidden" name="acao" value="adicionar">

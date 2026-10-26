@@ -20,6 +20,11 @@ require dirname(__FILE__) . '/Componentes/funcoes_eventos.php';
 exigir_login('Login.php');
 $usuarioId = usuario_id();
 
+// REGRA DE PUBLICAÇÃO (servidor): apenas contas de organizador
+// ('empresa' e 'admin') criam eventos. O POST de quem não pode
+// publicar nem é processado — esconder o botão é só apresentação.
+$podePublicar = usuario_pode_publicar_eventos($conexao);
+
 $erros = array();
 $sucesso = false;
 
@@ -43,7 +48,7 @@ $dados = array(
     'faixa_etaria'         => 'Livre',
 );
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $podePublicar) {
     csrf_exigir();
 
     // Recupera e faz um trim() básico em cada campo de texto
@@ -52,49 +57,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $dados[$campo] = entrada_texto($_POST, $campo, $valorPadrao);
     }
 
-    // ---- Validação server-side dos campos obrigatórios ----
-    if ($dados['categoria_id'] === '' || !ctype_digit($dados['categoria_id'])) {
-        $erros[] = 'Selecione uma categoria.';
-    }
-    if ($dados['titulo'] === '') {
-        $erros[] = 'Informe o título do evento.';
-    }
-    if ($dados['data_inicio_evento'] === '') {
-        $erros[] = 'Informe a data de início.';
-    }
-    if ($dados['data_fim_evento'] === '') {
-        $erros[] = 'Informe a data de término.';
-    }
-    if ($dados['data_inicio_evento'] !== '' && $dados['data_fim_evento'] !== ''
-        && $dados['data_fim_evento'] < $dados['data_inicio_evento']) {
-        $erros[] = 'A data de término não pode ser anterior à data de início.';
-    }
-    if ($dados['hora_inicio'] === '') {
-        $erros[] = 'Informe o horário de início.';
-    }
-    if ($dados['hora_fim'] === '') {
-        $erros[] = 'Informe o horário de término.';
-    }
-    if ($dados['endereco'] === '') {
-        $erros[] = 'Informe o endereço.';
-    }
-    if ($dados['cidade'] === '') {
-        $erros[] = 'Informe a cidade.';
-    }
-    if ($dados['estado'] === '' || strlen($dados['estado']) !== 2) {
-        $erros[] = 'Informe o estado (sigla com 2 letras, ex: SC).';
-    }
-    if ($dados['valor'] === '' || !is_numeric($dados['valor']) || (float) $dados['valor'] < 0) {
-        $erros[] = 'Informe um valor válido (use 0 para evento gratuito).';
-    }
-    if ($dados['vagas'] === '' || !ctype_digit((string) $dados['vagas'])) {
-        $erros[] = 'Informe a quantidade de vagas.';
-    }
-
     $faixasValidas = array('Livre', '10', '12', '14', '16', '18+');
     if (!in_array($dados['faixa_etaria'], $faixasValidas)) {
         $dados['faixa_etaria'] = 'Livre';
     }
+
+    // ---- Validação server-side completa (compartilhada com a edição) ----
+    $erros = validar_dados_evento($conexao, $dados);
 
     // ---- Validação da imagem de capa (opcional no cadastro? Aqui
     // tratamos como obrigatória, já que é a "capa" do evento —
@@ -133,7 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 // Tipos: i=inteiro, s=string, d=decimal
                 $stmt->bind_param(
-                    'iissssssssssdisss',
+                    'iisssssssssssdiss',
                     $usuarioId,
                     $categoriaId,
                     $dados['titulo'],
@@ -154,11 +123,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 );
 
                 if ($stmt->execute()) {
-                    $sucesso = true;
-                    // Limpa os dados do formulário após sucesso.
-                    foreach ($dados as $campo => $valorPadrao) {
-                        $dados[$campo] = ($campo === 'faixa_etaria') ? 'Livre' : '';
-                    }
+                    $stmt->close();
+                    // Pós-redirecionamento (PRG): evita reenvio do
+                    // formulário no F5 e mostra o feedback na listagem.
+                    flash_definir('Evento cadastrado com sucesso!');
+                    redirecionar('CRUD_Eventos.php');
                 } else {
                     // Se o INSERT falhar, remove a imagem que já tinha sido salva
                     // no disco para não deixar arquivo órfão.
@@ -188,12 +157,13 @@ require dirname(__FILE__) . '/Componentes/header.php';
     <p class="eyebrow">PAINEL DE CONTROLE</p>
     <h1>NOVO EVENTO</h1>
 
-    <?php if ($sucesso): ?>
-      <div class="alert alert-sucesso">
-        Evento cadastrado com sucesso!
-        <a href="CRUD_Eventos.php">Ver meus eventos</a>
+    <?php if (!$podePublicar): ?>
+      <div class="alert alert-erro">
+        Somente contas de organizador (tipo <strong>empresa</strong> ou <strong>administração</strong>)
+        podem publicar eventos. Sua conta participa da rede como público e artista.
+        <a href="Eventos.php">Ver agenda de eventos</a>.
       </div>
-    <?php endif; ?>
+    <?php else: ?>
 
     <?php if (!empty($erros)): ?>
       <div class="alert alert-erro">
@@ -206,7 +176,7 @@ require dirname(__FILE__) . '/Componentes/header.php';
       </div>
     <?php endif; ?>
 
-    <form class="evento-form" action="CadastrarEvento.php" method="post" enctype="multipart/form-data">
+    <form class="evento-form" action="CadastrarEvento.php" method="post" enctype="multipart/form-data" data-loading="true">
     <?php echo csrf_campo(); ?>
 
       <div class="campo campo-full">
@@ -217,7 +187,7 @@ require dirname(__FILE__) . '/Componentes/header.php';
 
       <div class="campo campo-full">
         <label for="descricao">Descrição</label>
-        <textarea id="descricao" name="descricao"><?php echo htmlspecialchars($dados['descricao']); ?></textarea>
+        <textarea id="descricao" name="descricao" maxlength="20000" required><?php echo htmlspecialchars($dados['descricao']); ?></textarea>
       </div>
 
       <div class="campo">
@@ -306,13 +276,13 @@ require dirname(__FILE__) . '/Componentes/header.php';
 
       <div class="campo">
         <label for="vagas">Vagas</label>
-        <input type="number" id="vagas" name="vagas" min="0" step="1" required
+        <input type="number" id="vagas" name="vagas" min="1" step="1" required
                value="<?php echo htmlspecialchars($dados['vagas']); ?>">
       </div>
 
       <div class="campo campo-full">
         <label for="imagem_capa">Imagem de capa (JPG, PNG ou GIF, até 2MB)</label>
-        <input type="file" id="imagem_capa" name="imagem_capa" accept="image/jpeg,image/png,image/gif">
+        <input type="file" id="imagem_capa" name="imagem_capa" accept="image/jpeg,image/png,image/gif" required>
       </div>
 
       <div class="form-acoes">
@@ -321,6 +291,7 @@ require dirname(__FILE__) . '/Componentes/header.php';
       </div>
 
     </form>
+    <?php endif; ?>
 
   </div>
 </main>

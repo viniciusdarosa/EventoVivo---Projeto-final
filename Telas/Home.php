@@ -69,6 +69,7 @@ if ($stmtArtistas !== null) {
     $artistas = array();
     while ($linha = $resultArtistas->fetch_assoc()) {
         $artistas[] = array(
+            'id'         => (int) $linha['id_freelancer'],
             'foto'       => freelancer_imagem_publica_src($linha['foto_perfil']),
             'nome'       => $linha['nome'],
             'tipo'       => $linha['profissao'] ?: $linha['categoria_nome'],
@@ -128,7 +129,7 @@ require dirname(__FILE__) . '/Componentes/header.php';
     <div class="wrap">
       <div class="section-header">
         <h2>Próximos eventos</h2>
-        <a class="btn btn-ghost" href="Eventos.php" style="font-size:.85rem;padding:.6rem 1rem;">Ver todos</a>
+        <a class="btn btn-ghost" href="Eventos.php">Ver todos</a>
       </div>
       <div class="grid">
         <?php if (empty($eventos)): ?>
@@ -146,7 +147,7 @@ require dirname(__FILE__) . '/Componentes/header.php';
     <div class="wrap">
       <div class="section-header">
         <h2>Artistas mais bem avaliados</h2>
-        <a class="btn btn-ghost" href="Artistas.php" style="font-size:.85rem;padding:.6rem 1rem;">Ver todos</a>
+        <a class="btn btn-ghost" href="Artistas.php">Ver todos</a>
       </div>
       <div class="grid">
         <?php if (empty($artistas)): ?>

@@ -1,0 +1,473 @@
+/* ============================================================
+   EventoVivo — perfil.css  [ESPECÍFICA]
+   Página PerfilFreelancer.php (hero, seções, carrossel,
+   abas e avaliações).
+   Carregada APÓS os globais (tokens/reset/layout/components/site).
+   ============================================================ */
+
+/* ==========================================================
+   1. SHELL
+   ========================================================== */
+.perfil-page { padding-bottom: var(--space-16); }
+
+/* ==========================================================
+   2. HERO DO PERFIL
+   ========================================================== */
+.perfil-hero {
+  position: relative;
+  padding: clamp(2.5rem, 6vw, 4rem) 0 clamp(2rem, 5vw, 3rem);
+  background: linear-gradient(135deg, var(--color-ink) 0%, var(--color-ink-2) 50%, var(--color-ink) 100%);
+  border-bottom: 1px solid var(--color-rule);
+}
+.perfil-hero::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, var(--color-blood) 0%, var(--color-accent) 40%, transparent 100%);
+}
+
+.perfil-header {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: var(--space-8);
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.perfil-foto {
+  width: 220px;
+  height: 220px;
+  flex-shrink: 0;
+  object-fit: cover;
+  object-position: center 20%;
+  background: var(--color-ink-2);
+  border: 3px solid var(--color-rule);
+  box-shadow: var(--shadow-hard);
+}
+
+.perfil-info { min-width: 0; }
+.perfil-info h1 {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  font-size: clamp(2rem, 5vw, 3rem);
+  line-height: 1.1;
+  text-shadow: 3px 3px 0 var(--color-blood);
+  max-width: none;
+  margin-bottom: var(--space-2);
+  overflow-wrap: break-word;
+}
+
+.perfil-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4) var(--space-6);
+  margin-top: var(--space-4);
+  color: var(--color-paper-dim);
+  font-size: var(--font-size-base);
+}
+.perfil-meta span { display: flex; align-items: center; gap: var(--space-2); }
+
+.perfil-categoria {
+  display: inline-block;
+  margin-top: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  background: rgba(184, 0, 13, 0.15);
+  border: 1px solid var(--color-accent);
+  color: var(--color-red-text);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.perfil-valor {
+  color: var(--color-yellow);
+  font-family: var(--font-mark);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+}
+
+.perfil-contatos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+}
+
+.btn-contato {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding: var(--space-3) var(--space-5);
+  background: var(--color-blood);
+  color: var(--color-paper);
+  border: 2px solid var(--color-blood);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  font-size: var(--font-size-sm);
+  letter-spacing: 0.05em;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background var(--ease-base), color var(--ease-base), border-color var(--ease-base);
+}
+.btn-contato:hover { background: transparent; color: var(--color-red-text); }
+.btn-contato.ghost {
+  background: transparent;
+  border-color: var(--color-rule);
+  color: var(--color-paper);
+}
+.btn-contato.ghost:hover { border-color: var(--color-accent); color: var(--color-red-text); }
+
+/* ==========================================================
+   3. SEÇÕES
+   ========================================================== */
+.perfil-section { padding-block: var(--space-12); }
+.perfil-section.alt {
+  background: var(--color-ink-2);
+  border-top: 1px solid var(--color-rule);
+}
+
+/* Subtítulo de bloco dentro do perfil (Experiência, avaliação...) */
+.perfil-subtitulo {
+  font-family: var(--font-body);
+  font-size: var(--font-size-xl);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin-top: var(--space-8);
+  margin-bottom: 0;
+}
+.perfil-subtitulo.avaliar {
+  margin-top: 0;
+  margin-bottom: var(--space-4);
+}
+
+/* Cabeçalho do bloco de avaliações (título + média) */
+.perfil-avaliacoes-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+.perfil-avaliacoes-topo .section-title { margin-bottom: 0; }
+.perfil-avaliacoes-topo .estrelas-avaliacao { font-size: 1.5rem; }
+
+/* Nota de apoio (já avaliou / faça login) */
+.perfil-nota {
+  margin-top: var(--space-8);
+  color: var(--color-paper-dim);
+}
+
+/* Variante LTR do input de estrelas */
+.estrelas-input.esquerda { direction: ltr; }
+
+.descricao-texto {
+  color: var(--color-paper-dim);
+  line-height: 1.8;
+  font-size: var(--font-size-md);
+  max-width: 80ch;
+  margin-bottom: 0;
+}
+
+.experiencia-lista {
+  list-style: disc;
+  padding-left: var(--space-6);
+  color: var(--color-paper-dim);
+  line-height: 1.8;
+  max-width: 80ch;
+}
+.experiencia-lista li { margin-bottom: var(--space-2); }
+
+/* ==========================================================
+   4. CARROSSEL DE FOTOS DO TRABALHO
+   ========================================================== */
+.carrossel {
+  position: relative;
+  /* Toda foto cai na mesma caixa. A largura acompanha a mesma
+     referência de altura (66vh) usada abaixo, senão o max-height
+     estica o box e ele deixa de ter a proporção declarada. */
+  max-width: max(640px, calc(66vh * 1.5));
+  margin: 0 auto;
+  background: var(--color-steel);
+  border: 2px solid var(--color-rule);
+  box-shadow: var(--shadow-hard);
+}
+.carrossel-viewport {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background: var(--color-ink-2);
+}
+.carrossel-trilha { position: relative; }
+
+.carrossel-slide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.6s ease, visibility 0.6s ease;
+  pointer-events: none;
+}
+.carrossel-slide.ativo {
+  position: relative;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+.carrossel-slide img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 3 / 2;
+  max-height: 66vh;
+  /* contain: a foto inteira cabe na caixa, sem corte. */
+  object-fit: contain;
+  object-position: center;
+  background: var(--color-ink-2);
+}
+
+.carrossel-legenda {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  padding: 2.5rem var(--space-5) var(--space-3);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.88) 0%, rgba(0, 0, 0, 0.55) 55%, transparent 100%);
+  color: var(--color-paper);
+  font-family: var(--font-body);
+  font-size: var(--font-size-base);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.carrossel-seta {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: rgba(18, 15, 15, 0.82);
+  border: 2px solid var(--color-rule);
+  color: var(--color-paper);
+  font-size: 1.3rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background var(--ease-base), border-color var(--ease-base), color var(--ease-base);
+}
+.carrossel-seta:hover {
+  background: var(--color-blood);
+  border-color: var(--color-accent);
+}
+.carrossel-seta:focus-visible { outline: 2px solid var(--color-yellow); outline-offset: 2px; }
+.carrossel-seta.anterior { left: var(--space-3); }
+.carrossel-seta.proximo { right: var(--space-3); }
+.carrossel-seta[disabled] { opacity: 0; pointer-events: none; }
+
+.carrossel-rodape {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--color-rule);
+}
+.carrossel-dots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.carrossel-dot {
+  display: block;
+  width: 12px;
+  height: 12px;
+  padding: 0;
+  background: transparent;
+  border: 2px solid var(--color-rule);
+  cursor: pointer;
+  transition: background var(--ease-base), border-color var(--ease-base);
+}
+.carrossel-dot:hover { border-color: var(--color-paper-dim); }
+.carrossel-dot[aria-current="true"] {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+}
+.carrossel-dot:focus-visible { outline: 2px solid var(--color-yellow); outline-offset: 2px; }
+
+.carrossel-contador {
+  color: var(--color-paper-dim);
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  letter-spacing: 0.08em;
+  margin-left: auto;
+}
+
+.carrossel-vazio {
+  background: var(--color-steel);
+  border: 2px dashed var(--color-rule);
+  padding: var(--space-10) var(--space-6);
+  text-align: center;
+  color: var(--color-paper-dim);
+}
+.carrossel-gestao { margin-top: var(--space-5); }
+
+/* ==========================================================
+   5. ABAS E AVALIAÇÕES
+   ========================================================== */
+.abas-avaliacoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-6);
+  border-bottom: 2px solid var(--color-rule);
+}
+.aba-btn {
+  background: transparent;
+  border: 0;
+  color: var(--color-paper-dim);
+  font-family: var(--font-body);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: var(--space-3) var(--space-5);
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  transition: color var(--ease-base), border-color var(--ease-base);
+}
+.aba-btn:hover { color: var(--color-red-text); }
+.aba-btn.ativa {
+  color: var(--color-red-text);
+  border-bottom-color: var(--color-accent);
+}
+
+.aba-conteudo { display: none; }
+.aba-conteudo.ativa { display: block; animation: ev-fade-in 0.2s ease; }
+@keyframes ev-fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.avaliacoes-lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+.avaliacao-card {
+  background: var(--color-steel);
+  border: 2px solid var(--color-rule);
+  box-shadow: var(--shadow-hard);
+  padding: var(--space-6);
+}
+.avaliacao-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-3);
+}
+.avaliador-foto {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-full);
+  object-fit: cover;
+  border: 2px solid var(--color-rule);
+  background: var(--color-ink-2);
+}
+.avaliador-info { flex: 1; min-width: 0; }
+.avaliador-nome {
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  font-size: var(--font-size-base);
+}
+.avaliacao-data { color: var(--color-paper-dim); font-size: var(--font-size-sm); }
+.avaliacao-estrelas {
+  color: var(--color-yellow);
+  font-family: var(--font-mark);
+  font-size: var(--font-size-xl);
+  letter-spacing: 0.1em;
+}
+.avaliacao-comentario { color: var(--color-paper-dim); line-height: 1.6; margin-bottom: 0; }
+
+/* -- formulário de avaliação -- */
+.avaliar-form {
+  background: var(--color-steel);
+  border: 2px solid var(--color-rule);
+  box-shadow: var(--shadow-hard);
+  padding: var(--space-8);
+  max-width: 600px;
+}
+.avaliar-form .campo { margin-bottom: var(--space-4); }
+
+.estrelas-input {
+  display: flex;
+  gap: var(--space-2);
+  direction: rtl;
+}
+.estrelas-input input { display: none; }
+.estrelas-input label {
+  font-size: 2rem;
+  line-height: 1;
+  color: var(--color-rule);
+  cursor: pointer;
+  transition: color var(--ease-base), transform var(--ease-base);
+}
+.estrelas-input label:hover { transform: scale(1.1); }
+.estrelas-input input:checked ~ label,
+.estrelas-input label:hover,
+.estrelas-input label:hover ~ label { color: var(--color-yellow); }
+.estrelas-input input:focus-visible + label {
+  outline: 2px solid var(--color-yellow);
+  outline-offset: 2px;
+}
+
+/* ==========================================================
+   6. RESPONSIVO
+   ========================================================== */
+@media (max-width: 720px) {
+  .perfil-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .perfil-foto { width: 160px; height: 160px; }
+  .perfil-meta { justify-content: center; }
+  .perfil-contatos { justify-content: center; }
+  .avaliar-form { padding: var(--space-6); }
+  .abas-avaliacoes { justify-content: center; }
+  .carrossel { max-width: 100%; }
+  .carrossel-seta { width: 38px; height: 38px; font-size: 1.1rem; }
+  .carrossel-seta.anterior { left: var(--space-1); }
+  .carrossel-seta.proximo { right: var(--space-1); }
+  .carrossel-legenda { font-size: var(--font-size-sm); padding: 2rem var(--space-3) var(--space-2); }
+  .carrossel-contador { margin-left: 0; }
+  .avaliacao-card { padding: var(--space-4); }
+}
+
+@media (max-width: 480px) {
+  .carrossel-rodape { justify-content: center; }
+  .carrossel-contador {
+    width: 100%;
+    text-align: center;
+    order: -1;
+    margin-left: 0;
+  }
+}

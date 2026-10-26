@@ -18,6 +18,11 @@ require_once dirname(__FILE__) . '/Componentes/funcoes_eventos.php';
 exigir_login('Login.php');
 $usuarioId = usuario_id();
 
+// REGRA DE PUBLICAÇÃO: só contas de organizador ('empresa'/'admin')
+// criam eventos — o botão abaixo e o link do estado vazio seguem a
+// mesma regra que é validada no servidor em CadastrarEvento.php.
+$podePublicar = usuario_pode_publicar_eventos($conexao);
+
 // ---- Filtros vindos da barra de busca — rejeitam arrays ----
 $busca = entrada_texto($_GET, 'busca');
 $categoriaFiltro = entrada_inteiro($_GET, 'categoria');
@@ -81,7 +86,7 @@ $categorias = buscar_categorias_eventos($conexao);
 
 $pageTitle = 'EventoVivo — Gerenciar eventos';
 $pageDescription = 'Gerencie seus eventos publicados no EventoVivo';
-$extraCss = array('../Css/eventos.css');
+$extraCss = array();
 
 require dirname(__FILE__) . '/Componentes/header.php';
 
@@ -100,11 +105,14 @@ if (isset($_SESSION['flash_eventos'])) {
 
 
 
+
+
+
 <main class="admin-page">
 
   <?php if ($flashCadastro !== ''): ?>
     <div class="wrap">
-      <div class="alert alert-sucesso" style="margin:1.5rem 0 0;padding:.8rem;background:rgba(230,185,35,.12);border:2px solid #e6b923;color:#e6dfc9;font-size:.85rem;">
+      <div class="alert alert-sucesso">
         <?php echo htmlspecialchars($flashCadastro); ?>
       </div>
     </div>
@@ -112,7 +120,7 @@ if (isset($_SESSION['flash_eventos'])) {
 
   <?php if ($flashEventos !== ''): ?>
     <div class="wrap">
-      <div class="alert alert-sucesso" style="margin:1.5rem 0 0;padding:.8rem;background:rgba(230,185,35,.12);border:2px solid #e6b923;color:#e6dfc9;font-size:.85rem;">
+      <div class="alert alert-sucesso">
         <?php echo htmlspecialchars($flashEventos); ?>
       </div>
     </div>
@@ -128,9 +136,11 @@ if (isset($_SESSION['flash_eventos'])) {
         </p>
       </div>
 
-      <a class="btn btn-primary" href="CadastrarEvento.php">
-        + NOVO EVENTO
-      </a>
+      <?php if ($podePublicar): ?>
+        <a class="btn btn-primary" href="CadastrarEvento.php">
+          + NOVO EVENTO
+        </a>
+      <?php endif; ?>
     </div>
   </section>
 
@@ -180,7 +190,12 @@ if (isset($_SESSION['flash_eventos'])) {
 
         <p class="estado-vazio">
           Nenhum evento encontrado.
-          <a href="CadastrarEvento.php">Cadastre o primeiro evento</a>.
+          <?php if ($podePublicar): ?>
+            <a href="CadastrarEvento.php">Cadastre o primeiro evento</a>.
+          <?php else: ?>
+            Contas do tipo <strong>empresa</strong> publicam eventos — a agenda pública está em
+            <a href="Eventos.php">Eventos</a>.
+          <?php endif; ?>
         </p>
 
       <?php else: ?>
@@ -195,7 +210,7 @@ if (isset($_SESSION['flash_eventos'])) {
 
               <div class="evento-card-corpo">
                 <?php if ((int) $evento['arquivado'] === 1): ?>
-                  <span style="display:inline-block;padding:.15rem .5rem;border:1px solid #e6b923;color:#e6b923;font-size:.65rem;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem;">Arquivado</span>
+                  <span class="tag-arquivado">Arquivado</span>
                 <?php endif; ?>
                 <p class="evento-card-categoria"><?php echo htmlspecialchars($evento['categoria_nome']); ?></p>
                 <h3 class="evento-card-titulo"><?php echo htmlspecialchars($evento['titulo']); ?></h3>
@@ -217,16 +232,14 @@ if (isset($_SESSION['flash_eventos'])) {
                     <a class="btn-icone" href="EditarEvento.php?id_evento=<?php echo (int) $evento['id_evento']; ?>">Editar</a>
 
                     <?php if ((int) $evento['arquivado'] === 1): ?>
-                      <form method="post" action="RestaurarEvento.php"
-                            style="display:inline;">
+                      <form method="post" action="RestaurarEvento.php">
                         <?php echo csrf_campo(); ?>
                         <input type="hidden" name="id_evento" value="<?php echo (int) $evento['id_evento']; ?>">
                         <button type="submit" class="btn-icone">Restaurar</button>
                       </form>
                     <?php else: ?>
                       <form method="post" action="ExcluirEvento.php"
-                            onsubmit="return confirm('Tem certeza que deseja arquivar este evento? Ele deixará de aparecer nas listagens públicas e poderá ser restaurado depois.');"
-                            style="display:inline;">
+                            onsubmit="return confirm('Tem certeza que deseja arquivar este evento? Ele deixará de aparecer nas listagens públicas e poderá ser restaurado depois.');">
                         <?php echo csrf_campo(); ?>
                         <input type="hidden" name="id_evento" value="<?php echo (int) $evento['id_evento']; ?>">
                         <button type="submit" class="btn-icone btn-icone-excluir">Arquivar</button>

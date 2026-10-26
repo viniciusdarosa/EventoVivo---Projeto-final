@@ -510,6 +510,46 @@ if (!function_exists('aviso_sessao')) {
 }
 
 /**
+ * Guarda uma mensagem de feedback (sucesso ou erro) para exibir na
+ * próxima página depois de um redirecionamento (padrão PRG).
+ *
+ * @param string $mensagem Texto exibido ao usuário (sem HTML).
+ * @param string $nivel    'sucesso' ou 'erro'.
+ */
+if (!function_exists('flash_definir')) {
+    function flash_definir($mensagem, $nivel = 'sucesso')
+    {
+        if (!is_string($mensagem) || $mensagem === '') {
+            return;
+        }
+        if (!isset($_SESSION['flash_mensagens']) || !is_array($_SESSION['flash_mensagens'])) {
+            $_SESSION['flash_mensagens'] = array();
+        }
+        $_SESSION['flash_mensagens'][] = array(
+            'nivel'  => ($nivel === 'erro') ? 'erro' : 'sucesso',
+            'texto'  => $mensagem,
+        );
+    }
+}
+
+/**
+ * Lê e CONSUME todas as mensagens de feedback pendentes (uma vez só).
+ *
+ * @return array lista de arrays ('nivel' => sucesso|erro, 'texto' => string)
+ */
+if (!function_exists('flash_ler')) {
+    function flash_ler()
+    {
+        if (empty($_SESSION['flash_mensagens']) || !is_array($_SESSION['flash_mensagens'])) {
+            return array();
+        }
+        $mensagens = $_SESSION['flash_mensagens'];
+        unset($_SESSION['flash_mensagens']);
+        return $mensagens;
+    }
+}
+
+/**
  * Lê um valor textual de $_GET/$_POST com segurança.
  * Rejeita arrays (ex.: ?nome[]=x) e aplica trim, evitando warnings do PHP
  * ao passar array para trim() e evitando arrays dentro dos prepared statements.

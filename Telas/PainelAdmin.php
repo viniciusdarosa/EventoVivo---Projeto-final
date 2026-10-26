@@ -542,10 +542,12 @@ require dirname(__FILE__) . '/Componentes/header.php';
       <ul class="adm-metricas">
         <li><span>Avaliações</span><b><?php echo (int) $social['avaliacoes']; ?></b></li>
         <li><span>Favoritos</span><b><?php echo (int) $social['favoritos']; ?></b></li>
-        <li><span>Mensagens</span><b><?php echo (int) $social['mensagens']; ?></b></li>
         <li><span>Fotos publicadas</span><b><?php echo (int) $social['fotos']; ?></b></li>
-        <li><span>Notificações abertas</span><b><?php echo (int) $social['notificacoes_abertas']; ?></b></li>
       </ul>
+      <!-- Mensagens e Notificações: tabelas existem no banco, mas as
+           funcionalidades de envio/leitura ainda não têm interface —
+           ver "Funcionalidades futuras" no README.md. Os contadores
+           foram removidos daqui para não exibir números sempre zero. -->
     </section>
 
   </div>

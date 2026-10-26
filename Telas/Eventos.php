@@ -11,8 +11,9 @@ require_once dirname(__FILE__) . '/../config/bootstrap.php';
 require_once dirname(__FILE__) . '/Componentes/funcoes_eventos.php';
 require_once dirname(__FILE__) . '/Componentes/EventoCard.php';
 
-// Arquiva (sem apagar) eventos encerrados há mais de 1 mês antes da listagem.
-arquivar_eventos_encerrados($conexao);
+// A listagem é somente leitura: nada é arquivado nem apagado aqui.
+// O arquivamento é uma ação explícita do dono (CRUD_Eventos.php,
+// botão "Arquivar"), nunca disparada por navegação.
 
 // ---- Filtros (GET) — entrada_texto/entrada_inteiro rejeitam arrays ----
 $busca = entrada_texto($_GET, 'busca');
@@ -109,7 +110,7 @@ if ($resEstados) {
 }
 $pageTitle = 'EventoVivo — Todos os Eventos';
 $pageDescription = 'Descubra eventos culturais, shows, festivais, teatro e dança na sua cidade.';
-$extraCss = array('../Css/style.css', '../Css/eventos.css', '../Css/crud_eventos.css');
+$extraCss = array();
 
 require dirname(__FILE__) . '/Componentes/header.php';
 ?>
@@ -174,7 +175,7 @@ require dirname(__FILE__) . '/Componentes/header.php';
         </div>
 
         <button class="btn btn-filter" type="submit">FILTRAR</button>
-        <a class="btn btn-ghost" href="Eventos.php" style="align-self:flex-end;">LIMPAR</a>
+        <a class="btn btn-ghost" href="Eventos.php">LIMPAR</a>
       </form>
     </div>
   </section>

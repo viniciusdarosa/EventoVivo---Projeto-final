@@ -1,0 +1,193 @@
+/* ============================================================
+   EventoVivo — Design Tokens
+   Single source of truth for colors, typography, spacing, shadows.
+   ============================================================ */
+
+:root {
+  /* -- Color: Base (dark theme) -- */
+  --color-ink: #120f0f;
+  --color-ink-2: #1f1a1a;
+  --color-ink-3: #2a2424;
+  --color-steel: #2d2727;
+  --color-rule: #4a4040;
+  --color-rule-light: #5a4e4e;
+
+  /* -- Color: Text -- */
+  --color-paper: #dedbd2;
+  --color-paper-dim: #a5a29a;
+  --color-paper-muted: #8a8780;
+  --color-white: #ffffff;
+
+  /* -- Color: Brand / Accent -- */
+  --color-blood: #b3121e;
+  --color-blood-hover: #c91422;
+  --color-accent: #b8000d;
+  --color-accent-hover: #d00010;
+  --color-red-text: #ff6670;
+  --color-yellow: #e6b923;
+  --color-yellow-hover: #f0c840;
+
+  /* -- Color: Semantic -- */
+  --color-success: #2e7d32;
+  --color-success-bg: rgba(46, 125, 50, 0.15);
+  --color-success-border: #4caf50;
+  --color-error: #b3121e;
+  --color-error-bg: rgba(179, 18, 30, 0.12);
+  --color-error-border: #b3121e;
+  --color-warning: #e6b923;
+  --color-warning-bg: rgba(230, 185, 35, 0.12);
+  --color-warning-border: #e6b923;
+  --color-info: #1565c0;
+  --color-info-bg: rgba(21, 101, 192, 0.15);
+  --color-info-border: #1976d2;
+
+  /* -- Color: Focus -- */
+  --color-focus: var(--color-accent);
+  --color-focus-ring: rgba(184, 0, 13, 0.25);
+
+  /* -- Typography -- */
+  --font-display: 'Anton', sans-serif;
+  --font-body: 'Courier Prime', monospace;
+  --font-mark: 'Permanent Marker', cursive;
+
+  --font-size-xs: 0.625rem;   /* 10px */
+  --font-size-sm: 0.75rem;    /* 12px */
+  --font-size-base: 0.875rem; /* 14px */
+  --font-size-md: 1rem;       /* 16px */
+  --font-size-lg: 1.125rem;   /* 18px */
+  --font-size-xl: 1.25rem;    /* 20px */
+  --font-size-2xl: 1.5rem;    /* 24px */
+  --font-size-3xl: 2rem;      /* 32px */
+  --font-size-4xl: 2.5rem;    /* 40px */
+  --font-size-5xl: 3.5rem;    /* 56px */
+  --font-size-6xl: 4.5rem;    /* 72px */
+
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
+
+  --line-height-tight: 1.1;
+  --line-height-snug: 1.35;
+  --line-height-normal: 1.6;
+  --line-height-relaxed: 1.75;
+
+  /* -- Spacing (base 8px = 0.5rem) -- */
+  --space-0: 0;
+  --space-1: 0.25rem;  /* 4px */
+  --space-2: 0.5rem;   /* 8px */
+  --space-3: 0.75rem;  /* 12px */
+  --space-4: 1rem;     /* 16px */
+  --space-5: 1.25rem;  /* 20px */
+  --space-6: 1.5rem;   /* 24px */
+  --space-8: 2rem;     /* 32px */
+  --space-10: 2.5rem;  /* 40px */
+  --space-12: 3rem;    /* 48px */
+  --space-16: 4rem;    /* 64px */
+  --space-20: 5rem;    /* 80px */
+  --space-24: 6rem;    /* 96px */
+
+  /* -- Container -- */
+  --container-max: 1180px;
+  --container-padding: var(--space-6);
+
+  /* -- Border Radius -- */
+  --radius-none: 0;
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 8px;
+  --radius-full: 9999px;
+
+  /* -- Shadows -- */
+  --shadow-hard: 6px 6px 0 rgba(0, 0, 0, 0.55);
+  --shadow-hard-hover: 8px 8px 0 rgba(0, 0, 0, 0.55);
+  --shadow-soft: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.25);
+  --shadow-focus: 0 0 0 3px var(--color-focus-ring);
+
+  /* -- Transitions -- */
+  --ease-fast: 0.12s ease;
+  --ease-base: 0.18s ease;
+  --ease-slow: 0.25s ease;
+  --ease-spring: 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* -- Z-index scale -- */
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-fixed: 300;
+  --z-modal-backdrop: 400;
+  --z-modal: 500;
+  --z-popover: 600;
+  --z-tooltip: 700;
+  --z-toast: 800;
+
+  /* -- Breakpoints (em-based) -- */
+  --bp-xs: 20em;    /* 320px */
+  --bp-sm: 22.5em;  /* 360px */
+  --bp-md: 24.375em; /* 390px */
+  --bp-lg: 26.875em; /* 430px */
+  --bp-tablet: 48em; /* 768px */
+  --bp-laptop: 64em; /* 1024px */
+  --bp-desktop: 80em; /* 1280px */
+  --bp-xl: 90em;    /* 1440px */
+  --bp-2xl: 120em;  /* 1920px */
+
+  /* -- Header height -- */
+  --header-height: 4.25rem;
+
+  /* ==========================================================
+     LEGACY ALIASES
+     Mantêm compatibilidade com folhas específicas que ainda
+     usam os nomes curtos (--ink, --blood, --sp-3 ...).
+     Novos códigos devem usar os nomes completos acima.
+     ========================================================== */
+  --ink: var(--color-ink);
+  --ink-2: var(--color-ink-2);
+  --ink-3: var(--color-ink-3);
+  --steel: var(--color-steel);
+  --rule: var(--color-rule);
+  --rule-light: var(--color-rule-light);
+  --paper: var(--color-paper);
+  --paper-dim: var(--color-paper-dim);
+  --paper-muted: var(--color-paper-muted);
+  --white: var(--color-white);
+  --blood: var(--color-blood);
+  --accent: var(--color-accent);
+  --red-text: var(--color-red-text);
+  --yellow: var(--color-yellow);
+
+  --sp-1: var(--space-2);   /* .5rem  */
+  --sp-2: var(--space-4);   /* 1rem   */
+  --sp-3: var(--space-6);   /* 1.5rem */
+  --sp-4: var(--space-8);   /* 2rem   */
+  --sp-5: var(--space-12);  /* 3rem   */
+  --sp-6: var(--space-16);  /* 4rem   */
+  --sp-7: var(--space-24);  /* 6rem   */
+
+  --ease: var(--ease-base);
+}
+
+/* Reduced motion: disable all transitions/animations */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --ease-fast: 0s;
+    --ease-base: 0s;
+    --ease-slow: 0s;
+    --ease-spring: 0s;
+  }
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* High contrast mode adjustments */
+@media (prefers-contrast: high) {
+  :root {
+    --color-rule: #6a5a5a;
+    --color-paper-dim: #c5c2ba;
+    --shadow-hard: 4px 4px 0 #000;
+    --shadow-hard-hover: 6px 6px 0 #000;
+  }
+}
