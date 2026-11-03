@@ -1,0 +1,67 @@
+FONTES DOS EVENTOS — CATEGORIAS COMPLEMENTARES
+Consultadas em 03/11/2026. O SQL correspondente é eventos_sc_categorias_complementares.sql.
+
+As datas e os locais abaixo foram coletados de páginas de organizadores, instituições,
+teatros e serviços de ingresso. Valores que aparecem nas páginas podem mudar.
+O banco exige número de vagas; quando o organizador não informa lotação, foi usada
+uma estimativa para fins de demonstração. Alguns campos `imagem_capa` usam as capas
+genéricas já existentes no projeto para a categoria; os nomes dos arquivos são
+referenciados pelo SQL e ficam em `uploads/eventos/`.
+
+CULTURA
+1. 3º Festival Cultural Chinês de Santa Catarina — 07/11/2026, Multi Open Shopping:
+   https://guiafloripa.com.br/agenda/gratuito/3o-festival-cultural-chines-de-santa-catarina-em-florianopolis.php
+2. 4ª edição do Haru Matsuri — 07–08/11/2026, Jardim Botânico de Florianópolis:
+   https://guiafloripa.com.br/agenda/gratuito/4a-edicao-do-haru-matsuri-em-florianopolis.php
+3. 8ª Feira de Cerâmica — 13–15/11/2026, Multi Open Shopping:
+   https://guiafloripa.com.br/agenda/gratuito/feira-de-ceramica-em-florianopolis.php
+4. Exposição A Reinvenção da Natureza — Zé Paiva — 22/10/2026–26/02/2027, Sesc Concórdia:
+   https://www.sesc-sc.com.br/agenda/exposicao/exposicao-a-reinvencao-da-natureza-de-ze-paiva
+5. Natal em Pomerode — 19/11/2026–03/01/2027:
+   https://www.pomerode.sc.gov.br/cidadao/noticia/natal-em-pomerode-vai-crescer-em-programacao-e-em-espaco
+
+DANÇA
+1. A Dança das Flores — 21/11/2026, Teatro Governador Pedro Ivo:
+   https://www.outhere.guide/place/teatro-governador-pedro-ivo-82be
+2. Dança — Uma História em Movimento — 03/12/2026, Teatro Ademir Rosa:
+   https://moventistickets.com.br/eventos?cat=infantil
+3. Em Cena — espetáculo de dança — 04/12/2026, Teatro Ademir Rosa:
+   https://moventistickets.com.br/eventos?cat=infantil
+4. Cartas ao Mar — XVII Mostra do Casarão da Dança — 09/12/2026, Teatro Ademir Rosa:
+   https://www.sympla.com.br/evento/cartas-ao-mar-xvii-mostra-de-danca-do-casarao-da-danca/3578529
+5. Anos 2000 — espetáculo de fim de ano da Central da Dança — 11/12/2026:
+   https://moventistickets.com.br/eventos/anos-2000-espetaculo-de-fim-de-ano-da-central-da-danca
+
+FESTIVAIS
+1. 2º Festival Catarinense de Hip Hop — 21–22/11/2026, Criciúma:
+   https://asdccriciuma.blogspot.com/2026/10/regulamento-2-festival-catarinense-de.html
+2. 18º Festival Brasileiro da Cerveja — 03–06/03/2027, Parque Vila Germânica:
+   https://festivaldacervejablumenau.com.br/
+   Ingresso Degusta (primeiro lote): https://hallomagazine.com.br/degusta-cervejas-do-brasil-abre-pre-venda-especial/
+3. 42ª Festa Pomerana — 13–24/01/2027, Pavilhão Municipal de Eventos:
+   https://www.festapomerana.com.br/faq
+4. Sommer Festival 2027 — 21–23/01/2027, Parque Vila Germânica:
+   https://e-governo.blumenau.sc.gov.br/secao/noticias/135010
+   Informação de ingresso a partir de R$ 55: https://hubnews.io/sc/blumenau/eventos/sommer-festival-2027-em-blumenau-de-21-a-23-de-janeiro
+5. Festival de Forró do Rosa — 11–14/03/2027, Imbituba:
+   https://festivaldeforrodorosa.com.br/
+
+TEATRO
+1. Elisa e os Cisnes Selvagens — 04/11/2026, Sesc/Joinville:
+2. Pintor da Palavra — 05/11/2026, Sesc/Joinville:
+3. Mulher Pássaro — 06/11/2026, Sesc/Joinville:
+   Fonte comum das três apresentações do 8º Animaneco:
+   https://www.sesc-sc.com.br/agenda/teatro/pauta-aberta-8-animaneco?u=34
+4. TÍMON — Persona Cia de Teatro — 07–08/11/2026, Centro Cultural Camarim:
+   https://www.sympla.com.br/evento/timon-de-william-shakespeare-e-thomas-middleton/3638517
+5. Dois de Nós — 20–22/11/2026, Teatro Ademir Rosa:
+   https://www.diskingressos.com.br/evento/4180/2026-11-20/sc/florianopolis/dois-de-nos
+
+IMAGENS
+O campo `imagem_capa` guarda somente o nome do arquivo; o site resolve a pasta
+`uploads/eventos/`. O SQL usa capas específicas locais para a exposição de Zé Paiva,
+Natal em Pomerode, Festival Catarinense de Hip Hop, Sommer Festival, Festival de Forró,
+Festival Brasileiro da Cerveja, Animaneco e Mulher Pássaro/TÍMON. Para alguns outros
+eventos, o projeto reaproveita as capas de categoria já existentes (`feira_cultural.jpg`,
+`danca.jpg`, `festival_primavera.jpg` e `teatro.jpg`), porque as páginas consultadas não
+ofereceram um arquivo de divulgação acessível para cada evento.

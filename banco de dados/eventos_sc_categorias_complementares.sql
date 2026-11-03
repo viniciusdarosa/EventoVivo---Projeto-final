@@ -1,0 +1,41 @@
+-- EventoVivo: eventos reais divulgados para Santa Catarina
+-- Categorias: Teatro (2), Dança (3), Cultura (4), Festivais (5).
+-- Organizador usado nos registros: usuário administrador 6.
+-- As capas existentes ficam em ../uploads/eventos/ e o banco armazena
+-- somente o nome do arquivo, conforme a aplicação.
+-- IMPORTANTE: importe este arquivo uma única vez para não duplicar eventos.
+-- Mantém apenas eventos com capas oficiais em arquivos JPEG/PNG do projeto.
+-- Os números de vagas são estimativas para cadastro de demonstração;
+-- horários, valores e locais foram preenchidos com base nas fontes listadas
+-- em fontes_eventos_sc_categorias.txt. Eventos gratuitos usam valor 0.00.
+
+USE `eventovivo`;
+
+INSERT INTO `eventos`
+(`usuario_id`,`categoria_id`,`titulo`,`descricao`,`data_inicio_evento`,`data_fim_evento`,`hora_inicio`,`hora_fim`,`endereco`,`numero`,`cidade`,`estado`,`cep`,`valor`,`vagas`,`imagem_capa`,`faixa_etaria`,`data_publicacao`,`arquivado`)
+VALUES
+-- CULTURA (categoria_id 4)
+(6,4,'3º Festival Cultural Chinês de Santa Catarina','Evento familiar gratuito com apresentações de Kung Fu e Tai Chi, palestras e atividades de valorização da cultura chinesa.','2026-11-07','2026-11-07','10:00:00','16:00:00','Multi Open Shopping - Boulevard','3339','Florianópolis','SC','88048-301',0.00,400,'evento_cultura_festival_chines.jpg','Livre','2026-11-03 12:00:00',0),
+(6,4,'4ª edição do Haru Matsuri','Celebração da cultura e da primavera japonesa com gastronomia, música tradicional, oficinas criativas e artesanato. Entrada gratuita.','2026-11-07','2026-11-08','10:00:00','17:00:00','Jardim Botânico de Florianópolis','742','Florianópolis','SC','88034-000',0.00,700,'evento_cultura_haru_matsuri.jpg','Livre','2026-11-03 12:00:00',0),
+(6,4,'8ª Feira de Cerâmica de Florianópolis','Feira gratuita com 15 expositores de cerâmica e peças autorais, no boulevard do Multi Open Shopping.','2026-11-13','2026-11-15','12:00:00','20:00:00','Multi Open Shopping - Boulevard','3339','Florianópolis','SC','88048-301',0.00,350,'evento_cultura_feira_ceramica.jpg','Livre','2026-11-03 12:00:00',0),
+(6,4,'Exposição A Reinvenção da Natureza — Zé Paiva','Exposição gratuita de fotografia e arte sobre a Mata Atlântica, com curadoria de Ana Sabiá e participação da artista Clara Fernandes. Visitação em dias úteis.','2026-10-22','2027-02-26','08:00:00','18:30:00','Galeria de Arte do Sesc Concórdia','620','Concórdia','SC','89700-000',0.00,150,'evento_cultura_ze_paiva.jpg','Livre','2026-11-03 12:00:00',0),
+(6,4,'Natal em Pomerode 2026','Programação natalina com Mercado de Natal, decoração, artesanato, gastronomia, apresentações culturais e atividades para famílias.','2026-11-19','2027-01-03','16:00:00','22:00:00','Centro Cultural de Pomerode','111','Pomerode','SC','89107-000',0.00,1000,'evento_cultura_natal_pomerode.png','Livre','2026-11-03 12:00:00',0),
+
+-- DANÇA (categoria_id 3)
+(6,3,'A Dança das Flores','Espetáculo de dança com sessão no Teatro Governador Pedro Ivo, em Florianópolis. Ingresso anunciado a partir de R$ 60,00.','2026-11-21','2026-11-21','18:30:00','20:30:00','Teatro Governador Pedro Ivo - Rodovia SC-401, km 5','4600','Florianópolis','SC','88032-005',60.00,500,'evento_danca_danca_das_flores.jpeg','Livre','2026-11-03 12:00:00',0),
+(6,3,'Dança — Uma História em Movimento','Espetáculo de dança no Teatro Ademir Rosa (CIC), em Florianópolis. Ingressos anunciados a partir de R$ 35,00.','2026-12-03','2026-12-03','20:00:00','22:00:00','Teatro Ademir Rosa - Avenida Governador Irineu Bornhausen','5600','Florianópolis','SC','88025-202',35.00,900,'evento_danca_historia_movimento.png','Livre','2026-11-03 12:00:00',0),
+(6,3,'Cartas ao Mar — XVII Mostra de Dança do Casarão da Dança','Mostra de dança do Casarão da Dança no Teatro Ademir Rosa, em Florianópolis. Ingressos anunciados a partir de R$ 50,00.','2026-12-09','2026-12-09','19:30:00','21:30:00','Teatro Ademir Rosa - Avenida Governador Irineu Bornhausen','5600','Florianópolis','SC','88025-202',50.00,900,'evento_danca_cartas_ao_mar.png','Livre','2026-11-03 12:00:00',0),
+(6,3,'Anos 2000 — espetáculo de fim de ano da Central da Dança','Espetáculo de fim de ano da Central da Dança no Teatro Ademir Rosa, em Florianópolis. Ingressos anunciados a partir de R$ 50,00.','2026-12-11','2026-12-11','20:00:00','22:00:00','Teatro Ademir Rosa - Avenida Governador Irineu Bornhausen','5600','Florianópolis','SC','88025-202',50.00,900,'evento_danca_anos_2000.jpg','Livre','2026-11-03 12:00:00',0),
+
+-- FESTIVAIS (categoria_id 5)
+(6,5,'2º Festival Catarinense de Hip Hop — Etapa Criciúma','Festival gratuito de cultura urbana com graffiti, breaking, DJs, MCs, batalhas e atividades formativas em espaços culturais parceiros de Criciúma.','2026-11-21','2026-11-22','09:00:00','21:00:00','Casa do Hip Hop Flor e Ser - Vila Zuleima','s/n','Criciúma','SC','88805-000',0.00,500,'evento_festival_hiphop.jpeg','Livre','2026-11-03 12:00:00',0),
+(6,5,'18º Festival Brasileiro da Cerveja','Festival de cervejarias artesanais, gastronomia e cultura cervejeira no Parque Vila Germânica. O ingresso informado a partir de R$ 119,00 refere-se ao primeiro lote do evento Degusta, realizado no mesmo local e período.','2027-03-03','2027-03-06','19:00:00','23:00:00','Parque Vila Germânica - Rua Alberto Stein','199','Blumenau','SC','89036-200',119.00,1200,'evento_festival_cerveja.jpg','18+','2026-11-03 12:00:00',0),
+(6,5,'42ª Festa Pomerana','Doze dias de cultura e tradições germânicas, com desfiles, grupos folclóricos, gastronomia típica, competições, feira e parque de diversões. Ingressos a partir de R$ 25,00.','2027-01-13','2027-01-24','18:00:00','23:59:00','Pavilhão Municipal de Eventos - Avenida 21 de Janeiro','2700','Pomerode','SC','89107-000',25.00,1500,'evento_festival_festa_pomerana.jpg','Livre','2026-11-03 12:00:00',0),
+(6,5,'Sommer Festival 2027','Festival de verão no Parque Vila Germânica, com programação de música, gastronomia e atrações culturais. A Prefeitura confirmou os dias 21 a 23/01; o show de Simone Mendes em 23/01 tem ingressos a partir de R$ 55,00.','2027-01-21','2027-01-23','18:00:00','23:59:00','Pavilhão Spaten - Parque Vila Germânica, Rua Alberto Stein','199','Blumenau','SC','89036-200',55.00,3000,'evento_festival_sommer.jpg','Livre','2026-11-03 12:00:00',0),
+(6,5,'Festival de Forró do Rosa — 5 anos','Quatro dias de forró na Praia do Rosa, com bailes, oficinas, atividades na lagoa e apresentações de trios. Passaportes anunciados a partir de R$ 290,00.','2027-03-11','2027-03-14','21:00:00','23:59:00','Mar del Rosa - Praia do Rosa','s/n','Imbituba','SC','88780-000',60.00,800,'evento_festival_forro_rosa.png','Livre','2026-11-03 12:00:00',0),
+
+-- TEATRO (categoria_id 2)
+(6,2,'Elisa e os Cisnes Selvagens — 8º Animaneco','Espetáculo de teatro de formas animadas com Teatro por um Triz. Sessões gratuitas às 9h e 15h no Teatro Sesc de Joinville.','2026-11-04','2026-11-04','09:00:00','16:00:00','Teatro Sesc - Rua Itaiópolis','470','Joinville','SC','89204-100',0.00,180,'evento_teatro_animaneco.jpg','Livre','2026-11-03 12:00:00',0),
+(6,2,'Pintor da Palavra — 8º Animaneco','Espetáculo gratuito do Grupo Teatro CasAmarela, de Brusque, inspirado nas cartas e pinturas de Vincent van Gogh. Sessões no Teatro Sesc de Joinville.','2026-11-05','2026-11-05','19:00:00','21:00:00','Teatro Sesc - Rua Itaiópolis','470','Joinville','SC','89204-100',0.00,180,'evento_teatro_pintor_palavra.png','Livre','2026-11-03 12:00:00',0),
+(6,2,'Mulher Pássaro — 8º Animaneco','Performance visual de Genifer Gerhardt que combina teatro de bonecos em miniatura, circo e intervenção urbana. Sessão gratuita às 20h no Teatro Sesc de Joinville.','2026-11-06','2026-11-06','20:00:00','21:00:00','Teatro Sesc - Rua Itaiópolis','470','Joinville','SC','89204-100',0.00,180,'evento_teatro_mulher_passaro.jpg','Livre','2026-11-03 12:00:00',0),
+(6,2,'TÍMON — Persona Cia de Teatro','Montagem de Shakespeare e Thomas Middleton ambientada nos anos 1920. Duas apresentações no Teatro Camarim, dias 7 e 8 de novembro, às 19h30. Ingresso solidário anunciado a R$ 40,00 com doação de alimento.','2026-11-07','2026-11-08','19:30:00','21:30:00','Centro Cultural Camarim - Rua Professora Antonieta de Barros','976','Florianópolis','SC','88070-700',40.00,100,'evento_teatro_timon.jpg','14','2026-11-03 12:00:00',0);
