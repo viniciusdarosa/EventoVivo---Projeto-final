@@ -79,7 +79,19 @@ INSERT INTO `avaliacoes` (`id`, `avaliador`, `freelancer_id`, `nota`, `comentari
   (2, 1, 2, 5, 'Excelente cantora e ótima interação com o público.', '2026-08-16 16:00:00'),
   (3, 4, 3, 5, 'Fotografias de ótima qualidade e entrega rápida.', '2026-08-17 10:20:00'),
   (4, 1, 4, 5, 'Excelente dançarino e muito profissional.', '2026-08-18 18:45:00'),
-  (5, 4, 5, 4, 'Bom trabalho de design e ótima qualidade visual.', '2026-08-19 12:10:00');
+  (5, 3, 5, 4, 'Bom trabalho de design e ótima qualidade visual.', '2026-08-19 12:10:00'),
+  (6, 4, 1, 5, 'Show muito bem ensaiado e som impecável. Fez a festa do nosso casamento em Içara ficar ainda mais especial.', '2026-08-01 09:00:00'),
+  (7, 5, 1, 4, 'Pontual, atencioso e com repertório certeiro. Agradou tanto os mais velhos quanto os jovens.', '2026-08-04 09:00:00'),
+  (8, 3, 1, 5, 'Excelente custo-benefício e negociação tranquila. Já estamos combinando a próxima data.', '2026-08-07 09:00:00'),
+  (9, 3, 2, 5, 'Voz linda e presença de palco marcante. Cantou MPB e pop com uma naturalidade que encantou todo mundo.', '2026-08-05 09:00:00'),
+  (10, 4, 2, 4, 'Interagiu com o público do começo ao fim e o repertório foi bem montado. Comunicação rápida desde o primeiro contato.', '2026-08-08 09:00:00'),
+  (11, 5, 3, 5, 'Fotos com naturalidade incrível: registrou momentos que nem sabíamos que estavam acontecendo.', '2026-08-09 09:00:00'),
+  (12, 1, 3, 4, 'Entrega antes do prazo e tudo organizado em pastas. Trabalhou tranquilo sem interromper o evento.', '2026-08-12 09:00:00'),
+  (13, 3, 4, 5, 'Coreografia impecável e energia contagiante. Foi o ponto alto do nosso evento corporativo.', '2026-08-13 09:00:00'),
+  (14, 4, 4, 4, 'Muito profissional: chegou cedo para ensaiar com a equipe e apresentou tudo certinho.', '2026-08-16 09:00:00'),
+  (15, 2, 4, 5, 'Dançarino versátil, do urbano ao contemporâneo. O público aplaudiu de pé.', '2026-08-19 09:00:00'),
+  (16, 1, 5, 5, 'Cartazes chamativos e identidade visual consistente em tudo. A divulgação do festival ficou muito mais forte.', '2026-08-17 09:00:00'),
+  (17, 2, 5, 4, 'Atendeu rápido às mudanças de última hora e entregou os arquivos prontos para impressão.', '2026-08-20 09:00:00');
 
 -- ---- Favoritos ----
 INSERT INTO `favoritos` (`id`, `usuario_id`, `evento_id`, `freelancer_id`) VALUES

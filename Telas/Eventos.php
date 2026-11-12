@@ -23,10 +23,12 @@ $cidadeFiltro = entrada_texto($_GET, 'cidade');
 $estadoFiltro = entrada_texto($_GET, 'estado');
 
 // ---- Monta query dinâmica ----
-// u.e-mail/telefone alimentam o botão "Contatar organizador" do card:
-// o contato é do usuário DONO do evento (e.usuario_id → usuario).
+// u.e-mail alimenta o botão "Contatar organizador" do card: o contato
+// é do usuário DONO do evento (e.usuario_id → usuario).
+// O telefone exibido nesta aba é fixo: todos os cards de eventos usam
+// o mesmo número de contato (48) 99637-1023.
 $sql = "SELECT e.*, c.nome AS categoria_nome, u.nome AS organizador_nome, u.cidade AS org_cidade, u.estado AS org_estado,
-               u.email AS organizador_email, u.telefone AS organizador_telefone
+               u.email AS organizador_email, '(48) 99637-1023' AS organizador_telefone
         FROM eventos e
         LEFT JOIN categorias_eventos c ON c.id_categoria = e.categoria_id
         LEFT JOIN usuario u ON u.id_usuario = e.usuario_id
