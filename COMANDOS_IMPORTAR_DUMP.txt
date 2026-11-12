@@ -1,0 +1,34 @@
+COMO IMPORTAR OS 12 ARQUIVOS DO DUMP
+
+1. Extraia Dump20261109.zip para:
+   C:\Users\rato3\Downloads\Dump20261109\
+
+2. Abra o Prompt de Comando e conecte ao MySQL do EasyPHP:
+   cd /d "C:\Program Files (x86)\EasyPHP-5.3.9\mysql\bin"
+   mysql -u root -p eventovivo
+
+   Digite a senha do MySQL quando solicitada. Se o usuário root não tiver senha,
+   use: mysql -u root eventovivo
+
+3. No prompt do MySQL (mysql>), cole/exeute as linhas abaixo. Use barras /
+   nos caminhos, como mostrado:
+
+SOURCE C:/Users/rato3/Downloads/Dump20261109/eventovivo_categorias_eventos.sql;
+SOURCE C:/Users/rato3/Downloads/Dump20261109/eventovivo_categorias_servicos.sql;
+SOURCE C:/Users/rato3/Downloads/Dump20261109/eventovivo_usuario.sql;
+SOURCE C:/Users/rato3/Downloads/Dump20261109/eventovivo_eventos.sql;
+SOURCE C:/Users/rato3/Downloads/Dump20261109/eventovivo_freelancers.sql;
+SOURCE C:/Users/rato3/Downloads/Dump20261109/eventovivo_portfolio.sql;
+SOURCE C:/Users/rato3/Downloads/Dump20261109/eventovivo_carrossel_fotos.sql;
+SOURCE C:/Users/rato3/Downloads/Dump20261109/eventovivo_avaliacoes.sql;
+SOURCE C:/Users/rato3/Downloads/Dump20261109/eventovivo_favoritos.sql;
+SOURCE C:/Users/rato3/Downloads/Dump20261109/eventovivo_mensagens.sql;
+SOURCE C:/Users/rato3/Downloads/Dump20261109/eventovivo_notificacoes.sql;
+SOURCE C:/Users/rato3/Downloads/Dump20261109/eventovivo_acesso_sistema.sql;
+
+4. Ao terminar, digite:
+   exit
+
+ATENÇÃO: estes dumps contêm DROP TABLE. A importação apaga e recria as tabelas
+com os mesmos nomes no schema eventovivo, substituindo os dados atuais dessas
+tabelas. Faça backup antes se precisar preservar o conteúdo atual.
